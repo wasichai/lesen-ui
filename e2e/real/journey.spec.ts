@@ -12,6 +12,19 @@ test('leer, consultar y guardar una palabra contra el backend', async ({ page })
   await page.getByLabel(/contraseña|password/i).fill(PASSWORD)
   await page.getByRole('button', { name: /entrar|iniciar|sign in|log in/i }).click()
   await page.waitForURL(/\/(discover|welcome)/)
+  // una cuenta recién creada (la de CI) no tiene perfil: el marco la lleva al onboarding, que se completa como cualquier persona.
+  // tras el login se llega primero a /discover y la redirección llega cuando responde el perfil: hasta entonces no hay h1
+  await page.locator('h1').first().waitFor()
+  if (page.url().includes('/welcome')) {
+    await page.getByRole('button', { name: 'Continuar' }).click()
+    await page.getByText('alemán', { exact: true }).click()
+    await page.getByRole('button', { name: 'Continuar' }).click()
+    await page.getByText('A2 · Básico').click()
+    await page.getByRole('button', { name: 'Continuar' }).click()
+    await page.getByRole('button', { name: 'Continuar' }).click()
+    await page.getByRole('button', { name: 'Empezar a leer' }).click()
+    await page.waitForURL(/\/discover/)
+  }
   await page.goto('/read/der-alte-leuchtturm')
   const word = page.locator('[data-token="p1s1t2"]')
   await word.click()
