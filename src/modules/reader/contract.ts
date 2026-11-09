@@ -55,3 +55,22 @@ export const noteSchema = z.object({
 export type Note = z.infer<typeof noteSchema>
 
 export const savedKeysSchema = z.array(z.string())
+
+const rangeSchema = z.object({ id: z.string(), startMs: z.number().int().nonnegative(), endMs: z.number().int().nonnegative() })
+export const audioSchema = z.object({
+  assets: z.array(
+    z.object({
+      id: z.string(),
+      voice: z.object({ id: z.string(), provider: z.string(), language: z.string(), name: z.string(), license: z.string() }),
+      url: z.string(),
+      format: z.string(),
+      durationMs: z.number().int().positive(),
+      origin: z.enum(['GENERATED', 'UPLOADED']),
+      timings: z.array(z.tuple([z.string(), z.number().int().nonnegative(), z.number().int().nonnegative()])),
+      sentences: z.array(rangeSchema),
+      paragraphs: z.array(rangeSchema)
+    })
+  )
+})
+export type ReadingAudio = z.infer<typeof audioSchema>
+export type AudioAsset = ReadingAudio['assets'][number]

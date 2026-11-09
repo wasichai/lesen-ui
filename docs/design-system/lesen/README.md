@@ -37,7 +37,7 @@ se resumen en `tokens.json`. `src/theme/lesen.test.ts` comprueba el contrato y l
 | `lesen-reader-dark`  | Lector, oscuro                   | `#121318`  | `#e2dccf` | `#f19a7b` |
 
 Tonos de tema: `sea`, `sage`, `ochre`, `plum` (texto AA sobre superficie). Marcas del lector: `mark-saved` (palabra
-guardada), `mark-new` (subrayado de palabra nueva, fase 4) y `mark-sentence` (oración abierta).
+guardada), `mark-new` (subrayado de palabra nueva, fase 4) y `mark-sentence` (oración abierta, y la que suena con el audio).
 
 ## Tipografía
 
@@ -52,6 +52,13 @@ lectura va de 18 a 29 px con interlineado 1,55 / 1,75 / 1,95 a elección de quie
 (proporción fija 3:4, perezosa), `LevelBadge`, `ProgressBar`, `Sheet` (abajo o a la derecha, sobre el `Dialog` de
 `@wasichai/ui`), `EmptyState`, `ProblemState`, `Skeleton`, `LesenMark`. Botones y chips con `buttonClass` y `chipClass`
 (`src/shared/ui.ts`).
+
+`AudioBar` (lector, fase 3): barra fija abajo con posición, párrafo anterior y siguiente, ±5 s (desde 640 px),
+reproducir, velocidad (0,75–1,5×), volumen (desde 1024 px) y «seguir la lectura». La palabra que suena lleva fondo y
+subrayado (`data-playing`) y su oración el fondo de `mark-sentence` (`data-spoken`): nunca solo color. El resaltado se
+escribe en el DOM fotograma a fotograma, sin pintar de nuevo los párrafos (`useAudioPlayer`). El desplazamiento sigue al
+audio hasta que quien lee mueve la página; entonces aparece «seguir la lectura». Sin audio, o si falla, el lector es el
+mismo.
 
 ## Movimiento
 

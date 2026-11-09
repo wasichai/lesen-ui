@@ -80,6 +80,26 @@ const es = {
     remove: 'Borrar la nota',
     go: 'Ir a la oración'
   },
+  audio: {
+    label: 'Audio de la lectura',
+    play: 'Escuchar',
+    pause: 'Pausar',
+    back: 'Retroceder 5 segundos',
+    forward: 'Avanzar 5 segundos',
+    previousParagraph: 'Párrafo anterior',
+    nextParagraph: 'Párrafo siguiente',
+    position: 'Posición del audio',
+    positionValue: '{{current}} de {{total}}',
+    rate: 'Velocidad',
+    rateValue: '{{rate}}×',
+    volume: 'Volumen',
+    follow: 'Seguir la lectura',
+    loading: 'Cargando el audio…',
+    voice: 'Voz: {{voice}}',
+    error: 'No pudimos cargar el audio. Puedes seguir leyendo igual.',
+    fromHere: 'Escuchar desde aquí',
+    paragraph: 'Escuchar este párrafo'
+  },
   end: {
     finish: 'Terminé de leer',
     finishing: 'Guardando…',
@@ -175,6 +195,26 @@ const en: typeof es = {
     empty: "You haven't saved any sentences from this reading. Open a word and choose “Save sentence”.",
     remove: 'Delete note',
     go: 'Go to the sentence'
+  },
+  audio: {
+    label: 'Reading audio',
+    play: 'Listen',
+    pause: 'Pause',
+    back: 'Back 5 seconds',
+    forward: 'Forward 5 seconds',
+    previousParagraph: 'Previous paragraph',
+    nextParagraph: 'Next paragraph',
+    position: 'Audio position',
+    positionValue: '{{current}} of {{total}}',
+    rate: 'Speed',
+    rateValue: '{{rate}}×',
+    volume: 'Volume',
+    follow: 'Follow the reading',
+    loading: 'Loading audio…',
+    voice: 'Voice: {{voice}}',
+    error: "We couldn't load the audio. You can keep reading.",
+    fromHere: 'Listen from here',
+    paragraph: 'Listen to this paragraph'
   },
   end: {
     finish: "I've finished reading",

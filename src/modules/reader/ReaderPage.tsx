@@ -15,7 +15,9 @@ import { usePageTitle } from '../../shared/useAppName'
 import { useCanHover, useIsWide } from '../../shared/useMediaQuery'
 import { useRovingToolbar } from '../../shared/useRovingToolbar'
 import { READER_THEMES } from '../../theme/themes'
-import { useContent, useProgress, useReadingDetail, useSavedKeys } from './api'
+import { useContent, useProgress, useReadingAudio, useReadingDetail, useSavedKeys } from './api'
+import { AudioBar } from './AudioBar'
+import { buildIndex, neighbourParagraph, rangeOf, seekToWord } from './audioSync'
 import type { Progress, ReadingContent, Token } from './contract'
 import { EndOfReading } from './EndOfReading'
 import { READER_MODULE_ID } from './i18n'
@@ -24,6 +26,7 @@ import { indexContent, remainingMinutes } from './readerModel'
 import { LEADINGS, useReaderPreferences } from './readerPreferences'
 import { ReaderSettings } from './ReaderSettings'
 import { ReaderText, type WordEvents } from './ReaderText'
+import { useAudioPlayer } from './useAudioPlayer'
 import { useReadingPosition } from './useReadingPosition'
 import { WordDetails } from './WordDetails'
 import { WordPreview } from './WordPreview'
@@ -97,6 +100,51 @@ function Reader({
   const [fullscreen, setFullscreen] = useState(false)
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const toolbar = useRovingToolbar<HTMLDivElement>()
+
+  // el audio de esta versión (fase 3). Sin audio, nada de esto se ve y el lector es el de siempre
+  const audioQuery = useReadingAudio(slug, content.version)
+  const asset = audioQuery.data?.assets[0] ?? null
+  const audioIndex = useMemo(() => (asset ? buildIndex(asset.timings, asset.sentences, asset.paragraphs) : null), [asset])
+  // seguir la lectura: el texto se desplaza con la voz hasta que la persona desplaza por su cuenta
+  const following = useRef(true)
+  const [followingView, setFollowingView] = useState(true)
+  const onSpokenWord = useCallback((tokenId: string | null) => {
+    if (!tokenId || !following.current) return
+    const element = document.getElementById(`w-${tokenId}`)
+    if (!element) return
+    const rect = element.getBoundingClientRect()
+    if (rect.top < window.innerHeight * 0.18 || rect.bottom > window.innerHeight * 0.68) {
+      const reduced = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      element.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
+    }
+  }, [])
+  const player = useAudioPlayer({ src: asset?.url ?? null, index: audioIndex, slug, version: content.version, onWord: onSpokenWord })
+  const follow = useCallback(() => {
+    following.current = true
+    setFollowingView(true)
+  }, [])
+  useEffect(() => {
+    const stop = () => {
+      if (!player.state.playing || !following.current) return
+      following.current = false
+      setFollowingView(false)
+    }
+    window.addEventListener('wheel', stop, { passive: true })
+    window.addEventListener('touchmove', stop, { passive: true })
+    return () => {
+      window.removeEventListener('wheel', stop)
+      window.removeEventListener('touchmove', stop)
+    }
+  }, [player.state.playing])
+  const listenParagraph = useCallback(
+    (paragraphId: string) => {
+      const range = audioIndex ? rangeOf(audioIndex.paragraphs, paragraphId) : null
+      if (!range) return
+      follow()
+      void player.playFrom(range.startMs, range.endMs + 150)
+    },
+    [audioIndex, follow, player]
+  )
 
   // al abrir, vuelve a la oración donde la persona lo dejó (una sola vez)
   const restored = useRef(false)
@@ -241,6 +289,7 @@ function Reader({
             showParagraphTranslations={preferences.paragraphTranslations}
             translationLanguage={translationLanguage}
             events={events}
+            onListenParagraph={audioIndex ? listenParagraph : undefined}
           />
           <EndOfReading
             slug={slug}
@@ -292,10 +341,41 @@ function Reader({
               language={content.language}
               mode="full"
               saved={open.token.entry !== null && saved.has(open.token.entry)}
+              onListen={
+                audioIndex && seekToWord(audioIndex, open.token.id) !== null
+                  ? () => {
+                      const from = seekToWord(audioIndex, open.token.id)!
+                      setOpen(null)
+                      follow()
+                      void player.playFrom(from)
+                    }
+                  : undefined
+              }
             />
           </div>
         )}
       </Sheet>
+
+      {asset && audioIndex && (
+        <AudioBar
+          state={player.state}
+          voice={asset.voice.name}
+          following={followingView}
+          onToggle={() => (player.state.playing ? player.pause() : void player.play())}
+          onSeek={player.seek}
+          onSkip={(delta) => player.seek(Math.min(player.state.durationMs, Math.max(0, player.state.currentMs + delta)))}
+          onParagraph={(step) => {
+            const target = neighbourParagraph(audioIndex, player.state.currentMs, step)
+            if (target !== null) {
+              follow()
+              player.seek(target)
+            }
+          }}
+          onRate={player.setRate}
+          onVolume={player.setVolume}
+          onFollow={follow}
+        />
+      )}
 
       <Sheet open={panel === 'settings'} onOpenChange={(next) => !next && setPanel(null)} title={t('settings.title')} side={wide ? 'right' : 'bottom'}>
         <ReaderSettings preferences={preferences} update={update} />

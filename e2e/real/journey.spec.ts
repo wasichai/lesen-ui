@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test'
 const EMAIL = process.env.LESEN_EMAIL ?? 'lena@demo.lesen.test'
 const PASSWORD = process.env.LESEN_PASSWORD ?? ''
 
-test('leer, consultar y guardar una palabra contra el backend', async ({ page }) => {
+test('leer, escuchar, consultar y guardar una palabra contra el backend', async ({ page }) => {
   test.skip(!PASSWORD, 'LESEN_PASSWORD sin poner')
   await page.goto('/login')
   await page.getByLabel(/correo|email/i).fill(EMAIL)
@@ -26,6 +26,11 @@ test('leer, consultar y guardar una palabra contra el backend', async ({ page })
     await page.waitForURL(/\/discover/)
   }
   await page.goto('/read/der-alte-leuchtturm')
+  // la narración de demostración suena y marca la palabra que se oye
+  const audio = page.getByRole('region', { name: 'Audio de la lectura' })
+  await audio.getByRole('button', { name: 'Escuchar' }).click()
+  await expect(page.locator('.word[data-playing="true"]')).toHaveCount(1)
+  await audio.getByRole('button', { name: 'Pausar' }).click()
   const word = page.locator('[data-token="p1s1t2"]')
   await word.click()
   await expect(page.getByRole('dialog').getByText('verbringen').first()).toBeVisible()
