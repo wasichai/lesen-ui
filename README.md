@@ -35,23 +35,25 @@ yarn e2e:visual               # capturas de cada pantalla a 360–1920 px (solo 
 ```
 
 Las respuestas de la API simulada (`e2e/fixtures/lesen.json`) se capturan del backend real con
-`LESEN_EMAIL=… LESEN_PASSWORD=… node e2e/fixtures/capture.mjs`, junto con la narración de una lectura
+`LESEN_EMAIL=… LESEN_PASSWORD=… node e2e/fixtures/capture.mjs` (el estudio, como la editora de la demostración con la
+misma contraseña, o `LESEN_EDITOR_EMAIL` y `LESEN_EDITOR_PASSWORD`), junto con la narración de una lectura
 (`e2e/fixtures/audio/`); la simulación la sirve con rangos, como el servidor.
 
 ## Estructura
 
-| Ruta                     | Qué es                                                                                 |
-| ------------------------ | -------------------------------------------------------------------------------------- |
-| `src/modules/onboarding` | Primer paso: idiomas, nivel, intereses, ritmo                                          |
-| `src/modules/discover`   | Portada editorial, catálogo con filtros en la URL, ficha de lectura                    |
-| `src/modules/reader`     | El lector inmersivo: palabras, diccionario en contexto, traducciones, ayudas, posición |
-| `src/modules/library`    | Mis lecturas: en curso, guardadas, leídas y listas propias                             |
-| `src/modules/vocabulary` | El cuaderno de vocabulario                                                             |
-| `src/modules/dictionary` | Diccionario bilingüe: búsqueda en dos sentidos, entradas, favoritas, historial         |
-| `src/modules/progress`   | Panel de progreso (medido y estimado), metas, racha semanal, logros, resumen semanal   |
-| `src/modules/profile`    | Perfil de aprendizaje, metas y apariencia                                              |
-| `src/shared`             | Marco, contratos compartidos, componentes, claves de ruta                              |
-| `src/theme`              | Tokens y temas de Lesen (página y lector)                                              |
+| Ruta                     | Qué es                                                                                       |
+| ------------------------ | -------------------------------------------------------------------------------------------- |
+| `src/modules/onboarding` | Primer paso: idiomas, nivel, intereses, ritmo                                                |
+| `src/modules/discover`   | Portada editorial, catálogo con filtros en la URL, ficha de lectura                          |
+| `src/modules/reader`     | El lector inmersivo: palabras, diccionario en contexto, traducciones, ayudas, posición       |
+| `src/modules/library`    | Mis lecturas: en curso, guardadas, leídas y listas propias                                   |
+| `src/modules/vocabulary` | El cuaderno de vocabulario                                                                   |
+| `src/modules/dictionary` | Diccionario bilingüe: búsqueda en dos sentidos, entradas, favoritas, historial               |
+| `src/modules/progress`   | Panel de progreso (medido y estimado), metas, racha semanal, logros, resumen semanal         |
+| `src/modules/profile`    | Perfil de aprendizaje, metas y apariencia                                                    |
+| `src/modules/studio`     | Estudio editorial: borradores, texto y traducciones, preguntas, audio, revisión, historial   |
+| `src/shared`             | Marcos (`LearnerLayout`, `StudioLayout`), contratos compartidos, componentes, claves de ruta |
+| `src/theme`              | Tokens y temas de Lesen (página y lector)                                                    |
 
 ## Integración continua
 

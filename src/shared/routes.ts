@@ -16,7 +16,10 @@ export const ROUTES = {
   entry: 'dictionary:entry',
   progress: 'progress:home',
   week: 'progress:week',
-  profile: 'profile:home'
+  profile: 'profile:home',
+  studio: 'studio:home',
+  studioDraft: 'studio:draft',
+  studioHistory: 'studio:history'
 } as const
 
 export type RouteName = keyof typeof ROUTES

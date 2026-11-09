@@ -31,6 +31,39 @@ const READINGS = fixture.readings as unknown as Record<string, FixtureReading | 
 const STORAGE_PREFIX = 'lesen'
 export const LEARNER = { id: 'u-lena', email: 'lena@demo.lesen.test', displayName: 'Lena Lectora', organizationId: 'org-demo', roles: ['LECTOR'] }
 const PERMISSIONS = { admin: false, capabilities: [], objects: { lectura: ['READ'], cuaderno: ['READ', 'UPDATE'] } }
+// la editora de la demostración: estudio con PUBLICAR, sin cuaderno (no tiene perfil de lectora)
+export const EDITOR = { id: 'u-edith', email: 'editor@demo.lesen.test', displayName: 'Edith', organizationId: 'org-demo', roles: ['EDITOR'] }
+const EDITOR_PERMISSIONS = { admin: false, capabilities: [], objects: { lectura: ['READ'], estudio: ['READ', 'UPDATE', 'PUBLICAR'] } }
+interface StudioDraft {
+  id: string
+  slug: string
+  language: string
+  status: string
+  baseVersion: number | null
+  publishedVersion: number | null
+  revision: number
+  document: {
+    slug: string
+    language: string
+    level: string
+    topics: string[]
+    featured: boolean
+    cover?: string | null
+    accent?: string | null
+    title: string
+    subtitle?: string | null
+    summary: string
+    paragraphs: { sentences: { text: string; translations: Record<string, string>; senses: Record<string, string> }[]; translations: Record<string, string> }[]
+  }
+  questions: Json[]
+  audio: { file: string; url: string; format: string; durationMs: number; voice: string; license: string; timedWords: number } | null
+  createdBy: string
+  updatedBy: string
+  createdAt: string
+  updatedAt: string
+  events: Json[]
+}
+const STUDIO_DRAFT = fixture.studio.draft as unknown as StudioDraft
 export const PROFILE = {
   interfaceLanguage: 'es',
   targetLanguage: 'de',
@@ -118,6 +151,9 @@ export interface FakeApi {
   goals: { weeklyDays: number; timeZone: string; weeklySummary: boolean; configured: boolean }
   earned: Map<string, string>
   lists: { id: string; name: string; slugs: string[]; updatedAt: string }[]
+  // el estudio: borradores, lecturas publicadas desde él y entradas añadidas al diccionario
+  drafts: StudioDraft[]
+  entries: string[]
   // lo que se pidió, como «MÉTODO /ruta»
   requests: string[]
   unexpected: string[]
@@ -135,9 +171,10 @@ const RATINGS: [string, number][] = [
 ]
 const normalize = (text: string) => text.normalize('NFC').replace('’', "'").toLowerCase()
 
-export async function fakeApi(page: Page, options: { signedIn?: boolean; profile?: Json | null } = {}): Promise<FakeApi> {
+export async function fakeApi(page: Page, options: { signedIn?: boolean; profile?: Json | null; as?: 'learner' | 'editor' } = {}): Promise<FakeApi> {
+  const editor = options.as === 'editor'
   const api: FakeApi = {
-    profile: options.profile === undefined ? PROFILE : options.profile,
+    profile: options.profile === undefined ? (editor ? null : PROFILE) : options.profile,
     progress: new Map(),
     bookmarks: new Set(),
     vocabulary: [],
@@ -151,6 +188,8 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     goals: { weeklyDays: 3, timeZone: 'UTC', weeklySummary: false, configured: false },
     earned: new Map(),
     lists: [],
+    drafts: [],
+    entries: [],
     requests: [],
     unexpected: []
   }
@@ -160,7 +199,7 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
         localStorage.setItem(`${prefix}.token`, 'token-e2e')
         localStorage.setItem(`${prefix}.user`, JSON.stringify(user))
       },
-      { prefix: STORAGE_PREFIX, user: LEARNER }
+      { prefix: STORAGE_PREFIX, user: editor ? EDITOR : LEARNER }
     )
 
   const ui = (): Lang => (api.profile?.interfaceLanguage as Lang) ?? 'es'
@@ -535,6 +574,277 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
       if (method === 'DELETE') list.slugs = list.slugs.filter((s) => s !== slug)
       list.updatedAt = now()
       return { status: 204, body: null }
+    }
+    return undefined
+  }
+
+  // el estudio editorial, como el backend (ADR-0012): la forma de cada respuesta es la capturada del servidor
+  const actor = () => (editor ? EDITOR.email : LEARNER.email)
+  const WORD = /[\p{L}\p{M}\p{N}]+(?:['’\-][\p{L}\p{M}\p{N}]+)*/gu
+  const known = () =>
+    new Set([
+      ...Object.values(READINGS).flatMap(
+        (r) => r?.content.paragraphs.flatMap((p) => p.sentences.flatMap((s) => s.tokens.filter((t) => t.entry).map((t) => normalize(t.text)))) ?? []
+      ),
+      ...api.entries
+    ])
+  // los ids que tendrá la versión: palabras y signos por orden, como el tokenizador del backend
+  function sentencesOf(document: StudioDraft['document']) {
+    return document.paragraphs.flatMap((p, i) =>
+      p.sentences.map((s, j) => {
+        const id = `p${i + 1}s${j + 1}`
+        const words: { id: string; text: string }[] = []
+        let n = 0
+        let last = 0
+        for (const match of s.text.matchAll(WORD)) {
+          n += [...s.text.slice(last, match.index).replace(/\s/g, '')].length
+          words.push({ id: `${id}t${++n}`, text: match[0] })
+          last = match.index + match[0].length
+        }
+        return { id, text: s.text.trim(), words }
+      })
+    )
+  }
+  function check(draft: StudioDraft) {
+    const doc = draft.document
+    const errors: { code: string; ref: string | null; detail: string | null }[] = []
+    const warnings: typeof errors = []
+    if (!doc.title.trim()) errors.push({ code: 'FIELD', ref: 'title', detail: 'must not be blank' })
+    if (!doc.summary.trim()) errors.push({ code: 'FIELD', ref: 'summary', detail: 'must not be blank' })
+    if (!doc.topics.length) errors.push({ code: 'FIELD', ref: 'topics', detail: 'must name at least one topic' })
+    doc.paragraphs.forEach((p, i) =>
+      p.sentences.forEach((s, j) => {
+        if (!s.text.trim()) errors.push({ code: 'FIELD', ref: `paragraphs[${i}].sentences[${j}]`, detail: 'must not be blank' })
+      })
+    )
+    const sentences = sentencesOf(doc)
+    const words = sentences.flatMap((s) => s.words)
+    if (!errors.length) {
+      const dictionary = known()
+      for (const w of new Set(words.map((x) => x.text))) if (!dictionary.has(normalize(w))) warnings.push({ code: 'UNRESOLVED', ref: w, detail: null })
+      for (const language of ['es', 'en'].filter((l) => l !== doc.language))
+        doc.paragraphs.forEach((p, i) => {
+          if (!(p.translations as Record<string, string>)[language]?.trim()) warnings.push({ code: 'TRANSLATION_MISSING', ref: `p${i + 1}`, detail: language })
+          p.sentences.forEach((s, j) => {
+            if (!(s.translations as Record<string, string>)[language]?.trim())
+              warnings.push({ code: 'TRANSLATION_MISSING', ref: `p${i + 1}s${j + 1}`, detail: language })
+          })
+        })
+      for (const q of draft.questions as { id: string; refs: string[] }[]) {
+        if (!q.refs.length) errors.push({ code: 'QUESTION', ref: q.id, detail: 'the question must cite at least one sentence' })
+        for (const ref of q.refs)
+          if (!sentences.some((s) => s.id === ref)) errors.push({ code: 'QUESTION', ref: q.id, detail: `${ref} is not a sentence of this text` })
+      }
+      if (!draft.questions.length) warnings.push({ code: 'NO_QUESTIONS', ref: null, detail: null })
+      if (!draft.audio) warnings.push({ code: 'NO_AUDIO', ref: null, detail: null })
+    }
+    return {
+      ready: errors.length === 0,
+      errors,
+      warnings,
+      words: words.length,
+      sentences: sentences.length,
+      unresolved: warnings.filter((w) => w.code === 'UNRESOLVED').length,
+      missingTranslations: warnings.filter((w) => w.code === 'TRANSLATION_MISSING').length,
+      questions: draft.questions.length,
+      alignedWords: draft.audio ? Math.min(draft.audio.timedWords, words.length) : null
+    }
+  }
+  function event(draft: StudioDraft, action: string, note: string | null = null, version: number | null = null) {
+    ;(draft.events as unknown[]).unshift({ draftId: draft.id, slug: draft.slug, action, actor: actor(), note, version, at: now() })
+  }
+  function studioView(draft: StudioDraft) {
+    return { ...draft, sentences: sentencesOf(draft.document) }
+  }
+  const summaryOf = (d: StudioDraft) => ({
+    id: d.id,
+    slug: d.slug,
+    language: d.language,
+    level: d.document.level,
+    title: d.document.title,
+    status: d.status,
+    baseVersion: d.baseVersion,
+    publishedVersion: d.publishedVersion,
+    questions: d.questions.length,
+    audio: Boolean(d.audio),
+    updatedBy: d.updatedBy,
+    updatedAt: d.updatedAt
+  })
+  function studioRoutes(method: string, rest: string[], body: Json, request: Route['request'] extends () => infer R ? R : never) {
+    if (!editor) return { status: 403, body: problem(403, 'Forbidden') }
+    const open = (d: StudioDraft) => d.status === 'DRAFT' || d.status === 'IN_REVIEW'
+    if (rest[0] === 'readings' && rest.length === 1) {
+      const fromStudio = api.drafts
+        .filter((d) => d.status === 'PUBLISHED' && !fixture.studio.readings.some((r) => r.slug === d.slug))
+        .map((d) => ({
+          slug: d.slug,
+          language: d.language,
+          level: d.document.level,
+          title: d.document.title,
+          currentVersion: d.publishedVersion,
+          versions: d.publishedVersion,
+          updatedAt: d.updatedAt
+        }))
+      return {
+        status: 200,
+        body: [...fromStudio, ...fixture.studio.readings].map((r) => ({ ...r, openDraft: api.drafts.find((d) => d.slug === r.slug && open(d))?.id ?? null }))
+      }
+    }
+    if (rest[0] === 'readings' && rest[2] === 'history') {
+      const slug = decodeURIComponent(rest[1]!)
+      const drafts = api.drafts.filter((d) => d.slug === slug)
+      const base = fixture.studio.readings.find((r) => r.slug === slug)
+      const published = drafts.filter((d) => d.status === 'PUBLISHED')
+      if (!base && !drafts.length) return { status: 404, body: problem(404, 'Reading not found') }
+      const top = Math.max(base?.currentVersion ?? 0, ...published.map((d) => d.publishedVersion ?? 0))
+      return {
+        status: 200,
+        body: {
+          slug,
+          versions: Array.from({ length: top }, (_, i) => top - i).map((number) => ({
+            number,
+            status: number === top ? 'PUBLISHED' : 'RETIRED',
+            title: published.find((d) => d.publishedVersion === number)?.document.title ?? base?.title ?? slug,
+            wordCount: 100,
+            publishedAt: now(),
+            audio: number === top && published.some((d) => d.audio),
+            questions: 0
+          })),
+          events: drafts.flatMap((d) => d.events)
+        }
+      }
+    }
+    if (rest[0] === 'covers' && method === 'POST')
+      return {
+        status: 201,
+        body: { file: 'cover-0123456789abcdef01234567.png', kind: 'COVER', contentType: 'image/png', sizeBytes: 68, sha256: '0'.repeat(64) }
+      }
+    if (rest[0] === 'dictionary' && rest[1] === 'entries' && method === 'POST') {
+      const entry = body.entry as { key: string; lemma: string }
+      if (api.entries.includes(normalize(entry.lemma))) return { status: 409, body: problem(409, 'That entry already exists') }
+      api.entries.push(normalize(entry.lemma))
+      return { status: 201, body: entry }
+    }
+    if (rest[0] !== 'drafts') return undefined
+    if (rest.length === 1 && method === 'GET') return { status: 200, body: api.drafts.map(summaryOf) }
+    if (rest.length === 1 && method === 'POST') {
+      const slug = (body.from ?? body.slug) as string
+      if (api.drafts.some((d) => d.slug === slug && open(d))) return { status: 409, body: problem(409, 'This reading already has an open draft') }
+      let draft: StudioDraft
+      if (body.from) {
+        const base = fixture.studio.readings.find((r) => r.slug === body.from)
+        if (!base) return { status: 404, body: problem(404, 'Reading not found') }
+        draft = structuredClone(STUDIO_DRAFT)
+        draft.slug = base.slug
+        draft.document = { ...draft.document, slug: base.slug, title: STUDIO_DRAFT.slug === base.slug ? draft.document.title : base.title }
+        draft.baseVersion = base.currentVersion
+      } else {
+        if (fixture.cards.some((c) => c.slug === slug)) return { status: 409, body: problem(409, 'A reading with that slug already exists') }
+        draft = structuredClone(STUDIO_DRAFT)
+        Object.assign(draft, { slug, language: body.language, baseVersion: null, questions: [], audio: null })
+        draft.document = {
+          slug,
+          language: body.language as string,
+          level: body.level as string,
+          topics: [],
+          featured: false,
+          cover: null,
+          accent: null,
+          title: body.title as string,
+          subtitle: null,
+          summary: '',
+          paragraphs: [{ sentences: [{ text: '', translations: {}, senses: {} }], translations: {} }]
+        }
+      }
+      Object.assign(draft, {
+        id: `draft-${api.drafts.length + 1}`,
+        status: 'DRAFT',
+        publishedVersion: null,
+        revision: 1,
+        createdBy: actor(),
+        updatedBy: actor(),
+        createdAt: now(),
+        updatedAt: now(),
+        events: []
+      })
+      event(draft, 'CREATED', null, draft.baseVersion)
+      api.drafts.unshift(draft)
+      return { status: 201, body: studioView(draft) }
+    }
+    const draft = api.drafts.find((d) => d.id === rest[1])
+    if (!draft) return { status: 404, body: problem(404, 'Draft not found') }
+    const touch = () => Object.assign(draft, { revision: draft.revision + 1, updatedBy: actor(), updatedAt: now() })
+    if (rest.length === 2 && method === 'GET') return { status: 200, body: studioView(draft) }
+    if (rest.length === 2 && method === 'PUT') {
+      if (draft.status !== 'DRAFT' || body.revision !== draft.revision) return { status: 409, body: problem(409, 'Someone saved this draft in the meantime') }
+      draft.document = { ...(body.document as StudioDraft['document']), slug: draft.slug, language: draft.language }
+      draft.questions = body.questions as Json[]
+      touch()
+      event(draft, 'SAVED')
+      return { status: 200, body: studioView(draft) }
+    }
+    if (rest.length === 2 && method === 'DELETE') {
+      if (!open(draft)) return { status: 409, body: problem(409, 'Only an open draft can be discarded') }
+      draft.status = 'DISCARDED'
+      event(draft, 'DISCARDED')
+      return { status: 204, body: null }
+    }
+    // sin tocar el borrador de una lectura publicada, la comprobación es la que devolvió el servidor real
+    const untouched =
+      draft.baseVersion !== null && JSON.stringify([draft.document, draft.questions]) === JSON.stringify([STUDIO_DRAFT.document, STUDIO_DRAFT.questions])
+    if (rest[2] === 'check') return { status: 200, body: untouched ? fixture.studio.check : check(draft) }
+    if (rest[2] === 'audio') {
+      if (draft.status !== 'DRAFT') return { status: 409, body: problem(409, 'Not editable') }
+      if (method === 'DELETE') {
+        draft.audio = null
+        touch()
+        event(draft, 'AUDIO_REMOVED')
+        return { status: 200, body: studioView(draft) }
+      }
+      // el multipart no se decodifica aquí: basta saber que llegaron el audio y los tiempos
+      const raw = request.postData() ?? ''
+      if (!raw.includes('name="audio"') || !raw.includes('name="timings"')) return { status: 400, body: problem(400, 'Invalid audio') }
+      const words = sentencesOf(draft.document).flatMap((s) => s.words).length
+      const voice = /name="voice"\r\n\r\n([^\r]*)/.exec(raw)?.[1] ?? ''
+      const license = /name="license"\r\n\r\n([^\r]*)/.exec(raw)?.[1] ?? ''
+      draft.audio = {
+        file: 'audio-0123456789abcdef01234567.mp3',
+        url: '/api/lesen/public/audio/audio-0123456789abcdef01234567.mp3',
+        format: 'mp3',
+        durationMs: 4000,
+        voice,
+        license,
+        timedWords: words
+      }
+      touch()
+      event(draft, 'AUDIO_ATTACHED', `${words}/${words}`)
+      return { status: 200, body: studioView(draft) }
+    }
+    const step = rest[2]
+    const note = (body.note as string | null) ?? null
+    if (step === 'submit') {
+      if (draft.status !== 'DRAFT') return { status: 409, body: problem(409, 'Not a draft') }
+      if (!check(draft).ready) return { status: 409, body: problem(409, 'The draft has problems to fix') }
+      draft.status = 'IN_REVIEW'
+      touch()
+      event(draft, 'SUBMITTED', note)
+      return { status: 200, body: studioView(draft) }
+    }
+    if (step === 'return') {
+      if (!note?.trim()) return { status: 400, body: problem(400, 'Say what to fix') }
+      if (draft.status !== 'IN_REVIEW') return { status: 409, body: problem(409, 'Not in review') }
+      draft.status = 'DRAFT'
+      touch()
+      event(draft, 'RETURNED', note)
+      return { status: 200, body: studioView(draft) }
+    }
+    if (step === 'publish') {
+      if (draft.status !== 'IN_REVIEW') return { status: 409, body: problem(409, 'Not in review') }
+      const version = (draft.baseVersion ?? 0) + 1
+      Object.assign(draft, { status: 'PUBLISHED', publishedVersion: version })
+      touch()
+      event(draft, 'PUBLISHED', note, version)
+      return { status: 200, body: studioView(draft) }
     }
     return undefined
   }
@@ -915,8 +1225,10 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     let reply: { status: number; body: unknown } | undefined
     if (path.startsWith('/api/lesen/public/covers/')) return route.fulfill({ status: 200, contentType: 'image/svg+xml', body: COVER })
     if (path.startsWith('/api/lesen/public/audio/')) return fulfillAudio(route, path.split('/').pop()!)
-    if (method === 'POST' && path === '/api/auth/login') reply = { status: 200, body: { token: 'token-e2e', expiresAt: '2099-01-01T00:00:00Z', user: LEARNER } }
-    else if (path === '/api/auth/me/permissions') reply = { status: 200, body: PERMISSIONS }
+    if (method === 'POST' && path === '/api/auth/login')
+      reply = { status: 200, body: { token: 'token-e2e', expiresAt: '2099-01-01T00:00:00Z', user: editor ? EDITOR : LEARNER } }
+    else if (path === '/api/auth/me/permissions') reply = { status: 200, body: editor ? EDITOR_PERMISSIONS : PERMISSIONS }
+    else if (path.startsWith('/api/lesen/studio/')) reply = studioRoutes(method, path.slice('/api/lesen/studio/'.length).split('/'), body, request)
     else if (path === '/api/lesen/public/languages') reply = { status: 200, body: fixture.languages }
     else if (path === '/api/lesen/public/topics') reply = { status: 200, body: fixture.topics }
     else if (path === '/api/lesen/learner/profile') {
@@ -988,4 +1300,12 @@ function fulfillAudio(route: Route, file: string) {
     headers: { 'Accept-Ranges': 'bytes', 'Content-Range': `bytes ${start}-${end}/${bytes.length}` },
     body: bytes.subarray(start, end + 1)
   })
+}
+
+// un borrador abierto ya creado (el de una lectura publicada, capturado del servidor), para las pruebas de pantallas
+export function seedDraft(api: FakeApi): string {
+  const draft = structuredClone(STUDIO_DRAFT)
+  Object.assign(draft, { id: 'draft-seed', status: 'DRAFT', events: [] })
+  api.drafts.unshift(draft)
+  return draft.id
 }

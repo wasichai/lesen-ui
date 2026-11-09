@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { fakeApi } from './api'
+import { fakeApi, seedDraft } from './api'
 import { horizontalOverflow } from './overflow'
 
 // sin desplazamiento horizontal en ningún ancho de referencia (docs/product/requirements.md, RNF)
@@ -17,14 +17,22 @@ const PAGES = [
   '/dictionary?q=Meer',
   '/progress',
   '/progress/week',
-  '/profile'
+  '/profile',
+  '/studio',
+  '/studio/drafts/draft-seed',
+  '/studio/drafts/draft-seed?tab=text',
+  '/studio/drafts/draft-seed?tab=questions',
+  '/studio/drafts/draft-seed?tab=audio',
+  '/studio/drafts/draft-seed?tab=review',
+  '/studio/readings/der-alte-leuchtturm'
 ]
 
 for (const width of WIDTHS) {
   test(`nada se sale por la derecha a ${width} px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 })
     for (const path of PAGES) {
-      await fakeApi(page, { profile: path === '/welcome' ? null : undefined })
+      const api = await fakeApi(page, { profile: path === '/welcome' ? null : undefined, as: path.startsWith('/studio') ? 'editor' : 'learner' })
+      seedDraft(api)
       await page.goto(path)
       await page.locator('main, form').first().waitFor()
       await page.waitForLoadState('networkidle')

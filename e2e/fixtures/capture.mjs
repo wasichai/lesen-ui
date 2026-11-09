@@ -92,5 +92,32 @@ for (const slug of READINGS) {
     assessment
   }
 }
+// el estudio, como editora (LESEN_EDITOR_EMAIL, por defecto la de la demostración, con la misma contraseña): las lecturas
+// publicadas, y un borrador de una de ellas con su comprobación, que se descarta al terminar
+const editorLogin = await fetch(`${base}/auth/login`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: process.env.LESEN_EDITOR_EMAIL ?? 'editor@demo.lesen.test',
+    password: process.env.LESEN_EDITOR_PASSWORD ?? process.env.LESEN_PASSWORD
+  })
+})
+const editorToken = (await editorLogin.json()).token
+const studio = async (method, path, body) => {
+  const response = await fetch(`${base}/lesen/studio${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${editorToken}`, 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body)
+  })
+  if (!response.ok) throw new Error(`studio${path}: ${response.status}`)
+  return response.status === 204 ? null : response.json()
+}
+const draft = await studio('POST', '/drafts', { from: 'der-alte-leuchtturm' })
+fixture.studio = {
+  readings: (await studio('GET', '/readings')).map((r) => ({ ...r, openDraft: null })),
+  draft: { ...draft, events: [] },
+  check: await studio('GET', `/drafts/${draft.id}/check`)
+}
+await studio('DELETE', `/drafts/${draft.id}`)
 writeFileSync(join(import.meta.dirname, 'lesen.json'), JSON.stringify(fixture) + '\n')
 console.log(`${cards.length} tarjetas, ${READINGS.length} lecturas con texto`)
