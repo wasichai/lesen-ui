@@ -1,5 +1,5 @@
 import { useWasichaiLinks } from '@wasichai/core'
-import { BookmarkCheck, BookmarkPlus, Languages, NotebookPen, Quote } from 'lucide-react'
+import { BookmarkCheck, BookmarkPlus, Headphones, Languages, NotebookPen, Quote } from 'lucide-react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -19,7 +19,8 @@ export function WordDetails({
   tokenRef,
   language,
   mode,
-  saved
+  saved,
+  onListen
 }: {
   slug: string
   version: number
@@ -27,10 +28,18 @@ export function WordDetails({
   language: string
   mode: 'compact' | 'full'
   saved: boolean
+  // con audio: escuchar desde esta palabra
+  onListen?: () => void
 }) {
   const { t } = useTranslation(READER_MODULE_ID)
   const lookup = useLookup(slug, version, tokenRef)
-  if (lookup.isError) return <p className="text-danger">{t('word.noEntry')}</p>
+  if (lookup.isError)
+    return (
+      <div className="flex flex-col gap-2">
+        <p className="text-danger">{t('word.noEntry')}</p>
+        {mode === 'full' && <ListenButton onListen={onListen} />}
+      </div>
+    )
   if (!lookup.data)
     return (
       <div role="status" aria-label={t('word.loading')} className="flex flex-col gap-2">
@@ -38,7 +47,29 @@ export function WordDetails({
         <Skeleton className="h-5 w-48" />
       </div>
     )
-  return <Details lookup={lookup.data} slug={slug} version={version} language={language} mode={mode} saved={saved || (lookup.data.entry?.saved ?? false)} />
+  return (
+    <Details
+      lookup={lookup.data}
+      slug={slug}
+      version={version}
+      language={language}
+      mode={mode}
+      saved={saved || (lookup.data.entry?.saved ?? false)}
+      onListen={onListen}
+    />
+  )
+}
+
+// con audio, escuchar desde la palabra; sin audio, nada
+function ListenButton({ onListen }: { onListen?: () => void }) {
+  const { t } = useTranslation(READER_MODULE_ID)
+  if (!onListen) return null
+  return (
+    <button type="button" className={buttonClass('secondary', 'sm', 'self-start')} onClick={onListen}>
+      <Headphones aria-hidden className="size-4" />
+      {t('audio.fromHere')}
+    </button>
+  )
 }
 
 function Details({
@@ -47,7 +78,8 @@ function Details({
   version,
   language,
   mode,
-  saved
+  saved,
+  onListen
 }: {
   lookup: Lookup
   slug: string
@@ -55,6 +87,7 @@ function Details({
   language: string
   mode: 'compact' | 'full'
   saved: boolean
+  onListen?: () => void
 }) {
   const { t } = useTranslation(READER_MODULE_ID)
   const { t: app } = useTranslation(APP_NAMESPACE)
@@ -72,6 +105,7 @@ function Details({
         </p>
         <p className="font-semibold">{t('word.noEntry')}</p>
         <p className="text-secondary text-ink-muted">{t('word.noEntryBody')}</p>
+        {mode === 'full' && <ListenButton onListen={onListen} />}
         {mode === 'full' && <SentenceTools lookup={lookup} slug={slug} version={version} language={language} />}
       </div>
     )
@@ -116,6 +150,7 @@ function Details({
         <>
           <div className="flex flex-wrap items-center gap-2">
             {saveButton}
+            <ListenButton onListen={onListen} />
             {linkable && (
               <Link to={links.to(ROUTES.entry, { key: entry.key })} className={buttonClass('quiet', 'sm', 'px-2')}>
                 {t('word.openEntry')}

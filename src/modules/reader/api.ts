@@ -3,7 +3,7 @@ import { orNull, useLesenApi } from '../../shared/api'
 import { queryKeys } from '../../shared/keys'
 import { retryNetwork } from '../../shared/retry'
 import { readingDetailSchema } from '../../shared/schemas'
-import { contentSchema, lookupSchema, noteSchema, progressSchema, savedKeysSchema, translationsSchema } from './contract'
+import { audioSchema, contentSchema, lookupSchema, noteSchema, progressSchema, savedKeysSchema, translationsSchema } from './contract'
 
 const path = (slug: string) => `/lesen/readings/${encodeURIComponent(slug)}`
 
@@ -123,5 +123,16 @@ export function useComplete(slug: string) {
       queryClient.setQueryData(queryKeys.progress(slug), progress)
       void queryClient.invalidateQueries({ queryKey: ['me'], predicate: (query) => query.queryKey[1] !== 'progress' })
     }
+  })
+}
+
+// el audio de una versión (fase 3): inmutable como su texto. Sin audio (404) es null: el lector funciona igual
+export function useReadingAudio(slug: string, version: number) {
+  const { get } = useLesenApi()
+  return useQuery({
+    queryKey: ['audio', slug, version],
+    queryFn: () => orNull(get(`${path(slug)}/versions/${version}/audio`, audioSchema)),
+    staleTime: Infinity,
+    retry: retryNetwork
   })
 }

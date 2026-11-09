@@ -1,5 +1,5 @@
-import { Languages } from 'lucide-react'
-import { memo, useCallback, useEffect, useState, type KeyboardEvent } from 'react'
+import { Headphones, Languages } from 'lucide-react'
+import { memo, useCallback, useEffect, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useTranslations } from './api'
 import type { Paragraph, Token } from './contract'
@@ -28,7 +28,8 @@ export function ReaderText({
   activeSentence,
   showParagraphTranslations,
   translationLanguage,
-  events
+  events,
+  onListenParagraph
 }: {
   slug: string
   version: number
@@ -44,6 +45,8 @@ export function ReaderText({
   showParagraphTranslations: boolean
   translationLanguage: string
   events: WordEvents
+  // con audio: escuchar solo ese párrafo
+  onListenParagraph?: (paragraphId: string) => void
 }) {
   const { t } = useTranslation(READER_MODULE_ID)
   const focusWord = useCallback(
@@ -87,6 +90,7 @@ export function ReaderText({
           translationLanguage={translationLanguage}
           events={events}
           onFocusWord={setCurrentWord}
+          onListen={onListenParagraph}
         />
       ))}
     </div>
@@ -106,7 +110,8 @@ const ParagraphView = memo(function ParagraphView({
   showTranslation,
   translationLanguage,
   events,
-  onFocusWord
+  onFocusWord,
+  onListen
 }: {
   slug: string
   version: number
@@ -120,6 +125,7 @@ const ParagraphView = memo(function ParagraphView({
   translationLanguage: string
   events: WordEvents
   onFocusWord: (id: string) => void
+  onListen?: (paragraphId: string) => void
 }) {
   const { t } = useTranslation(READER_MODULE_ID)
   return (
@@ -152,6 +158,18 @@ const ParagraphView = memo(function ParagraphView({
         language={translationLanguage}
         alwaysOn={showTranslation}
         label={t('text.translateParagraph')}
+        before={
+          onListen && (
+            <button
+              type="button"
+              onClick={() => onListen(paragraph.id)}
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-[13px] font-semibold text-ink-muted hover:text-ink"
+            >
+              <Headphones aria-hidden className="size-3.5" />
+              {t('audio.paragraph')}
+            </button>
+          )
+        }
       />
     </div>
   )
@@ -176,6 +194,7 @@ function WordButton({
     <>
       <button
         type="button"
+        id={`w-${token.id}`}
         className="word"
         data-token={token.id}
         data-saved={saved}
@@ -201,7 +220,8 @@ function ParagraphTranslation({
   paragraphId,
   language,
   alwaysOn,
-  label
+  label,
+  before
 }: {
   slug: string
   version: number
@@ -209,6 +229,7 @@ function ParagraphTranslation({
   language: string
   alwaysOn: boolean
   label: string
+  before?: ReactNode
 }) {
   const { t } = useTranslation(READER_MODULE_ID)
   const [open, setOpen] = useOpenState(alwaysOn)
@@ -216,6 +237,7 @@ function ParagraphTranslation({
   const regionId = `${paragraphId}-translation`
   return (
     <div className="mt-1 font-sans text-[15px] leading-relaxed" lang={language}>
+      {before}
       {!alwaysOn && (
         <button
           type="button"

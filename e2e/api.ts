@@ -1,4 +1,6 @@
 import type { Page, Route } from '@playwright/test'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import fixture from './fixtures/lesen.json' with { type: 'json' }
 
 // la API de Lesen simulada en el navegador, con respuestas reales del backend capturadas por e2e/fixtures/capture.mjs.
@@ -21,6 +23,7 @@ interface FixtureReading {
   content: Json & { paragraphs: { id: string; sentences: { id: string; tokens: Token[] }[] }[] }
   translations: Record<string, Json[]>
   entries: Record<string, Record<string, Json>>
+  audio: Json | null
 }
 const READINGS = fixture.readings as unknown as Record<string, FixtureReading | undefined>
 
@@ -210,6 +213,7 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     }
     if (!r) return { status: 404, body: problem(404, 'Reading version not found') }
     if (tail[0] === 'versions' && tail[2] === 'content') return { status: 200, body: r.content }
+    if (tail[0] === 'versions' && tail[2] === 'audio') return r.audio ? { status: 200, body: r.audio } : { status: 404, body: problem(404, 'No audio') }
     if (tail[0] === 'versions' && tail[2] === 'translations') {
       const language = (url.searchParams.get('language') as Lang) ?? ui()
       const unit = url.searchParams.get('unit')
@@ -418,6 +422,7 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     const path = url.pathname
     let reply: { status: number; body: unknown } | undefined
     if (path.startsWith('/api/lesen/public/covers/')) return route.fulfill({ status: 200, contentType: 'image/svg+xml', body: COVER })
+    if (path.startsWith('/api/lesen/public/audio/')) return fulfillAudio(route, path.split('/').pop()!)
     if (method === 'POST' && path === '/api/auth/login') reply = { status: 200, body: { token: 'token-e2e', expiresAt: '2099-01-01T00:00:00Z', user: LEARNER } }
     else if (path === '/api/auth/me/permissions') reply = { status: 200, body: PERMISSIONS }
     else if (path === '/api/lesen/public/languages') reply = { status: 200, body: fixture.languages }
@@ -466,4 +471,24 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     })
   })
   return api
+}
+
+// el mp3 capturado, con rangos como el servidor: sin un 206 el navegador no deja buscar en el audio
+function fulfillAudio(route: Route, file: string) {
+  let bytes: Buffer
+  try {
+    bytes = readFileSync(join(import.meta.dirname, 'fixtures', 'audio', file))
+  } catch {
+    return route.fulfill({ status: 404, contentType: 'application/problem+json', body: JSON.stringify(problem(404, 'No audio')) })
+  }
+  const range = /bytes=(\d*)-(\d*)/.exec(route.request().headers()['range'] ?? '')
+  if (!range) return route.fulfill({ status: 200, contentType: 'audio/mpeg', headers: { 'Accept-Ranges': 'bytes' }, body: bytes })
+  const start = range[1] ? Number(range[1]) : bytes.length - Number(range[2])
+  const end = range[1] && range[2] ? Math.min(Number(range[2]), bytes.length - 1) : bytes.length - 1
+  return route.fulfill({
+    status: 206,
+    contentType: 'audio/mpeg',
+    headers: { 'Accept-Ranges': 'bytes', 'Content-Range': `bytes ${start}-${end}/${bytes.length}` },
+    body: bytes.subarray(start, end + 1)
+  })
 }

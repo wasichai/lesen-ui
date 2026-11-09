@@ -35,7 +35,8 @@ yarn e2e:visual               # capturas de cada pantalla a 360–1920 px (solo 
 ```
 
 Las respuestas de la API simulada (`e2e/fixtures/lesen.json`) se capturan del backend real con
-`LESEN_EMAIL=… LESEN_PASSWORD=… node e2e/fixtures/capture.mjs`.
+`LESEN_EMAIL=… LESEN_PASSWORD=… node e2e/fixtures/capture.mjs`, junto con la narración de una lectura
+(`e2e/fixtures/audio/`); la simulación la sirve con rangos, como el servidor.
 
 ## Estructura
 

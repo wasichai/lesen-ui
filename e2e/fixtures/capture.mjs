@@ -1,11 +1,13 @@
 // captura los ejemplos de las pruebas e2e desde un backend de Lesen en marcha con el contenido de demostración
 // (README, «Pruebas»). Así la API simulada de e2e/api.ts sirve respuestas reales del contrato, no inventadas.
 // uso: LESEN_EMAIL=lena@demo.lesen.test LESEN_PASSWORD=… node e2e/fixtures/capture.mjs [http://localhost:8095]
-import { writeFileSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const base = (process.argv[2] ?? 'http://localhost:8095') + '/api'
 const READINGS = ['der-alte-leuchtturm', 'der-fuchs-im-garten', 'a-morning-in-lisbon']
+// la narración solo de esta lectura: las otras dos hacen de lecturas sin audio (el lector sigue igual)
+const WITH_AUDIO = ['der-alte-leuchtturm']
 const login = await fetch(`${base}/auth/login`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
@@ -49,7 +51,21 @@ for (const slug of READINGS) {
       entries[language][key] = { ...entry, favorite: false, saved: false }
     }
   }
-  fixture.readings[slug] = { detail: { ...detail, reading: anonymous(detail.reading), related: detail.related.map(anonymous) }, content, translations, entries }
+  let audio = null
+  if (WITH_AUDIO.includes(slug)) {
+    audio = await get(`/lesen/readings/${slug}/versions/${version}/audio`)
+    const file = await fetch(`${base.slice(0, -'/api'.length)}${audio.assets[0].url}`)
+    if (!file.ok) throw new Error(`${audio.assets[0].url}: ${file.status}`)
+    mkdirSync(join(import.meta.dirname, 'audio'), { recursive: true })
+    writeFileSync(join(import.meta.dirname, 'audio', audio.assets[0].url.split('/').pop()), Buffer.from(await file.arrayBuffer()))
+  }
+  fixture.readings[slug] = {
+    detail: { ...detail, reading: anonymous(detail.reading), related: detail.related.map(anonymous) },
+    content,
+    translations,
+    entries,
+    audio
+  }
 }
 writeFileSync(join(import.meta.dirname, 'lesen.json'), JSON.stringify(fixture) + '\n')
 console.log(`${cards.length} tarjetas, ${READINGS.length} lecturas con texto`)
