@@ -23,8 +23,22 @@ const es = {
     details: 'Ver detalles',
     reason: {
       LEVEL: 'A tu nivel',
+      COMPREHENSION: 'Por cómo entiendes',
       TOPIC: 'De tus temas',
-      NEW: 'Nueva'
+      HISTORY: 'Como lo que leíste',
+      NEW: 'Nueva',
+      TRENDING: 'Se lee esta semana'
+    },
+    thisWeek: 'Lo que se lee esta semana',
+    thisWeekLead: 'Lecturas que otras personas terminaron en los últimos 7 días.',
+    readers_one: '{{count}} persona la terminó',
+    readers_other: '{{count}} personas la terminaron',
+    glance: {
+      title: 'Tu semana',
+      met: 'Semana cumplida: {{active}} de {{target}} días y {{minutes}} min leídos.',
+      progress: 'Llevas {{active}} de {{target}} días y {{minutes}} min esta semana.',
+      quiet: 'Una semana nueva para leer a tu ritmo.',
+      open: 'Ver el resumen'
     },
     empty: 'Aún no hay lecturas en {{language}}',
     emptyBody: 'Pronto llegarán. Mientras, mira lo que hay en otros idiomas.'
@@ -76,7 +90,16 @@ const es = {
     related: 'Si te gusta esta, prueba',
     collections: 'En las colecciones',
     progress: 'Llevas el {{percent}} %',
-    done: 'Ya la leíste. ¿Otra vez?'
+    done: 'Ya la leíste. ¿Otra vez?',
+    lists: 'Añadir a una lista',
+    listsTitle: 'Tus listas',
+    listsEmpty: 'Aún no tienes listas. Crea una para guardar esta lectura.',
+    listsNew: 'Nombre de la lista nueva',
+    listsCreate: 'Crear y añadir',
+    listsError: 'No pudimos cambiar la lista. Inténtalo de nuevo.',
+    listsDuplicate: 'Ya tienes una lista con ese nombre.',
+    listsIn_one: 'En {{count}} lista',
+    listsIn_other: 'En {{count}} listas'
   }
 }
 
@@ -103,8 +126,22 @@ const en: typeof es = {
     details: 'See details',
     reason: {
       LEVEL: 'Your level',
+      COMPREHENSION: 'From how you understand',
       TOPIC: 'Your topics',
-      NEW: 'New'
+      HISTORY: 'Like what you read',
+      NEW: 'New',
+      TRENDING: 'Read this week'
+    },
+    thisWeek: 'What people are reading this week',
+    thisWeekLead: 'Readings others finished in the last 7 days.',
+    readers_one: '{{count}} person finished it',
+    readers_other: '{{count}} people finished it',
+    glance: {
+      title: 'Your week',
+      met: 'Week done: {{active}} of {{target}} days and {{minutes}} min read.',
+      progress: '{{active}} of {{target}} days and {{minutes}} min so far this week.',
+      quiet: 'A new week to read at your own pace.',
+      open: 'See the summary'
     },
     empty: 'No readings in {{language}} yet',
     emptyBody: 'They’re on their way. Meanwhile, see what’s available in other languages.'
@@ -156,7 +193,16 @@ const en: typeof es = {
     related: 'If you like this one, try',
     collections: 'In the collections',
     progress: 'You are {{percent}}% through',
-    done: 'You’ve read it. Again?'
+    done: 'You’ve read it. Again?',
+    lists: 'Add to a list',
+    listsTitle: 'Your lists',
+    listsEmpty: 'No lists yet. Create one to keep this reading.',
+    listsNew: 'Name of the new list',
+    listsCreate: 'Create and add',
+    listsError: "We couldn't change the list. Please try again.",
+    listsDuplicate: 'You already have a list with that name.',
+    listsIn_one: 'In {{count}} list',
+    listsIn_other: 'In {{count}} lists'
   }
 }
 

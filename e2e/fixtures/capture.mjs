@@ -40,7 +40,9 @@ const fixture = {
   topics: await get('/lesen/public/topics'),
   collections: (await get('/lesen/discover')).collections.map((c) => ({ ...c, readings: c.readings.map((r) => r.slug) })),
   cards,
-  readings: {}
+  readings: {},
+  // las reglas de los logros (lesen.achievement): la simulación calcula cuánto lleva cada prueba
+  progress: { achievements: (await get('/lesen/progress/achievements')).map(({ code, kind, threshold }) => ({ code, kind, threshold })) }
 }
 for (const slug of READINGS) {
   const detail = await get(`/lesen/readings/${slug}`)

@@ -9,7 +9,17 @@ const es = {
     library: 'Mis lecturas',
     vocabulary: 'Vocabulario',
     dictionary: 'Diccionario',
+    progress: 'Progreso',
     profile: 'Perfil',
+    // la barra de pestañas del móvil: seis secciones en 360 px, con nombres cortos
+    tab: {
+      discover: 'Descubrir',
+      library: 'Lecturas',
+      vocabulary: 'Palabras',
+      dictionary: 'Diccionario',
+      progress: 'Progreso',
+      profile: 'Perfil'
+    },
     skip: 'Saltar al contenido',
     signOut: 'Cerrar sesión'
   },
@@ -124,7 +134,16 @@ const en: typeof es = {
     library: 'My readings',
     vocabulary: 'Vocabulary',
     dictionary: 'Dictionary',
+    progress: 'Progress',
     profile: 'Profile',
+    tab: {
+      discover: 'Discover',
+      library: 'Readings',
+      vocabulary: 'Words',
+      dictionary: 'Dictionary',
+      progress: 'Progress',
+      profile: 'Profile'
+    },
     skip: 'Skip to content',
     signOut: 'Sign out'
   },

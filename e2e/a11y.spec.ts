@@ -12,6 +12,8 @@ const PAGES = [
   '/library',
   '/vocabulary',
   '/dictionary',
+  '/progress',
+  '/progress/week',
   '/profile'
 ]
 

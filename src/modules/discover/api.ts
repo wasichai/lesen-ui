@@ -5,7 +5,7 @@ import { queryKeys } from '../../shared/keys'
 import { retryNetwork } from '../../shared/retry'
 import { readingCardSchema, readingDetailSchema } from '../../shared/schemas'
 import { toApiQuery, type Filters } from './catalogFilters'
-import { discoverSchema } from './contract'
+import { discoverSchema, weekGlanceSchema } from './contract'
 
 export function useDiscover() {
   const { get } = useLesenApi()
@@ -29,4 +29,9 @@ export function useReadingDetail(slug: string) {
     queryFn: () => get(`/lesen/readings/${encodeURIComponent(slug)}`, readingDetailSchema),
     retry: retryNetwork
   })
+}
+
+export function useWeekGlance(enabled: boolean) {
+  const { get } = useLesenApi()
+  return useQuery({ queryKey: ['me', 'week-glance'], queryFn: () => get('/lesen/progress/weekly', weekGlanceSchema), enabled, retry: retryNetwork })
 }
