@@ -56,6 +56,14 @@ export type Note = z.infer<typeof noteSchema>
 
 export const savedKeysSchema = z.array(z.string())
 
+export const knownWordsSchema = z.object({
+  saved: z.array(z.object({ key: z.string(), status: z.enum(['SAVED', 'LEARNING', 'FAMILIAR', 'MASTERED']) })),
+  encountered: z.array(z.string())
+})
+
+// lo justo de las preguntas de una versión para saber que existen y si ya se respondieron
+export const assessmentRefSchema = z.object({ id: z.string(), questions: z.array(z.unknown()), lastAttempt: z.object({ id: z.string() }).nullable() })
+
 const rangeSchema = z.object({ id: z.string(), startMs: z.number().int().nonnegative(), endMs: z.number().int().nonnegative() })
 export const audioSchema = z.object({
   assets: z.array(

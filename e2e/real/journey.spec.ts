@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test'
 const EMAIL = process.env.LESEN_EMAIL ?? 'lena@demo.lesen.test'
 const PASSWORD = process.env.LESEN_PASSWORD ?? ''
 
-test('leer, escuchar, consultar y guardar una palabra contra el backend', async ({ page }) => {
+test('leer, escuchar, guardar, responder y repasar contra el backend', async ({ page }) => {
   test.skip(!PASSWORD, 'LESEN_PASSWORD sin poner')
   await page.goto('/login')
   await page.getByLabel(/correo|email/i).fill(EMAIL)
@@ -40,4 +40,19 @@ test('leer, escuchar, consultar y guardar una palabra contra el backend', async 
   await page.keyboard.press('Escape')
   await page.goto('/vocabulary')
   await expect(page.getByRole('heading', { name: 'verbringen' })).toBeVisible()
+
+  // las preguntas de la lectura, corregidas por el backend (fase 4)
+  await page.goto('/read/der-alte-leuchtturm/questions')
+  await page.getByRole('button', { name: /Empezar|Responder otra vez/ }).click()
+  await page.getByLabel('Porque la lámpara funciona automáticamente').check()
+  for (let i = 0; i < 6; i++) await page.getByRole('button', { name: /Siguiente|Saltar/ }).click()
+  await page.getByRole('button', { name: 'Ver resultados' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Tus resultados' })).toBeVisible()
+  await expect(page.getByRole('article').filter({ hasText: 'farero?' }).getByText('Bien', { exact: true })).toBeVisible()
+
+  // un repaso: la palabra guardada (o la que toque antes) se valora y la sesión avanza
+  await page.goto('/vocabulary/review')
+  await page.getByRole('button', { name: 'Mostrar respuesta' }).click()
+  await page.getByRole('button', { name: /^Bien/ }).click()
+  await expect(page.getByRole('button', { name: 'Mostrar respuesta' }).or(page.getByRole('heading', { name: /Repasaste/ }))).toBeVisible()
 })

@@ -1,10 +1,10 @@
 import { useWasichaiLinks } from '@wasichai/core'
 import { keepPreviousData, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { BookMarked, Repeat, Trash2 } from 'lucide-react'
+import { BookMarked, CalendarCheck, Repeat, Trash2 } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { useLesenApi } from '../../shared/api'
+import { useLesenApi, useProfile } from '../../shared/api'
 import { APP_NAMESPACE } from '../../shared/appMessages'
 import { EmptyState } from '../../shared/EmptyState'
 import { formatDate } from '../../shared/format'
@@ -13,9 +13,10 @@ import { ProblemState } from '../../shared/ProblemState'
 import { retryNetwork } from '../../shared/retry'
 import { ROUTES } from '../../shared/routes'
 import { Skeleton } from '../../shared/Skeleton'
-import { buttonClass } from '../../shared/ui'
+import { buttonClass, chipClass } from '../../shared/ui'
 import { usePageTitle } from '../../shared/useAppName'
-import { splitContext, vocabularyItemSchema, vocabularyPageSchema, type VocabularyItem } from './contract'
+import { useVocabularyStats } from './api'
+import { splitContext, statuses, vocabularyItemSchema, vocabularyPageSchema, type VocabularyItem } from './contract'
 import { VOCABULARY_MODULE_ID } from './i18n'
 
 export function VocabularyPage() {
@@ -34,13 +35,15 @@ function Vocabulary() {
   const { get } = useLesenApi()
   const [query, setQuery] = useState('')
   const [q, setQ] = useState('')
+  const [status, setStatus] = useState<(typeof statuses)[number] | null>(null)
   useEffect(() => {
     const timer = setTimeout(() => setQ(query.trim()), 300)
     return () => clearTimeout(timer)
   }, [query])
   const words = useInfiniteQuery({
-    queryKey: ['me', 'vocabulary', { q }],
-    queryFn: ({ pageParam }) => get(`/lesen/vocabulary?page=${pageParam}&size=24${q ? `&q=${encodeURIComponent(q)}` : ''}`, vocabularyPageSchema),
+    queryKey: ['me', 'vocabulary', { q, status }],
+    queryFn: ({ pageParam }) =>
+      get(`/lesen/vocabulary?page=${pageParam}&size=24${q ? `&q=${encodeURIComponent(q)}` : ''}${status ? `&status=${status}` : ''}`, vocabularyPageSchema),
     initialPageParam: 0,
     getNextPageParam: (last) => (last.totalPages > last.page + 1 ? last.page + 1 : undefined),
     placeholderData: keepPreviousData,
@@ -58,22 +61,28 @@ function Vocabulary() {
         </div>
         {words.data && total > 0 && <p className="text-label">{t('count', { count: total })}</p>}
       </header>
-      <p className="flex items-start gap-3 rounded-[var(--radius-lg)] bg-notice-soft px-4 py-3 text-notice">
-        <Repeat aria-hidden className="mt-0.5 size-5 shrink-0" />
-        {t('reviewSoon')}
-      </p>
-      <label htmlFor={searchId} className="sr-only">
-        {t('search')}
-      </label>
-      <input
-        id={searchId}
-        type="search"
-        value={query}
-        maxLength={64}
-        placeholder={t('search')}
-        onChange={(event) => setQuery(event.target.value)}
-        className="min-h-11 w-full rounded-full border border-border-control bg-surface-raised px-5 text-[16px] sm:max-w-sm"
-      />
+      <DueCard />
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <label htmlFor={searchId} className="sr-only">
+          {t('search')}
+        </label>
+        <input
+          id={searchId}
+          type="search"
+          value={query}
+          maxLength={64}
+          placeholder={t('search')}
+          onChange={(event) => setQuery(event.target.value)}
+          className="min-h-11 w-full rounded-full border border-border-control bg-surface-raised px-5 text-[16px] sm:max-w-sm"
+        />
+        <div role="group" aria-label={t('filter')} className="flex flex-wrap gap-2">
+          {[null, ...statuses].map((value) => (
+            <button key={value ?? 'all'} type="button" aria-pressed={status === value} className={chipClass(status === value)} onClick={() => setStatus(value)}>
+              {value ? t(`status.${value}`) : t('all')}
+            </button>
+          ))}
+        </div>
+      </div>
       {words.isError ? (
         <ProblemState error={words.error} onRetry={() => words.refetch()} />
       ) : !words.data ? (
@@ -85,10 +94,11 @@ function Vocabulary() {
       ) : items.length === 0 ? (
         <EmptyState
           icon={BookMarked}
-          title={q ? t('emptySearch', { q }) : t('empty')}
-          body={q ? undefined : t('emptyBody')}
+          title={q ? t('emptySearch', { q }) : status ? t('emptyStatus', { status: t(`status.${status}`) }) : t('empty')}
+          body={q || status ? undefined : t('emptyBody')}
           action={
-            !q && (
+            !q &&
+            !status && (
               <Link to={links.to(ROUTES.discover)} className={buttonClass('primary')}>
                 {t('discover')}
               </Link>
@@ -117,6 +127,36 @@ function Vocabulary() {
         </>
       )}
     </div>
+  )
+}
+
+// lo que toca repasar hoy en el idioma que se estudia, con el botón para empezar
+function DueCard() {
+  const { t } = useTranslation(VOCABULARY_MODULE_ID)
+  const links = useWasichaiLinks()
+  const profile = useProfile()
+  const stats = useVocabularyStats(profile.data?.targetLanguage)
+  if (!stats.data || stats.data.total === 0) return null
+  const due = stats.data.dueNow
+  return (
+    <section aria-labelledby="due-title" className="flex flex-wrap items-center gap-4 rounded-[var(--radius-lg)] border border-border bg-surface-raised p-5">
+      <div aria-hidden className="grid size-12 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-strong">
+        {due > 0 ? <Repeat className="size-6" /> : <CalendarCheck className="size-6" />}
+      </div>
+      <div className="min-w-0 flex-1">
+        <h2 id="due-title" className="font-read text-h3">
+          {due > 0 ? t('due.title', { count: due }) : t('due.none')}
+        </h2>
+        <p className="text-secondary text-ink-muted">
+          {due > 0 ? t('due.body') : stats.data.reviewedToday > 0 ? t('due.today', { count: stats.data.reviewedToday }) : t('due.body')}
+        </p>
+      </div>
+      {due > 0 && links.has(ROUTES.review) && (
+        <Link to={links.to(ROUTES.review)} className={buttonClass('primary')}>
+          {t('due.start')}
+        </Link>
+      )}
+    </section>
   )
 }
 
@@ -174,6 +214,8 @@ function WordCard({ item }: { item: VocabularyItem }) {
           </>
         )}
         {t('savedOn', { date: formatDate(item.savedAt, i18n.language) })}
+        {' · '}
+        {new Date(item.dueAt) <= new Date() ? t('dueNow') : t('dueOn', { date: formatDate(item.dueAt, i18n.language) })}
       </p>
       {editing ? (
         <form

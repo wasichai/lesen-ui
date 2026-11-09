@@ -23,6 +23,8 @@ function Text({ events, saved = new Set<string>() }: { events: WordEvents; saved
       setCurrentWord={setCurrent}
       openWord={null}
       saved={saved}
+      newWords={null}
+      learnedWords={null}
       highlightSaved
       activeSentence={null}
       showParagraphTranslations={false}

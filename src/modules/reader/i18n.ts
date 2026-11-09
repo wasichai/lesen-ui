@@ -70,6 +70,9 @@ const es = {
     },
     assistance: 'Ayudas',
     highlightSaved: 'Resaltar las palabras que guardaste',
+    highlightNew: 'Marcar las palabras nuevas para ti',
+    highlightNewHint: 'Las que no aparecieron en ninguna lectura que terminaste ni guardaste.',
+    highlightLearned: 'Marcar las palabras que ya aprendiste',
     paragraphTranslations: 'Mostrar la traducción de cada párrafo',
     paragraphTranslationsHint: 'Mejor apagada: intenta entender primero y traduce solo lo que necesites.',
     followPosition: 'Volver a donde lo dejé al abrir'
@@ -111,7 +114,7 @@ const es = {
     saved_other: 'Guardaste {{count}} palabras nuevas.',
     vocabulary: 'Repasar mi vocabulario',
     next: 'Sigue con',
-    comprehension: 'Muy pronto: unas preguntas amables para comprobar lo que entendiste.',
+    comprehension: 'Comprueba lo que entendiste ({{count}} preguntas)',
     discover: 'Volver a Descubrir'
   }
 }
@@ -186,6 +189,9 @@ const en: typeof es = {
     },
     assistance: 'Aids',
     highlightSaved: 'Highlight words you saved',
+    highlightNew: 'Mark words that are new to you',
+    highlightNewHint: 'Ones that didn’t appear in any reading you finished and that you haven’t saved.',
+    highlightLearned: 'Mark words you have already learned',
     paragraphTranslations: 'Show each paragraph’s translation',
     paragraphTranslationsHint: 'Best left off: try to understand first and translate only what you need.',
     followPosition: 'Return to where I left off when opening'
@@ -227,7 +233,7 @@ const en: typeof es = {
     saved_other: 'You saved {{count}} new words.',
     vocabulary: 'Review my vocabulary',
     next: 'Keep going with',
-    comprehension: 'Coming soon: a few friendly questions to check what you understood.',
+    comprehension: 'Check what you understood ({{count}} questions)',
     discover: 'Back to Discover'
   }
 }

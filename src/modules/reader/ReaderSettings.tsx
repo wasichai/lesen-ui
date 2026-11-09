@@ -74,6 +74,13 @@ export function ReaderSettings({ preferences, update }: { preferences: ReaderPre
         <legend className="mb-3 text-label">{t('settings.assistance')}</legend>
         <Toggle checked={preferences.highlightSaved} onChange={(highlightSaved) => update({ highlightSaved })} label={t('settings.highlightSaved')} />
         <Toggle
+          checked={preferences.highlightNew}
+          onChange={(highlightNew) => update({ highlightNew })}
+          label={t('settings.highlightNew')}
+          hint={t('settings.highlightNewHint')}
+        />
+        <Toggle checked={preferences.highlightLearned} onChange={(highlightLearned) => update({ highlightLearned })} label={t('settings.highlightLearned')} />
+        <Toggle
           checked={preferences.paragraphTranslations}
           onChange={(paragraphTranslations) => update({ paragraphTranslations })}
           label={t('settings.paragraphTranslations')}

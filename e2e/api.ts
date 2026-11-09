@@ -24,6 +24,7 @@ interface FixtureReading {
   translations: Record<string, Json[]>
   entries: Record<string, Record<string, Json>>
   audio: Json | null
+  assessment: (Json & { id: string; questions: (Json & { id: string; type: string })[]; answers: Record<string, FixtureAnswer> }) | null
 }
 const READINGS = fixture.readings as unknown as Record<string, FixtureReading | undefined>
 
@@ -64,10 +65,25 @@ interface VocabularyItem {
   context: string | null
   tokenRef: string | null
   source: { slug: string; title: string; version: number } | null
-  status: 'SAVED'
+  status: 'SAVED' | 'LEARNING' | 'FAMILIAR' | 'MASTERED'
   note: string | null
   savedAt: string
+  dueAt: string
+  reviews: number
 }
+
+interface FixtureAnswer {
+  solution: Json & {
+    options?: string[] | null
+    value?: boolean | null
+    blanks?: Record<string, string> | null
+    pairs?: Record<string, string> | null
+    order?: string[] | null
+  }
+  explanation: string
+  refs: string[]
+}
+type Attempt = Json & { id: string; answers: (Json & { questionId: string; result: string; evaluator: string | null })[] }
 
 export interface FakeApi {
   profile: Json | null
@@ -77,6 +93,10 @@ export interface FakeApi {
   notes: Map<string, Json[]>
   favorites: Set<string>
   history: { query: string; entryKey: string | null }[]
+  attempts: Attempt[]
+  // las entradas vistas al terminar lecturas
+  encountered: Set<string>
+  reviews: { vocabularyId: string; rating: string; clientId: string }[]
   // lo que se pidió, como «MÉTODO /ruta»
   requests: string[]
   unexpected: string[]
@@ -84,6 +104,14 @@ export interface FakeApi {
 
 const problem = (status: number, detail: string) => ({ type: `https://lesen.dev/problems/${status}`, title: detail, status, detail })
 const now = () => new Date().toISOString()
+const after = (ms: number) => new Date(Date.now() + ms).toISOString()
+// la próxima fecha de cada respuesta en la simulación (en el backend la calcula FSRS-5)
+const RATINGS: [string, number][] = [
+  ['AGAIN', 60_000],
+  ['HARD', 330_000],
+  ['GOOD', 600_000],
+  ['EASY', 16 * 86_400_000]
+]
 const normalize = (text: string) => text.normalize('NFC').replace('’', "'").toLowerCase()
 
 export async function fakeApi(page: Page, options: { signedIn?: boolean; profile?: Json | null } = {}): Promise<FakeApi> {
@@ -95,6 +123,9 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     notes: new Map(),
     favorites: new Set(),
     history: [],
+    attempts: [],
+    encountered: new Set(),
+    reviews: [],
     requests: [],
     unexpected: []
   }
@@ -213,6 +244,13 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     }
     if (!r) return { status: 404, body: problem(404, 'Reading version not found') }
     if (tail[0] === 'versions' && tail[2] === 'content') return { status: 200, body: r.content }
+    if (tail[0] === 'versions' && tail[2] === 'assessment') {
+      if (!r.assessment) return { status: 404, body: problem(404, 'No questions for this reading') }
+      const { answers: _solutions, ...view } = r.assessment
+      void _solutions
+      const last = api.attempts.filter((a) => a.assessmentId === r.assessment!.id).at(-1)
+      return { status: 200, body: { ...view, lastAttempt: last ? last.summary : null } }
+    }
     if (tail[0] === 'versions' && tail[2] === 'audio') return r.audio ? { status: 200, body: r.audio } : { status: 404, body: problem(404, 'No audio') }
     if (tail[0] === 'versions' && tail[2] === 'translations') {
       const language = (url.searchParams.get('language') as Lang) ?? ui()
@@ -252,6 +290,8 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
         completedAt: current?.completedAt ?? now()
       }
       api.progress.set(slug!, done)
+      // como el backend: terminar anota cada entrada vista
+      for (const p of r.content.paragraphs) for (const s of p.sentences) for (const t of s.tokens) if (t.entry) api.encountered.add(t.entry)
       return { status: 200, body: view(done) }
     }
     if (tail[0] === 'bookmark') {
@@ -345,8 +385,136 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     return undefined
   }
 
+  // corrige como el backend con las soluciones capturadas: lo cerrado por igualdad, la respuesta corta queda para valorar
+  function submitAttempt(assessmentId: string, body: Json) {
+    const r = Object.values(READINGS).find((x) => x?.assessment?.id === assessmentId)
+    if (!r?.assessment) return { status: 404, body: problem(404, 'Assessment not found') }
+    const given = new Map(((body.answers as Json[]) ?? []).map((a) => [a.questionId as string, a]))
+    const answers = r.assessment.questions.map((q) => {
+      const fixture = r.assessment!.answers[q.id]!
+      const answer = given.get(q.id) ?? {}
+      const solution = fixture.solution
+      const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
+      let result = 'INCORRECT'
+      if (q.type === 'SHORT_ANSWER') result = typeof answer.text === 'string' && answer.text.trim() ? 'UNGRADED' : 'INCORRECT'
+      else if (q.type === 'TRUE_FALSE') result = answer.value === solution.value ? 'CORRECT' : 'INCORRECT'
+      else if (q.type === 'COMPLETION') {
+        const blanks = (answer.blanks as Record<string, string>) ?? {}
+        result = Object.entries(solution.blanks ?? {}).every(([k, v]) => normalize(blanks[k]?.trim() ?? '') === normalize(v)) ? 'CORRECT' : 'INCORRECT'
+      } else if (q.type === 'MATCHING') result = same(answer.pairs ?? {}, solution.pairs) ? 'CORRECT' : 'INCORRECT'
+      else if (q.type === 'ORDERING') result = same(answer.order, solution.order) ? 'CORRECT' : 'INCORRECT'
+      else result = same([...((answer.options as string[]) ?? [])].sort(), [...(solution.options ?? [])].sort()) ? 'CORRECT' : 'INCORRECT'
+      return {
+        questionId: q.id,
+        type: q.type,
+        result,
+        evaluator: result === 'UNGRADED' ? null : 'RULE',
+        response: { questionId: q.id, ...answer },
+        solution,
+        explanation: fixture.explanation,
+        refs: fixture.refs,
+        justification: null,
+        citations: []
+      }
+    })
+    const { answers: _solutions, lastAttempt: _last, ...view } = r.assessment
+    void _solutions
+    void _last
+    const id = `attempt-${api.attempts.length + 1}`
+    const attempt: Attempt = {
+      id,
+      assessmentId,
+      slug: view.slug,
+      version: view.version,
+      submittedAt: now(),
+      questions: view.questions,
+      answers,
+      summary: {}
+    }
+    attempt.summary = summarize(attempt)
+    api.attempts.push(attempt)
+    return { status: 201, body: attempt }
+  }
+
+  function summarize(attempt: Attempt) {
+    const count = (result: string) => attempt.answers.filter((a) => a.result === result).length
+    return {
+      id: attempt.id,
+      submittedAt: attempt.submittedAt,
+      total: attempt.answers.length,
+      correct: count('CORRECT'),
+      partial: count('PARTIAL'),
+      incorrect: count('INCORRECT'),
+      pending: count('PENDING'),
+      ungraded: count('UNGRADED')
+    }
+  }
+
+  function attemptRoutes(method: string, rest: string[], body: Json) {
+    const attempt = api.attempts.find((a) => a.id === rest[0])
+    if (!attempt) return { status: 404, body: problem(404, 'Attempt not found') }
+    if (method === 'GET') return { status: 200, body: attempt }
+    const answer = attempt.answers.find((a) => a.questionId === rest[2])
+    if (!answer || answer.result !== 'UNGRADED') return { status: 409, body: problem(409, 'This answer is not waiting for a self-assessment') }
+    answer.result = body.result as string
+    answer.evaluator = 'SELF'
+    attempt.summary = summarize(attempt)
+    return { status: 200, body: attempt }
+  }
+
   function vocabularyRoutes(method: string, rest: string[], url: URL, body: Json) {
     const language = ui()
+    if (rest[0] === 'known')
+      return {
+        status: 200,
+        body: { saved: api.vocabulary.map((v) => ({ key: v.entryKey, status: v.status })), encountered: [...api.encountered].sort() }
+      }
+    if (rest[0] === 'stats') {
+      const due = api.vocabulary.filter((v) => v.dueAt <= now()).length
+      const by = (status: string) => api.vocabulary.filter((v) => v.status === status).length
+      return {
+        status: 200,
+        body: {
+          total: api.vocabulary.length,
+          byStatus: { SAVED: by('SAVED'), LEARNING: by('LEARNING'), FAMILIAR: by('FAMILIAR'), MASTERED: by('MASTERED') },
+          dueNow: due,
+          reviewedToday: api.reviews.length,
+          encountered: api.encountered.size
+        }
+      }
+    }
+    if (rest[0] === 'reviews' && rest[1] === 'next') {
+      const due = api.vocabulary.filter((v) => v.dueAt <= now()).sort((a, b) => a.dueAt.localeCompare(b.dueAt))
+      const later = api.vocabulary
+        .filter((v) => v.dueAt > now())
+        .map((v) => v.dueAt)
+        .sort()
+      return {
+        status: 200,
+        body: {
+          cards: due
+            .slice(0, 20)
+            .map((item) => ({ item, state: item.reviews ? 'REVIEW' : 'LEARNING', preview: Object.fromEntries(RATINGS.map(([r, ms]) => [r, after(ms)])) })),
+          due: due.length,
+          nextDueAt: later[0] ?? null
+        }
+      }
+    }
+    if (rest[0] === 'reviews' && method === 'POST') {
+      const item = api.vocabulary.find((v) => v.id === body.vocabularyId)
+      if (!item) return { status: 404, body: problem(404, 'Word not found') }
+      const previousStatus = item.status
+      // una versión mínima del repaso: el servidor real usa FSRS-5 (sus pruebas, en el backend)
+      if (!api.reviews.some((r) => r.clientId === body.clientId)) {
+        const rating = RATINGS.find(([r]) => r === body.rating)
+        if (!rating) return { status: 400, body: problem(400, 'Invalid rating') }
+        api.reviews.push({ vocabularyId: item.id, rating: rating[0], clientId: body.clientId as string })
+        item.dueAt = after(rating[1])
+        item.reviews += 1
+        item.status = rating[0] === 'EASY' ? 'FAMILIAR' : 'LEARNING'
+      }
+      return { status: 200, body: { item, state: item.status === 'FAMILIAR' ? 'REVIEW' : 'LEARNING', previousStatus } }
+    }
     if (rest[0] === 'keys')
       return {
         status: 200,
@@ -354,7 +522,10 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
       }
     if (!rest[0] && method === 'GET') {
       const q = url.searchParams.get('q')?.toLowerCase()
-      const list = api.vocabulary.filter((v) => !q || v.lemma.toLowerCase().startsWith(q) || v.surface.toLowerCase().startsWith(q))
+      const status = url.searchParams.get('status')
+      const list = api.vocabulary.filter(
+        (v) => (!q || v.lemma.toLowerCase().startsWith(q) || v.surface.toLowerCase().startsWith(q)) && (!status || v.status === status)
+      )
       return { status: 200, body: { content: list, page: 0, size: 24, totalElements: list.length, totalPages: list.length ? 1 : 0 } }
     }
     if (!rest[0] && method === 'POST') {
@@ -390,7 +561,9 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
         source,
         status: 'SAVED',
         note: null,
-        savedAt: now()
+        savedAt: now(),
+        dueAt: now(),
+        reviews: 0
       }
       api.vocabulary.unshift(item)
       return { status: 201, body: item }
@@ -456,7 +629,9 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
         )
       }
       reply = found ? { status: 204, body: null } : { status: 404, body: problem(404, 'Note not found') }
-    } else if (path.startsWith('/api/lesen/dictionary/')) reply = dictionaryRoutes(method, path.slice('/api/lesen/dictionary/'.length).split('/'), url)
+    } else if (method === 'POST' && /^\/api\/lesen\/assessments\/[^/]+\/attempts$/.test(path)) reply = submitAttempt(path.split('/')[4]!, body)
+    else if (/^\/api\/lesen\/attempts\/[^/]+(\/answers\/[^/]+\/self-assessment)?$/.test(path)) reply = attemptRoutes(method, path.split('/').slice(4), body)
+    else if (path.startsWith('/api/lesen/dictionary/')) reply = dictionaryRoutes(method, path.slice('/api/lesen/dictionary/'.length).split('/'), url)
     else if (path === '/api/lesen/vocabulary' || path.startsWith('/api/lesen/vocabulary/'))
       reply = vocabularyRoutes(method, path.slice('/api/lesen/vocabulary'.length).split('/').filter(Boolean), url, body)
     if (!reply) {

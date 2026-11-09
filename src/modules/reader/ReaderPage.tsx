@@ -15,7 +15,7 @@ import { usePageTitle } from '../../shared/useAppName'
 import { useCanHover, useIsWide } from '../../shared/useMediaQuery'
 import { useRovingToolbar } from '../../shared/useRovingToolbar'
 import { READER_THEMES } from '../../theme/themes'
-import { useContent, useProgress, useReadingAudio, useReadingDetail, useSavedKeys } from './api'
+import { useContent, useKnownWords, useProgress, useReadingAudio, useReadingDetail, useSavedKeys } from './api'
 import { AudioBar } from './AudioBar'
 import { buildIndex, neighbourParagraph, rangeOf, seekToWord } from './audioSync'
 import type { Progress, ReadingContent, Token } from './contract'
@@ -85,6 +85,20 @@ function Reader({
   const index = useMemo(() => indexContent(content), [content])
   const savedKeys = useSavedKeys(content.language)
   const saved = useMemo(() => new Set(savedKeys.data ?? []), [savedKeys.data])
+  // las ayudas de palabras nuevas y aprendidas (fase 4): lo encontrado al terminar lecturas y el estado del cuaderno
+  const known = useKnownWords(content.language, preferences.highlightNew || preferences.highlightLearned)
+  const newWords = useMemo(() => {
+    if (!preferences.highlightNew || !known.data) return null
+    const seen = new Set([...known.data.encountered, ...known.data.saved.map((w) => w.key)])
+    return new Set(index.words.flatMap((w) => (w.entry && !seen.has(w.entry) ? [w.entry] : [])))
+  }, [index, known.data, preferences.highlightNew])
+  const learnedWords = useMemo(
+    () =>
+      preferences.highlightLearned && known.data
+        ? new Set(known.data.saved.filter((w) => w.status === 'FAMILIAR' || w.status === 'MASTERED').map((w) => w.key))
+        : null,
+    [known.data, preferences.highlightLearned]
+  )
   const savedAtStart = useRef<number | null>(null)
   if (savedAtStart.current === null && savedKeys.data) savedAtStart.current = savedKeys.data.length
   const article = useRef<HTMLElement>(null)
@@ -151,11 +165,19 @@ function Reader({
   useEffect(() => {
     if (restored.current) return
     restored.current = true
+    // un enlace a una oración (desde los resultados de las preguntas) gana a la posición guardada: se centra y se marca
+    const cited = window.location.hash.slice(1)
+    if (/^p\d+s\d+$/.test(cited) && index.sentences.some((s) => s.id === cited)) {
+      const element = document.getElementById(cited)
+      element?.setAttribute('data-cited', 'true')
+      element?.scrollIntoView({ block: 'center' })
+      return
+    }
     if (!preferences.followPosition || !stored?.position || stored.version !== content.version || stored.completed) return
     // la posición se anota con la oración más alta de la franja de lectura (15 % bajo el borde): vuelve a ponerse ahí
     const target = document.getElementById(stored.position)
     if (target) window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.18 })
-  }, [content.version, preferences.followPosition, stored])
+  }, [content.version, index, preferences.followPosition, stored])
 
   useEffect(() => {
     const onChange = () => setFullscreen(document.fullscreenElement !== null)
@@ -285,6 +307,8 @@ function Reader({
             openWord={open?.token.id ?? preview?.token.id ?? null}
             saved={saved}
             highlightSaved={preferences.highlightSaved}
+            newWords={newWords}
+            learnedWords={learnedWords}
             activeSentence={open ? (index.sentenceOfWord.get(open.token.id) ?? null) : null}
             showParagraphTranslations={preferences.paragraphTranslations}
             translationLanguage={translationLanguage}

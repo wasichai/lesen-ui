@@ -25,6 +25,8 @@ export function ReaderText({
   openWord,
   saved,
   highlightSaved,
+  newWords,
+  learnedWords,
   activeSentence,
   showParagraphTranslations,
   translationLanguage,
@@ -41,6 +43,8 @@ export function ReaderText({
   openWord: string | null
   saved: Set<string>
   highlightSaved: boolean
+  newWords: Set<string> | null
+  learnedWords: Set<string> | null
   activeSentence: string | null
   showParagraphTranslations: boolean
   translationLanguage: string
@@ -85,6 +89,8 @@ export function ReaderText({
           openWord={openWord && index.paragraphOfSentence.get(index.sentenceOfWord.get(openWord) ?? '') === paragraph.id ? openWord : null}
           saved={saved}
           highlightSaved={highlightSaved}
+          newWords={newWords}
+          learnedWords={learnedWords}
           activeSentence={activeSentence && index.paragraphOfSentence.get(activeSentence) === paragraph.id ? activeSentence : null}
           showTranslation={showParagraphTranslations}
           translationLanguage={translationLanguage}
@@ -106,6 +112,8 @@ const ParagraphView = memo(function ParagraphView({
   openWord,
   saved,
   highlightSaved,
+  newWords,
+  learnedWords,
   activeSentence,
   showTranslation,
   translationLanguage,
@@ -120,6 +128,8 @@ const ParagraphView = memo(function ParagraphView({
   openWord: string | null
   saved: Set<string>
   highlightSaved: boolean
+  newWords: Set<string> | null
+  learnedWords: Set<string> | null
   activeSentence: string | null
   showTranslation: boolean
   translationLanguage: string
@@ -141,6 +151,8 @@ const ParagraphView = memo(function ParagraphView({
                   tabbable={token.id === tabStop}
                   open={token.id === openWord}
                   saved={highlightSaved && token.entry !== null && saved.has(token.entry)}
+                  isNew={token.entry !== null && (newWords?.has(token.entry) ?? false)}
+                  learned={token.entry !== null && (learnedWords?.has(token.entry) ?? false)}
                   events={events}
                   onFocusWord={onFocusWord}
                 />
@@ -180,6 +192,8 @@ function WordButton({
   tabbable,
   open,
   saved,
+  isNew,
+  learned,
   events,
   onFocusWord
 }: {
@@ -187,6 +201,8 @@ function WordButton({
   tabbable: boolean
   open: boolean
   saved: boolean
+  isNew: boolean
+  learned: boolean
   events: WordEvents
   onFocusWord: (id: string) => void
 }) {
@@ -198,6 +214,8 @@ function WordButton({
         className="word"
         data-token={token.id}
         data-saved={saved}
+        data-new={isNew || undefined}
+        data-learned={learned || undefined}
         tabIndex={tabbable ? 0 : -1}
         aria-haspopup="dialog"
         aria-expanded={open}

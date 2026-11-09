@@ -8,12 +8,24 @@ const base = (process.argv[2] ?? 'http://localhost:8095') + '/api'
 const READINGS = ['der-alte-leuchtturm', 'der-fuchs-im-garten', 'a-morning-in-lisbon']
 // la narración solo de esta lectura: las otras dos hacen de lecturas sin audio (el lector sigue igual)
 const WITH_AUDIO = ['der-alte-leuchtturm']
+// las preguntas de comprensión de esta lectura, y sus soluciones y explicaciones (de un intento en blanco), para que la
+// simulación corrija como el backend
+const WITH_QUESTIONS = ['der-alte-leuchtturm']
 const login = await fetch(`${base}/auth/login`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ email: process.env.LESEN_EMAIL, password: process.env.LESEN_PASSWORD })
 })
 const { token } = await login.json()
+const send = async (method, path, body) => {
+  const response = await fetch(`${base}${path}`, {
+    method,
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  if (!response.ok) throw new Error(`${path}: ${response.status}`)
+  return response.json()
+}
 const get = async (path) => {
   const response = await fetch(`${base}${path}`, { headers: { Authorization: `Bearer ${token}` } })
   if (!response.ok) throw new Error(`${path}: ${response.status}`)
@@ -59,12 +71,23 @@ for (const slug of READINGS) {
     mkdirSync(join(import.meta.dirname, 'audio'), { recursive: true })
     writeFileSync(join(import.meta.dirname, 'audio', audio.assets[0].url.split('/').pop()), Buffer.from(await file.arrayBuffer()))
   }
+  let assessment = null
+  if (WITH_QUESTIONS.includes(slug)) {
+    const questions = await get(`/lesen/readings/${slug}/versions/${version}/assessment?language=es`)
+    const blank = await send('POST', `/lesen/assessments/${questions.id}/attempts`, { answers: [] })
+    assessment = {
+      ...questions,
+      lastAttempt: null,
+      answers: Object.fromEntries(blank.answers.map((a) => [a.questionId, { solution: a.solution, explanation: a.explanation, refs: a.refs }]))
+    }
+  }
   fixture.readings[slug] = {
     detail: { ...detail, reading: anonymous(detail.reading), related: detail.related.map(anonymous) },
     content,
     translations,
     entries,
-    audio
+    audio,
+    assessment
   }
 }
 writeFileSync(join(import.meta.dirname, 'lesen.json'), JSON.stringify(fixture) + '\n')

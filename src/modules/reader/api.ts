@@ -3,7 +3,17 @@ import { orNull, useLesenApi } from '../../shared/api'
 import { queryKeys } from '../../shared/keys'
 import { retryNetwork } from '../../shared/retry'
 import { readingDetailSchema } from '../../shared/schemas'
-import { audioSchema, contentSchema, lookupSchema, noteSchema, progressSchema, savedKeysSchema, translationsSchema } from './contract'
+import {
+  assessmentRefSchema,
+  audioSchema,
+  contentSchema,
+  knownWordsSchema,
+  lookupSchema,
+  noteSchema,
+  progressSchema,
+  savedKeysSchema,
+  translationsSchema
+} from './contract'
 
 const path = (slug: string) => `/lesen/readings/${encodeURIComponent(slug)}`
 
@@ -41,6 +51,27 @@ export function useSavedKeys(language: string | undefined) {
     queryKey: ['me', 'saved-keys', language],
     queryFn: () => get(`/lesen/vocabulary/keys?language=${encodeURIComponent(language ?? '')}`, savedKeysSchema),
     enabled: language !== undefined,
+    retry: retryNetwork
+  })
+}
+
+// lo guardado (con su estado) y lo encontrado al terminar lecturas: solo se pide si alguna ayuda lo usa
+export function useKnownWords(language: string, enabled: boolean) {
+  const { get } = useLesenApi()
+  return useQuery({
+    queryKey: ['me', 'known', language],
+    queryFn: () => get(`/lesen/vocabulary/known?language=${encodeURIComponent(language)}`, knownWordsSchema),
+    enabled,
+    retry: retryNetwork
+  })
+}
+
+// si la versión tiene preguntas de comprensión (sin ellas, el final de la lectura no las ofrece)
+export function useHasAssessment(slug: string, version: number) {
+  const { get } = useLesenApi()
+  return useQuery({
+    queryKey: ['me', 'assessment', slug, version, 'exists'],
+    queryFn: () => orNull(get(`${path(slug)}/versions/${version}/assessment`, assessmentRefSchema)),
     retry: retryNetwork
   })
 }

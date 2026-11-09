@@ -244,6 +244,19 @@
     text-underline-offset: 0.22em;
   }
 
+  /* una palabra que el repaso ya da por aprendida: subrayado continuo, distinto del punteado de las nuevas */
+  .word[data-learned='true'] {
+    text-decoration: underline solid var(--success);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.22em;
+  }
+
+  /* la oración citada desde los resultados de las preguntas */
+  .sentence[data-cited='true'] {
+    background-color: var(--mark-sentence);
+    box-shadow: 0 0 0 0.12em var(--mark-sentence);
+  }
+
   /* la palabra que suena (data-playing) y su oración (data-spoken): fondo y además subrayado, nunca solo color */
   .word[data-playing='true'] {
     background-color: var(--brand-soft);
