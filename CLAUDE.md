@@ -13,7 +13,7 @@ Packages, fijados todos a la misma versión exacta.
 
 1. **Una sola `WasichaiApp`** en `src/main.tsx`: un router, el login y la sesión de core. Cada experiencia es un
    `WasichaiModule` en `src/modules/<id>/` (rutas, i18n). Todas las rutas son `chrome: 'bare'` con `LearnerLayout`;
-   el lector va sin marco (ADR-0006 del backend).
+   el lector va sin marco (ADR-0006 del backend) y el estudio editorial con `StudioLayout` (ADR-0012 del backend).
 2. **Los módulos no se importan entre sí.** Lo compartido vive en `src/shared` (contratos, marco, componentes, claves de
    ruta en `shared/routes.ts`). `src/test/modules.test.ts` lo comprueba.
 3. **Enlaces por clave de ruta** con `useWasichaiLinks()`; nunca una URL escrita a mano. Un enlace a otro módulo se
@@ -21,9 +21,10 @@ Packages, fijados todos a la misma versión exacta.
 4. **Ningún texto visible escrito en un componente**: todo pasa por el i18n del módulo (es y en, con las mismas claves;
    lo comprueba la misma prueba). El nombre del producto sale de `VITE_APP_NAME` (`useAppName`).
 5. **La API con el cliente de core** (`useLesenApi` en `shared/api.ts`) y cada respuesta validada con zod
-   (`contract.ts`). Sin datos (404) es una respuesta (`orNull`), no un fallo.
+   (`contract.ts`). Sin datos (404) es una respuesta (`orNull`), no un fallo. Única excepción: las subidas multipart del
+   estudio (`studio/api.ts`), con el token y la base del cliente de core, porque este fuerza JSON.
 6. **Lógica fuera de los componentes**: funciones puras con pruebas (`readerModel.ts`, `catalogFilters.ts`,
-   `onboardingModel.ts`, `readerPreferences.ts`, `progressModel.ts`) y hooks.
+   `onboardingModel.ts`, `readerPreferences.ts`, `progressModel.ts`, `draftModel.ts`) y hooks.
 7. **Accesibilidad WCAG 2.2 AA**: los tokens pasan `lesen.test.ts` (contraste), objetivos de 44 px, foco visible, `lang`
    en todo texto del idioma de estudio, movimiento reducido. `e2e/a11y.spec.ts` corre axe.
 8. **Nada inventado**: si el backend no tiene la entrada o la traducción, la interfaz lo dice.

@@ -75,6 +75,12 @@ se lleva, no lo que falta. Los logros pendientes muestran cuánto se lleva, sin 
 pestañas del móvil usa nombres cortos (`nav.tab.*`) y la superior, en escritorio estrecho, deja «Cerrar sesión» en el
 icono.
 
+Estudio editorial (fase 6): su propio marco (`StudioLayout`), más ancho y sin barra de pestañas, para quien escribe y
+publica sin perfil de lectora. El editor de un borrador va por pestañas (datos, texto y traducciones, preguntas, audio,
+revisión) con una barra fija de guardado que dice si hay cambios sin guardar. Cada oración se escribe junto a sus
+traducciones, con `lang` en cada campo. Los hallazgos de la comprobación se agrupan en «para arreglar» y «para mirar»,
+cada uno con un enlace a la pestaña donde se arregla; las palabras sin entrada se añaden al diccionario desde una hoja.
+
 ## Movimiento
 
 Entradas cortas (`animate-rise` 420 ms, `animate-sheet` 260 ms) y una sola celebración (`animate-pop` al terminar una

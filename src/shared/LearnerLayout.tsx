@@ -1,5 +1,5 @@
 import { useAuth, useWasichaiLinks } from '@wasichai/core'
-import { BookMarked, BookOpenText, Compass, Languages, LogOut, Sprout, UserRound } from 'lucide-react'
+import { BookMarked, BookOpenText, Compass, Languages, LogOut, PenLine, Sprout, UserRound } from 'lucide-react'
 import type { ComponentType, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, NavLink, useLocation } from 'react-router'
@@ -26,7 +26,7 @@ export function LearnerLayout({ children }: { children: ReactNode }) {
   const { t } = useTranslation(APP_NAMESPACE)
   const links = useWasichaiLinks()
   const profile = useProfile()
-  const { signOut } = useAuth()
+  const { signOut, can } = useAuth()
   const location = useLocation()
   const appName = useAppName()
   if (profile.isSuccess && profile.data === null) return <Navigate to={links.to(ROUTES.welcome)} replace state={{ from: location.pathname }} />
@@ -64,15 +64,26 @@ export function LearnerLayout({ children }: { children: ReactNode }) {
               ))}
             </ul>
           </nav>
-          <button
-            type="button"
-            onClick={signOut}
-            className="ml-auto inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-secondary font-semibold text-ink-muted hover:bg-surface-muted hover:text-ink"
-          >
-            <LogOut aria-hidden className="size-4" />
-            {/* visible donde cabe; en escritorio estrecho, con seis secciones, solo el icono */}
-            <span className="sr-only whitespace-nowrap sm:not-sr-only lg:sr-only xl:not-sr-only">{t('nav.signOut')}</span>
-          </button>
+          <div className="ml-auto flex items-center gap-1">
+            {can('estudio', 'READ') && links.has(ROUTES.studio) && (
+              <NavLink
+                to={links.to(ROUTES.studio)}
+                className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-3 text-secondary font-semibold text-ink-muted hover:bg-surface-muted hover:text-ink"
+              >
+                <PenLine aria-hidden className="size-4" />
+                <span className="sr-only xl:not-sr-only">{t('nav.studio')}</span>
+              </NavLink>
+            )}
+            <button
+              type="button"
+              onClick={signOut}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-secondary font-semibold text-ink-muted hover:bg-surface-muted hover:text-ink"
+            >
+              <LogOut aria-hidden className="size-4" />
+              {/* visible donde cabe; en escritorio estrecho, con seis secciones, solo el icono */}
+              <span className="sr-only whitespace-nowrap sm:not-sr-only lg:sr-only xl:not-sr-only">{t('nav.signOut')}</span>
+            </button>
+          </div>
         </div>
       </header>
       <main id="content" tabIndex={-1} className={`mx-auto w-full flex-1 px-4 pb-28 pt-6 sm:px-6 lg:pb-16 max-w-page`}>

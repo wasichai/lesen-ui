@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
-import { fakeApi } from './api'
+import { fakeApi, seedDraft } from './api'
 
 // WCAG 2.2 AA con axe en las pantallas principales, en claro y en los tres temas del lector
 const PAGES = [
@@ -14,12 +14,20 @@ const PAGES = [
   '/dictionary',
   '/progress',
   '/progress/week',
-  '/profile'
+  '/profile',
+  '/studio',
+  '/studio/drafts/draft-seed',
+  '/studio/drafts/draft-seed?tab=text',
+  '/studio/drafts/draft-seed?tab=questions',
+  '/studio/drafts/draft-seed?tab=audio',
+  '/studio/drafts/draft-seed?tab=review',
+  '/studio/readings/der-alte-leuchtturm'
 ]
 
 for (const path of PAGES) {
   test(`${path} no tiene problemas de accesibilidad`, async ({ page }) => {
-    await fakeApi(page, { profile: path === '/welcome' ? null : undefined })
+    const api = await fakeApi(page, { profile: path === '/welcome' ? null : undefined, as: path.startsWith('/studio') ? 'editor' : 'learner' })
+    seedDraft(api)
     await page.goto(path)
     await page.locator('main, form').first().waitFor()
     await page.waitForLoadState('networkidle')

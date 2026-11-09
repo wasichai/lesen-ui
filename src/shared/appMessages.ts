@@ -21,7 +21,16 @@ const es = {
       profile: 'Perfil'
     },
     skip: 'Saltar al contenido',
-    signOut: 'Cerrar sesión'
+    signOut: 'Cerrar sesión',
+    studio: 'Estudio'
+  },
+  studio: {
+    label: 'Estudio',
+    nav: 'Estudio editorial',
+    drafts: 'Lecturas y borradores',
+    toReader: 'Ir a leer',
+    forbidden: 'El estudio es para el equipo editorial',
+    forbiddenBody: 'Tu cuenta no tiene permiso para escribir ni publicar lecturas. Si debería tenerlo, pídeselo a quien administra.'
   },
   level: {
     A1: 'Inicial',
@@ -145,7 +154,16 @@ const en: typeof es = {
       profile: 'Profile'
     },
     skip: 'Skip to content',
-    signOut: 'Sign out'
+    signOut: 'Sign out',
+    studio: 'Studio'
+  },
+  studio: {
+    label: 'Studio',
+    nav: 'Editorial studio',
+    drafts: 'Readings and drafts',
+    toReader: 'Go read',
+    forbidden: 'The studio is for the editorial team',
+    forbiddenBody: 'Your account cannot write or publish readings. If it should, ask whoever runs the platform.'
   },
   level: {
     A1: 'Beginner',

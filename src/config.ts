@@ -18,8 +18,13 @@ export function appName(env: Pick<AppEnv, 'VITE_APP_NAME'> = import.meta.env): s
   return env.VITE_APP_NAME?.trim() || DEFAULT_APP_NAME
 }
 
-// el inicio de todo el que entra es Descubrir. Si los permisos no se pudieron leer, el panel de core (que lo explica)
-export const homeRoute: HomeRoute = (_permissions, { permissionsFailed }) => (permissionsFailed ? null : ROUTES.discover)
+// el inicio de quien lee es Descubrir; el de quien solo trabaja en el estudio editorial (sin cuaderno), el estudio. Si los
+// permisos no se pudieron leer, el panel de core (que lo explica)
+export const homeRoute: HomeRoute = (permissions, { permissionsFailed }) => {
+  if (permissionsFailed) return null
+  const can = (object: string) => permissions.admin || (permissions.objects[object] ?? []).includes('READ')
+  return !can('cuaderno') && can('estudio') ? ROUTES.studio : ROUTES.discover
+}
 
 // la configuración de <WasichaiApp>. /api lo atiende el proxy de Vite (vite.config.ts) o el del despliegue.
 // storagePrefix propio: otra app de Wasichai en el mismo origen no comparte sesión, idioma ni tema
