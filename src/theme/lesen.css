@@ -1,0 +1,277 @@
+/* tema Lesen (docs/design-system/lesen): papel cálido, tinta profunda y terracota para lo que invita a seguir. cinco bloques
+   según el contrato de @wasichai/ui (ADR-034 y ADR-035 de wasichai), cada uno con todos sus tokens, más los propios de Lesen:
+   - lesen y lesen-dark: los temas de página (config.themes)
+   - lesen-reader-light, -sepia y -dark: los del lector, como subárbol (data-theme en el contenedor de la lectura)
+   tokens propios: --sage, --ochre, --sea y --plum (temas y portadas), --mark-saved y --mark-saved-ink (palabra guardada),
+   --mark-new (palabra sin guardar, subrayado) y --mark-sentence (la oración activa). los pares de contraste los comprueba
+   lesen.test.ts (WCAG 2.2 AA) */
+
+/* Newsreader y Source Sans 3 (SIL OFL, src/theme/fonts) se declaran en src/index.css */
+
+[data-theme='lesen'] {
+  --surface: #fbf7f0;
+  --surface-muted: #f3ecdf;
+  --surface-raised: #fffdf9;
+  --border: #e4d9c7;
+  --ink: #1f2430;
+  --ink-muted: #565b67;
+  --brand: #a8402a;
+  --brand-strong: #85301d;
+  --brand-soft: #f6e3d8;
+  --on-brand: #ffffff;
+  --shell: #fbf7f0;
+  --shell-muted: #3b404c;
+  --shell-ink: #1f2430;
+  --danger: #b42318;
+  --danger-soft: #fbe6e2;
+  --on-danger: #ffffff;
+  --success: #2f6b47;
+  --success-soft: #e3efe4;
+  --warning: #855000;
+  --warning-soft: #f7ebd3;
+  --notice: #275c6b;
+  --notice-soft: #e0edf0;
+  --overlay: rgb(31 36 48 / 52%);
+
+  --link: #85301d;
+  --focus: #2f5d8a;
+  --table-head: #f0e8da;
+  --table-stripe: #f7f2ea;
+  --line: var(--border);
+  --map-selected: #a8402a;
+  --border-control: #857a69;
+  --placeholder: var(--ink-muted);
+
+  --sage: #4f6f55;
+  --ochre: #8c6216;
+  --sea: #275c6b;
+  --plum: #6d4566;
+  --mark-saved: #f4e2a8;
+  --mark-saved-ink: #1f2430;
+  --mark-new: #a8402a;
+  --mark-sentence: #f6ead9;
+
+  --font-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-card: 18px;
+  --shadow-overlay: 0 18px 40px rgb(48 34 20 / 18%);
+}
+
+[data-theme='lesen-dark'] {
+  --surface: #17181d;
+  --surface-muted: #111216;
+  --surface-raised: #212229;
+  --border: #33353f;
+  --ink: #efe8dc;
+  --ink-muted: #b4ad9f;
+  --brand: #f19a7b;
+  --brand-strong: #f7b8a0;
+  --brand-soft: #3b241c;
+  --on-brand: #1c100b;
+  --shell: #17181d;
+  --shell-muted: #c9c2b4;
+  --shell-ink: #efe8dc;
+  --danger: #f28b82;
+  --danger-soft: #3a1d1f;
+  --on-danger: #170c0b;
+  --success: #86c99e;
+  --success-soft: #17291e;
+  --warning: #e5b663;
+  --warning-soft: #30260f;
+  --notice: #8fc6d6;
+  --notice-soft: #14262d;
+  --overlay: rgb(0 0 0 / 64%);
+
+  --link: #f7b8a0;
+  --focus: #8fb4e3;
+  --table-head: #1f2026;
+  --table-stripe: #141519;
+  --line: var(--border);
+  --map-selected: #f19a7b;
+  --border-control: #7d7a73;
+  --placeholder: var(--ink-muted);
+
+  --sage: #a3c4a8;
+  --ochre: #e0b766;
+  --sea: #8fc6d6;
+  --plum: #d6a8cf;
+  --mark-saved: #4d4220;
+  --mark-saved-ink: #f6eedd;
+  --mark-new: #f19a7b;
+  --mark-sentence: #262229;
+
+  --font-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-card: 18px;
+  --shadow-overlay: 0 18px 40px rgb(0 0 0 / 45%);
+}
+
+/* el lector, claro: papel más blanco que la página, para leer mucho rato */
+[data-theme='lesen-reader-light'] {
+  --surface: #fffdf8;
+  --surface-muted: #f6f1e7;
+  --surface-raised: #ffffff;
+  --border: #e6ddcd;
+  --ink: #22252e;
+  --ink-muted: #585c66;
+  --brand: #a8402a;
+  --brand-strong: #85301d;
+  --brand-soft: #f6e3d8;
+  --on-brand: #ffffff;
+  --shell: #fffdf8;
+  --shell-muted: #3b404c;
+  --shell-ink: #22252e;
+  --danger: #b42318;
+  --danger-soft: #fbe6e2;
+  --on-danger: #ffffff;
+  --success: #2f6b47;
+  --success-soft: #e3efe4;
+  --warning: #855000;
+  --warning-soft: #f7ebd3;
+  --notice: #275c6b;
+  --notice-soft: #e0edf0;
+  --overlay: rgb(31 36 48 / 52%);
+
+  --link: #85301d;
+  --focus: #2f5d8a;
+  --table-head: #f2ebdf;
+  --table-stripe: #f9f5ee;
+  --line: var(--border);
+  --map-selected: #a8402a;
+  --border-control: #857a69;
+  --placeholder: var(--ink-muted);
+
+  --sage: #4f6f55;
+  --ochre: #8c6216;
+  --sea: #275c6b;
+  --plum: #6d4566;
+  --mark-saved: #f4e2a8;
+  --mark-saved-ink: #22252e;
+  --mark-new: #a8402a;
+  --mark-sentence: #f7ecdc;
+
+  --font-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-card: 18px;
+  --shadow-overlay: 0 18px 40px rgb(48 34 20 / 18%);
+}
+
+/* el lector, sepia: papel tostado y tinta marrón, menos brillo de noche sin pasar a oscuro */
+[data-theme='lesen-reader-sepia'] {
+  --surface: #f4ecdd;
+  --surface-muted: #ece2cf;
+  --surface-raised: #f8f1e4;
+  --border: #d9cbb1;
+  --ink: #3a2f22;
+  --ink-muted: #5e4f3c;
+  --brand: #9a3b25;
+  --brand-strong: #7a2c19;
+  --brand-soft: #eed7c4;
+  --on-brand: #ffffff;
+  --shell: #f4ecdd;
+  --shell-muted: #4a3d2d;
+  --shell-ink: #3a2f22;
+  --danger: #a82015;
+  --danger-soft: #f2ddd3;
+  --on-danger: #ffffff;
+  --success: #2d6a45;
+  --success-soft: #dde6d3;
+  --warning: #7a4800;
+  --warning-soft: #f1e1bc;
+  --notice: #275c6b;
+  --notice-soft: #dce5e3;
+  --overlay: rgb(58 47 34 / 52%);
+
+  --link: #7a2c19;
+  --focus: #2f5d8a;
+  --table-head: #e8dcc6;
+  --table-stripe: #efe6d6;
+  --line: var(--border);
+  --map-selected: #9a3b25;
+  --border-control: #7a6c55;
+  --placeholder: var(--ink-muted);
+
+  --sage: #4a6650;
+  --ochre: #7f5812;
+  --sea: #275c6b;
+  --plum: #66405f;
+  --mark-saved: #ead39a;
+  --mark-saved-ink: #3a2f22;
+  --mark-new: #9a3b25;
+  --mark-sentence: #ebdfc8;
+
+  --font-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-card: 18px;
+  --shadow-overlay: 0 18px 40px rgb(58 47 34 / 20%);
+}
+
+/* el lector, oscuro: tinta crema sobre casi negro, con la terracota aclarada */
+[data-theme='lesen-reader-dark'] {
+  --surface: #121318;
+  --surface-muted: #0d0e12;
+  --surface-raised: #1c1d23;
+  --border: #2e3039;
+  --ink: #e2dccf;
+  --ink-muted: #aaa396;
+  --brand: #f19a7b;
+  --brand-strong: #f7b8a0;
+  --brand-soft: #36211a;
+  --on-brand: #1c100b;
+  --shell: #121318;
+  --shell-muted: #c2bbad;
+  --shell-ink: #e2dccf;
+  --danger: #f28b82;
+  --danger-soft: #3a1d1f;
+  --on-danger: #170c0b;
+  --success: #86c99e;
+  --success-soft: #17291e;
+  --warning: #e5b663;
+  --warning-soft: #30260f;
+  --notice: #8fc6d6;
+  --notice-soft: #14262d;
+  --overlay: rgb(0 0 0 / 64%);
+
+  --link: #f7b8a0;
+  --focus: #8fb4e3;
+  --table-head: #1b1c22;
+  --table-stripe: #101115;
+  --line: var(--border);
+  --map-selected: #f19a7b;
+  --border-control: #7d7a73;
+  --placeholder: var(--ink-muted);
+
+  --sage: #a3c4a8;
+  --ochre: #e0b766;
+  --sea: #8fc6d6;
+  --plum: #d6a8cf;
+  --mark-saved: #4a3f1e;
+  --mark-saved-ink: #f3ead6;
+  --mark-new: #f19a7b;
+  --mark-sentence: #201f26;
+
+  --font-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-card: 18px;
+  --shadow-overlay: 0 18px 40px rgb(0 0 0 / 45%);
+}

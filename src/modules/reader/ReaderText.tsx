@@ -1,0 +1,248 @@
+import { Languages } from 'lucide-react'
+import { memo, useCallback, useEffect, useState, type KeyboardEvent } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useTranslations } from './api'
+import type { Paragraph, Token } from './contract'
+import { READER_MODULE_ID } from './i18n'
+import { neighbourSentenceWord, neighbourWord, type ReaderIndex } from './readerModel'
+
+export interface WordEvents {
+  onOpen: (token: Token, element: HTMLElement) => void
+  onHoverStart: (token: Token, element: HTMLElement) => void
+  onHoverEnd: () => void
+}
+
+// el texto: párrafos, oraciones y una palabra por botón. Un solo tabstop para todo el texto (la palabra «actual») y las
+// flechas para moverse: ←/→ por palabras, ↑/↓ por oraciones, Inicio/Fin al principio o al final. Intro o Espacio abren
+export function ReaderText({
+  slug,
+  version,
+  language,
+  paragraphs,
+  index,
+  currentWord,
+  setCurrentWord,
+  openWord,
+  saved,
+  highlightSaved,
+  activeSentence,
+  showParagraphTranslations,
+  translationLanguage,
+  events
+}: {
+  slug: string
+  version: number
+  language: string
+  paragraphs: Paragraph[]
+  index: ReaderIndex
+  currentWord: string | null
+  setCurrentWord: (id: string) => void
+  openWord: string | null
+  saved: Set<string>
+  highlightSaved: boolean
+  activeSentence: string | null
+  showParagraphTranslations: boolean
+  translationLanguage: string
+  events: WordEvents
+}) {
+  const { t } = useTranslation(READER_MODULE_ID)
+  const focusWord = useCallback(
+    (id: string) => {
+      setCurrentWord(id)
+      document.querySelector<HTMLElement>(`[data-token="${CSS.escape(id)}"]`)?.focus()
+    },
+    [setCurrentWord]
+  )
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const id = (event.target as HTMLElement).dataset.token
+    if (!id || event.altKey || event.ctrlKey || event.metaKey) return
+    const moves: Record<string, () => string> = {
+      ArrowRight: () => neighbourWord(index, id, 1),
+      ArrowLeft: () => neighbourWord(index, id, -1),
+      ArrowDown: () => neighbourSentenceWord(index, id, 1),
+      ArrowUp: () => neighbourSentenceWord(index, id, -1),
+      Home: () => index.words[0]?.id ?? id,
+      End: () => index.words.at(-1)?.id ?? id
+    }
+    const move = moves[event.key]
+    if (!move) return
+    event.preventDefault()
+    focusWord(move())
+  }
+  const tabStop = currentWord ?? index.words[0]?.id ?? null
+  return (
+    <div role="group" aria-label={t('text.label')} onKeyDown={onKeyDown} lang={language} className="reading-text flex flex-col gap-[1.1em]">
+      {paragraphs.map((paragraph) => (
+        <ParagraphView
+          key={paragraph.id}
+          slug={slug}
+          version={version}
+          paragraph={paragraph}
+          tabStop={tabStop && index.paragraphOfSentence.get(index.sentenceOfWord.get(tabStop) ?? '') === paragraph.id ? tabStop : null}
+          openWord={openWord && index.paragraphOfSentence.get(index.sentenceOfWord.get(openWord) ?? '') === paragraph.id ? openWord : null}
+          saved={saved}
+          highlightSaved={highlightSaved}
+          activeSentence={activeSentence && index.paragraphOfSentence.get(activeSentence) === paragraph.id ? activeSentence : null}
+          showTranslation={showParagraphTranslations}
+          translationLanguage={translationLanguage}
+          events={events}
+          onFocusWord={setCurrentWord}
+        />
+      ))}
+    </div>
+  )
+}
+
+// un párrafo solo se vuelve a pintar si cambia algo suyo: el resto del texto queda quieto mientras se lee
+const ParagraphView = memo(function ParagraphView({
+  slug,
+  version,
+  paragraph,
+  tabStop,
+  openWord,
+  saved,
+  highlightSaved,
+  activeSentence,
+  showTranslation,
+  translationLanguage,
+  events,
+  onFocusWord
+}: {
+  slug: string
+  version: number
+  paragraph: Paragraph
+  tabStop: string | null
+  openWord: string | null
+  saved: Set<string>
+  highlightSaved: boolean
+  activeSentence: string | null
+  showTranslation: boolean
+  translationLanguage: string
+  events: WordEvents
+  onFocusWord: (id: string) => void
+}) {
+  const { t } = useTranslation(READER_MODULE_ID)
+  return (
+    <div className="group/paragraph relative">
+      <p id={paragraph.id}>
+        {paragraph.sentences.map((sentence) => (
+          <span key={sentence.id} id={sentence.id} data-sentence={sentence.id} data-active={sentence.id === activeSentence} className="sentence">
+            {sentence.tokens.map((token) =>
+              token.kind === 'WORD' ? (
+                <WordButton
+                  key={token.id}
+                  token={token}
+                  tabbable={token.id === tabStop}
+                  open={token.id === openWord}
+                  saved={highlightSaved && token.entry !== null && saved.has(token.entry)}
+                  events={events}
+                  onFocusWord={onFocusWord}
+                />
+              ) : (
+                <span key={token.id}>{token.text + (token.space ? ' ' : '')}</span>
+              )
+            )}{' '}
+          </span>
+        ))}
+      </p>
+      <ParagraphTranslation
+        slug={slug}
+        version={version}
+        paragraphId={paragraph.id}
+        language={translationLanguage}
+        alwaysOn={showTranslation}
+        label={t('text.translateParagraph')}
+      />
+    </div>
+  )
+})
+
+function WordButton({
+  token,
+  tabbable,
+  open,
+  saved,
+  events,
+  onFocusWord
+}: {
+  token: Token
+  tabbable: boolean
+  open: boolean
+  saved: boolean
+  events: WordEvents
+  onFocusWord: (id: string) => void
+}) {
+  return (
+    <>
+      <button
+        type="button"
+        className="word"
+        data-token={token.id}
+        data-saved={saved}
+        tabIndex={tabbable ? 0 : -1}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onFocus={() => onFocusWord(token.id)}
+        onClick={(event) => events.onOpen(token, event.currentTarget)}
+        onMouseEnter={(event) => events.onHoverStart(token, event.currentTarget)}
+        onMouseLeave={events.onHoverEnd}
+      >
+        {token.text}
+      </button>
+      {token.space ? ' ' : ''}
+    </>
+  )
+}
+
+// la traducción de un párrafo, a petición y debajo de él. Con la ayuda encendida se ven todas; si no, un botón discreto
+function ParagraphTranslation({
+  slug,
+  version,
+  paragraphId,
+  language,
+  alwaysOn,
+  label
+}: {
+  slug: string
+  version: number
+  paragraphId: string
+  language: string
+  alwaysOn: boolean
+  label: string
+}) {
+  const { t } = useTranslation(READER_MODULE_ID)
+  const [open, setOpen] = useOpenState(alwaysOn)
+  const translation = useTranslations(slug, version, 'PARAGRAPH', paragraphId, language, open)
+  const regionId = `${paragraphId}-translation`
+  return (
+    <div className="mt-1 font-sans text-[15px] leading-relaxed" lang={language}>
+      {!alwaysOn && (
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={regionId}
+          onClick={() => setOpen(!open)}
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-[13px] font-semibold text-ink-muted hover:text-ink"
+        >
+          <Languages aria-hidden className="size-3.5" />
+          {open ? t('text.hideParagraph') : label}
+        </button>
+      )}
+      {open && (
+        <p
+          id={regionId}
+          aria-live="polite"
+          className="mt-1 rounded-[var(--radius-md)] border-l-4 border-brand-soft bg-surface-muted px-4 py-2.5 text-ink-muted"
+        >
+          {translation.isPending ? '…' : (translation.data?.[0]?.text ?? t('text.noTranslation'))}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function useOpenState(alwaysOn: boolean): [boolean, (open: boolean) => void] {
+  const [open, setOpen] = useState(alwaysOn)
+  useEffect(() => setOpen(alwaysOn), [alwaysOn])
+  return [open, setOpen]
+}

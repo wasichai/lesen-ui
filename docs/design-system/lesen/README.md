@@ -1,0 +1,59 @@
+# Sistema de diseño Lesen
+
+Un producto de lectura de consumo, no un panel de administración: cálido, editorial, juguetón sin estridencias y
+tranquilo para leer mucho rato. La lectura manda; la interfaz se aparta.
+
+## Principios
+
+1. **El texto primero.** En el lector no hay marco de app: título, texto a 38rem de ancho y una barra discreta.
+2. **Invitar, no administrar.** Portadas ilustradas, titulares en serifa, carriles que se deslizan, nada de tablas ni
+   gráficos por defecto.
+3. **Ayudar sin delatar.** Las traducciones están a un toque, nunca a la vista por defecto; la ayuda se ofrece, no se
+   impone.
+4. **Honestidad.** Sin entrada en el diccionario, se dice. Un nivel elegido «sin estar seguro» se llama estimación.
+5. **Ánimo sin castigo.** Metas en minutos, sin rachas que se rompen, celebraciones breves que no se repiten.
+6. **Para todo el mundo.** WCAG 2.2 AA comprobado por prueba, objetivos de 44 px, foco visible, movimiento reducido,
+   ningún estado solo por color (la palabra guardada lleva fondo y punto).
+
+## Direcciones exploradas
+
+| Dirección           | Idea                                                                                  | Por qué no (o sí)                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Papel y tinta**   | Papel cálido, tinta profunda, terracota como único acento de acción, serifa editorial | **Elegida.** Calma para leer, carácter sin estridencia, contraste AA holgado              |
+| Botánica            | Verdes y ocres, ilustración de hojas en todas partes, esquinas muy redondas           | Encantadora en portadas, cansa en sesiones largas; queda como tonos de tema (sage, ochre) |
+| Biblioteca nocturna | Oscuro por defecto, dorados, tipografía display muy contrastada                       | Espectacular en la portada, peor para leer de día; queda como tema oscuro del lector      |
+
+## Tokens
+
+Los valores viven en `src/theme/lesen.css` (cinco temas que ponen todos los tokens de `@wasichai/ui` más los propios) y
+se resumen en `tokens.json`. `src/theme/lesen.test.ts` comprueba el contrato y los pares de contraste.
+
+| Tema                 | Uso                              | Superficie | Tinta     | Acento    |
+| -------------------- | -------------------------------- | ---------- | --------- | --------- |
+| `lesen`              | Página, claro                    | `#fbf7f0`  | `#1f2430` | `#a8402a` |
+| `lesen-dark`         | Página, oscuro                   | `#17181d`  | `#efe8dc` | `#f19a7b` |
+| `lesen-reader-light` | Lector, claro (papel más blanco) | `#fffdf8`  | `#22252e` | `#a8402a` |
+| `lesen-reader-sepia` | Lector, sepia                    | `#f4ecdd`  | `#3a2f22` | `#9a3b25` |
+| `lesen-reader-dark`  | Lector, oscuro                   | `#121318`  | `#e2dccf` | `#f19a7b` |
+
+Tonos de tema: `sea`, `sage`, `ochre`, `plum` (texto AA sobre superficie). Marcas del lector: `mark-saved` (palabra
+guardada), `mark-new` (subrayado de palabra nueva, fase 4) y `mark-sentence` (oración abierta).
+
+## Tipografía
+
+Newsreader (serifa variable con eje óptico) para titulares y lectura; Source Sans 3 para la interfaz. Las dos
+autoalojadas en woff2 con licencia SIL OFL (`src/theme/fonts`), sin peticiones a terceros. Escala: `text-display` 52,
+`text-h1` 40, `h2` 30, `h3` 23, `h4` 19, `text-body` 16, `text-secondary` 14, `text-eyebrow` 13 en versalitas. La
+lectura va de 18 a 29 px con interlineado 1,55 / 1,75 / 1,95 a elección de quien lee.
+
+## Componentes propios
+
+`LearnerLayout` (barra superior desde 1024 px, barra de pestañas debajo), `ReadingTile` (alta y en fila), `Cover`
+(proporción fija 3:4, perezosa), `LevelBadge`, `ProgressBar`, `Sheet` (abajo o a la derecha, sobre el `Dialog` de
+`@wasichai/ui`), `EmptyState`, `ProblemState`, `Skeleton`, `LesenMark`. Botones y chips con `buttonClass` y `chipClass`
+(`src/shared/ui.ts`).
+
+## Movimiento
+
+Entradas cortas (`animate-rise` 420 ms, `animate-sheet` 260 ms) y una sola celebración (`animate-pop` al terminar una
+lectura). Con `prefers-reduced-motion` desaparece todo movimiento.

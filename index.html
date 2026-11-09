@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#fbf7f0" />
+    <title>Lesen</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script>
+      // antes del bundle: aplica el tema guardado para que nadie vea un destello (README de @wasichai/core).
+      // 'lesen' = storagePrefix. cada tema que ofrece la app, id -> esquema de color; «sistema» sigue al sistema operativo
+      try {
+        const schemes = { light: 'light', dark: 'dark', lesen: 'light', 'lesen-dark': 'dark' }
+        const system = { light: 'lesen', dark: 'lesen-dark' }
+        const stored = localStorage.getItem('lesen.theme')
+        const dark = matchMedia('(prefers-color-scheme: dark)').matches
+        const theme = stored && Object.hasOwn(schemes, stored) ? stored : system[dark ? 'dark' : 'light']
+        document.documentElement.dataset.theme = theme
+        document.documentElement.style.colorScheme = schemes[theme]
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

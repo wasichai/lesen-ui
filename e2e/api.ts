@@ -1,0 +1,469 @@
+import type { Page, Route } from '@playwright/test'
+import fixture from './fixtures/lesen.json' with { type: 'json' }
+
+// la API de Lesen simulada en el navegador, con respuestas reales del backend capturadas por e2e/fixtures/capture.mjs.
+// lo de cada persona (perfil, progreso, marcadores, notas, vocabulario, favoritas, historial) vive en el estado de la
+// prueba, no en la página: sobrevive a una recarga como en el servidor. Filtra el catálogo como el backend
+// (docs/architecture/api-design.md). Cualquier ruta de /api/lesen sin simular es un 404 y queda en `unexpected`
+
+type Json = Record<string, unknown>
+type Card = (typeof fixture.cards)[number]
+type Lang = 'es' | 'en'
+interface Token {
+  id: string
+  text: string
+  kind: string
+  space: boolean
+  entry: string | null
+}
+interface FixtureReading {
+  detail: { reading: Card; paragraphs: number; related: Card[]; collections: string[] }
+  content: Json & { paragraphs: { id: string; sentences: { id: string; tokens: Token[] }[] }[] }
+  translations: Record<string, Json[]>
+  entries: Record<string, Record<string, Json>>
+}
+const READINGS = fixture.readings as unknown as Record<string, FixtureReading | undefined>
+
+const STORAGE_PREFIX = 'lesen'
+export const LEARNER = { id: 'u-lena', email: 'lena@demo.lesen.test', displayName: 'Lena Lectora', organizationId: 'org-demo', roles: ['LECTOR'] }
+const PERMISSIONS = { admin: false, capabilities: [], objects: { lectura: ['READ'], cuaderno: ['READ', 'UPDATE'] } }
+export const PROFILE = {
+  interfaceLanguage: 'es',
+  targetLanguage: 'de',
+  level: 'A2',
+  levelEstimated: false,
+  goals: ['TRAVEL'],
+  topics: ['travel', 'nature'],
+  dailyMinutes: 10,
+  difficulty: 'BALANCED'
+}
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+const COVER = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800"><rect width="600" height="800" fill="#2f5d62"/></svg>'
+
+interface Progress {
+  version: number
+  position: string | null
+  percent: number
+  secondsRead: number
+  startedAt: string
+  updatedAt: string
+  completedAt: string | null
+}
+
+interface VocabularyItem {
+  id: string
+  entryKey: string
+  lemma: string
+  pos: string
+  language: string
+  translations: string[]
+  surface: string
+  context: string | null
+  tokenRef: string | null
+  source: { slug: string; title: string; version: number } | null
+  status: 'SAVED'
+  note: string | null
+  savedAt: string
+}
+
+export interface FakeApi {
+  profile: Json | null
+  progress: Map<string, Progress>
+  bookmarks: Set<string>
+  vocabulary: VocabularyItem[]
+  notes: Map<string, Json[]>
+  favorites: Set<string>
+  history: { query: string; entryKey: string | null }[]
+  // lo que se pidió, como «MÉTODO /ruta»
+  requests: string[]
+  unexpected: string[]
+}
+
+const problem = (status: number, detail: string) => ({ type: `https://lesen.dev/problems/${status}`, title: detail, status, detail })
+const now = () => new Date().toISOString()
+const normalize = (text: string) => text.normalize('NFC').replace('’', "'").toLowerCase()
+
+export async function fakeApi(page: Page, options: { signedIn?: boolean; profile?: Json | null } = {}): Promise<FakeApi> {
+  const api: FakeApi = {
+    profile: options.profile === undefined ? PROFILE : options.profile,
+    progress: new Map(),
+    bookmarks: new Set(),
+    vocabulary: [],
+    notes: new Map(),
+    favorites: new Set(),
+    history: [],
+    requests: [],
+    unexpected: []
+  }
+  if (options.signedIn !== false)
+    await page.addInitScript(
+      ({ prefix, user }) => {
+        localStorage.setItem(`${prefix}.token`, 'token-e2e')
+        localStorage.setItem(`${prefix}.user`, JSON.stringify(user))
+      },
+      { prefix: STORAGE_PREFIX, user: LEARNER }
+    )
+
+  const ui = (): Lang => (api.profile?.interfaceLanguage as Lang) ?? 'es'
+  const card = (base: Card) => {
+    const progress = api.progress.get(base.slug)
+    return {
+      ...base,
+      bookmarked: api.bookmarks.has(base.slug),
+      progress: progress
+        ? { percent: progress.percent, version: progress.version, completed: progress.completedAt !== null, updatedAt: progress.updatedAt }
+        : null
+    }
+  }
+  const cards = () => fixture.cards.map(card)
+  const reading = (slug: string) => READINGS[slug]
+  const entries = (language: Lang) => Object.values(READINGS).flatMap((r) => Object.values(r?.entries[language] ?? {}))
+  const entry = (key: string, language: Lang) => entries(language).find((e) => e.key === key)
+  const withMine = (e: Json) => ({ ...e, favorite: api.favorites.has(e.key as string), saved: api.vocabulary.some((v) => v.entryKey === e.key) })
+  const summary = (e: Json, matchedBy: string) => ({
+    key: e.key,
+    language: e.language,
+    lemma: e.lemma,
+    pos: e.pos,
+    translations: (e.senses as { translations: string[] }[]).flatMap((s) => s.translations).slice(0, 3),
+    matchedBy
+  })
+
+  function filterCards(url: URL) {
+    const p = url.searchParams
+    let list = cards()
+    const language = p.get('language')
+    if (language) list = list.filter((c) => c.language === language)
+    const levels = p.getAll('level')
+    if (levels.length) list = list.filter((c) => levels.includes(c.level))
+    const topic = p.get('topic')
+    if (topic) list = list.filter((c) => c.topics.some((t) => t === topic || t.startsWith(`${topic}/`)))
+    const min = p.get('minMinutes')
+    const max = p.get('maxMinutes')
+    if (min) list = list.filter((c) => c.minutes >= Number(min))
+    if (max) list = list.filter((c) => c.minutes <= Number(max))
+    const q = p.get('q')?.toLowerCase()
+    if (q) list = list.filter((c) => [c.title, c.subtitle ?? '', c.summary].some((text) => text.toLowerCase().includes(q)))
+    const status = p.get('status')
+    if (status === 'BOOKMARKED') list = list.filter((c) => c.bookmarked)
+    if (status === 'IN_PROGRESS') list = list.filter((c) => c.progress && !c.progress.completed)
+    if (status === 'COMPLETED') list = list.filter((c) => c.progress?.completed)
+    const sort = p.get('sort') ?? 'RECENT'
+    if (sort === 'LEVEL') list.sort((a, b) => LEVELS.indexOf(a.level) - LEVELS.indexOf(b.level) || a.title.localeCompare(b.title))
+    else if (sort === 'DURATION') list.sort((a, b) => a.minutes - b.minutes)
+    else if (sort === 'TITLE') list.sort((a, b) => a.title.localeCompare(b.title))
+    else list.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+    const page = Number(p.get('page') ?? 0)
+    const size = Number(p.get('size') ?? 12)
+    if (size > 50) return { status: 400, body: problem(400, 'Invalid size') }
+    return {
+      status: 200,
+      body: { content: list.slice(page * size, page * size + size), page, size, totalElements: list.length, totalPages: Math.ceil(list.length / size) }
+    }
+  }
+
+  function discover() {
+    if (!api.profile) return { status: 404, body: problem(404, 'No learner profile yet') }
+    const target = api.profile.targetLanguage as string
+    const mine = cards().filter((c) => c.language === target)
+    const at = LEVELS.indexOf(api.profile.level as string)
+    const topics = api.profile.topics as string[]
+    const recommended = mine
+      .filter((c) => !c.progress?.completed && Math.abs(LEVELS.indexOf(c.level) - at) <= 1)
+      .map((c) => ({
+        reading: c,
+        reasons: [
+          ...(c.level === api.profile!.level ? ['LEVEL'] : []),
+          ...(c.topics.some((t) => topics.some((p) => t === p || t.startsWith(`${p}/`))) ? ['TOPIC'] : [])
+        ]
+      }))
+      .sort((a, b) => b.reasons.length - a.reasons.length)
+      .slice(0, 6)
+    const counts = new Map<string, number>()
+    for (const c of mine) for (const root of new Set(c.topics.map((t) => t.split('/')[0]!))) counts.set(root, (counts.get(root) ?? 0) + 1)
+    return {
+      status: 200,
+      body: {
+        continueReading: cards().filter((c) => c.progress && !c.progress.completed),
+        featured: mine.filter((c) => c.featured),
+        recommended,
+        fresh: [...mine].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).slice(0, 6),
+        collections: fixture.collections
+          .map((c) => ({ ...c, readings: c.readings.map((slug) => mine.find((m) => m.slug === slug)).filter(Boolean) }))
+          .filter((c) => c.readings.length),
+        topics: [...counts].map(([slug, readings]) => ({ slug, readings }))
+      }
+    }
+  }
+
+  function readingRoutes(method: string, rest: string[], url: URL, body: Json) {
+    const [slug, ...tail] = rest
+    const r = reading(slug!)
+    const base = fixture.cards.find((c) => c.slug === slug)
+    if (!base) return { status: 404, body: problem(404, 'Reading not found') }
+    if (tail.length === 0 && method === 'GET') {
+      if (!r) return { status: 404, body: problem(404, 'Reading not found') }
+      return {
+        status: 200,
+        body: { ...r.detail, reading: card(base), related: r.detail.related.map((rel) => card(fixture.cards.find((c) => c.slug === rel.slug) ?? rel)) }
+      }
+    }
+    if (!r) return { status: 404, body: problem(404, 'Reading version not found') }
+    if (tail[0] === 'versions' && tail[2] === 'content') return { status: 200, body: r.content }
+    if (tail[0] === 'versions' && tail[2] === 'translations') {
+      const language = (url.searchParams.get('language') as Lang) ?? ui()
+      const unit = url.searchParams.get('unit')
+      const ref = url.searchParams.get('ref')
+      const found = (r.translations[language] ?? []).filter((t) => t.unit === unit && (!ref || t.ref === ref))
+      return ref && found.length === 0 ? { status: 404, body: problem(404, 'No translation') } : { status: 200, body: found }
+    }
+    if (tail[0] === 'progress' && method === 'GET') {
+      const p = api.progress.get(slug!)
+      return p ? { status: 200, body: view(p) } : { status: 404, body: problem(404, 'No progress yet') }
+    }
+    if (tail[0] === 'progress' && method === 'PUT') {
+      const current = api.progress.get(slug!)
+      const same = current?.version === body.version
+      const next: Progress = {
+        version: body.version as number,
+        position: (body.position as string | null) ?? current?.position ?? null,
+        percent: same ? Math.max(current!.percent, body.percent as number) : (body.percent as number),
+        secondsRead: Math.max(current?.secondsRead ?? 0, body.secondsRead as number),
+        startedAt: current?.startedAt ?? now(),
+        updatedAt: now(),
+        completedAt: current?.completedAt ?? null
+      }
+      api.progress.set(slug!, next)
+      return { status: 200, body: view(next) }
+    }
+    if (tail[0] === 'completion' && method === 'POST') {
+      const current = api.progress.get(slug!)
+      const done: Progress = {
+        version: body.version as number,
+        position: current?.position ?? null,
+        percent: 100,
+        secondsRead: Math.max(current?.secondsRead ?? 0, (body.secondsRead as number) ?? 0),
+        startedAt: current?.startedAt ?? now(),
+        updatedAt: now(),
+        completedAt: current?.completedAt ?? now()
+      }
+      api.progress.set(slug!, done)
+      return { status: 200, body: view(done) }
+    }
+    if (tail[0] === 'bookmark') {
+      if (method === 'PUT') api.bookmarks.add(slug!)
+      else api.bookmarks.delete(slug!)
+      return { status: 204, body: null }
+    }
+    if (tail[0] === 'notes' && method === 'GET') return { status: 200, body: api.notes.get(slug!) ?? [] }
+    if (tail[0] === 'notes' && method === 'POST') {
+      const sentence = r.content.paragraphs.flatMap((p) => p.sentences).find((s) => s.id === body.sentenceRef)
+      if (!sentence) return { status: 400, body: problem(400, 'Invalid sentence') }
+      const note = {
+        id: `n-${Date.now()}`,
+        version: body.version,
+        sentenceRef: sentence.id,
+        quote: sentence.tokens
+          .map((t) => t.text + (t.space ? ' ' : ''))
+          .join('')
+          .trim(),
+        note: body.note ?? null,
+        createdAt: now()
+      }
+      api.notes.set(slug!, [...(api.notes.get(slug!) ?? []), note])
+      return { status: 201, body: note }
+    }
+    return undefined
+  }
+
+  const view = (p: Progress) => ({ ...p, completed: p.completedAt !== null })
+
+  function dictionaryRoutes(method: string, rest: string[], url: URL) {
+    const language = ui()
+    if (rest[0] === 'lookup') {
+      const r = reading(url.searchParams.get('reading') ?? '')
+      const sentence = r?.content.paragraphs.flatMap((p) => p.sentences).find((s) => s.tokens.some((t) => t.id === url.searchParams.get('token')))
+      const token = sentence?.tokens.find((t) => t.id === url.searchParams.get('token'))
+      if (!r || !sentence || !token) return { status: 404, body: problem(404, 'Token not found') }
+      const found = token.entry ? entry(token.entry, language) : undefined
+      return {
+        status: 200,
+        body: {
+          token: token.text,
+          tokenRef: token.id,
+          sentenceRef: sentence.id,
+          sentence: sentence.tokens
+            .map((t) => t.text + (t.space ? ' ' : ''))
+            .join('')
+            .trim(),
+          translationLanguage: language,
+          entry: found ? withMine(found) : null,
+          inflected: found ? normalize(found.lemma as string) !== normalize(token.text) : false,
+          alternatives: []
+        }
+      }
+    }
+    if (rest[0] === 'search') {
+      const q = normalize(url.searchParams.get('q') ?? '')
+      const byLemma = entries(language).filter((e) => normalize(e.lemma as string).startsWith(q))
+      const byTranslation = entries(language).filter(
+        (e) => !byLemma.includes(e) && (e.senses as { translations: string[] }[]).some((s) => s.translations.some((t) => normalize(t).startsWith(q)))
+      )
+      const results = [...byLemma.map((e) => summary(e, 'LEMMA')), ...byTranslation.map((e) => summary(e, 'TRANSLATION'))]
+      const unique = results.filter((e, i) => results.findIndex((other) => other.key === e.key) === i).slice(0, Number(url.searchParams.get('limit') ?? 10))
+      if (url.searchParams.get('record') === 'true')
+        api.history.unshift({ query: url.searchParams.get('q') ?? '', entryKey: (unique[0]?.key as string) ?? null })
+      return { status: 200, body: unique }
+    }
+    if (rest[0] === 'entries' && rest[1]) {
+      const found = entry(decodeURIComponent(rest[1]), language)
+      return found ? { status: 200, body: withMine(found) } : { status: 404, body: problem(404, 'Entry not found') }
+    }
+    if (rest[0] === 'history') {
+      if (method === 'DELETE') api.history = []
+      return method === 'DELETE' ? { status: 204, body: null } : { status: 200, body: api.history }
+    }
+    if (rest[0] === 'favorites' && !rest[1]) {
+      return {
+        status: 200,
+        body: [...api.favorites]
+          .map((k) => entry(k, language))
+          .filter(Boolean)
+          .map((e) => summary(e!, 'FAVORITE'))
+      }
+    }
+    if (rest[0] === 'favorites' && rest[1]) {
+      const key = decodeURIComponent(rest[1])
+      if (method === 'PUT') api.favorites.add(key)
+      else api.favorites.delete(key)
+      return { status: 204, body: null }
+    }
+    return undefined
+  }
+
+  function vocabularyRoutes(method: string, rest: string[], url: URL, body: Json) {
+    const language = ui()
+    if (rest[0] === 'keys')
+      return {
+        status: 200,
+        body: api.vocabulary.filter((v) => !url.searchParams.get('language') || v.language === url.searchParams.get('language')).map((v) => v.entryKey)
+      }
+    if (!rest[0] && method === 'GET') {
+      const q = url.searchParams.get('q')?.toLowerCase()
+      const list = api.vocabulary.filter((v) => !q || v.lemma.toLowerCase().startsWith(q) || v.surface.toLowerCase().startsWith(q))
+      return { status: 200, body: { content: list, page: 0, size: 24, totalElements: list.length, totalPages: list.length ? 1 : 0 } }
+    }
+    if (!rest[0] && method === 'POST') {
+      const existing = api.vocabulary.find((v) => v.entryKey === body.entryKey)
+      if (existing) return { status: 200, body: existing }
+      const found = entry(body.entryKey as string, language)
+      if (!found) return { status: 404, body: problem(404, 'Entry not found') }
+      let surface = found.lemma as string
+      let context: string | null = null
+      let source: VocabularyItem['source'] = null
+      if (body.reading) {
+        const r = reading(body.reading as string)
+        const sentence = r?.content.paragraphs.flatMap((p) => p.sentences).find((s) => s.tokens.some((t) => t.id === body.tokenRef))
+        const token = sentence?.tokens.find((t) => t.id === body.tokenRef)
+        if (!r || !sentence || !token || token.entry !== body.entryKey) return { status: 400, body: problem(400, 'Invalid token') }
+        surface = token.text
+        context = sentence.tokens
+          .map((t) => t.text + (t.space ? ' ' : ''))
+          .join('')
+          .trim()
+        source = { slug: body.reading as string, title: r.detail.reading.title, version: body.version as number }
+      }
+      const item: VocabularyItem = {
+        id: `v-${api.vocabulary.length + 1}`,
+        entryKey: found.key as string,
+        lemma: found.lemma as string,
+        pos: found.pos as string,
+        language: found.language as string,
+        translations: summary(found, 'SAVED').translations,
+        surface,
+        context,
+        tokenRef: (body.tokenRef as string) ?? null,
+        source,
+        status: 'SAVED',
+        note: null,
+        savedAt: now()
+      }
+      api.vocabulary.unshift(item)
+      return { status: 201, body: item }
+    }
+    const item = api.vocabulary.find((v) => v.id === rest[0])
+    if (!item) return { status: 404, body: problem(404, 'Word not found') }
+    if (method === 'PATCH') {
+      item.note = (body.note as string | null) ?? null
+      return { status: 200, body: item }
+    }
+    if (method === 'DELETE') {
+      api.vocabulary = api.vocabulary.filter((v) => v !== item)
+      return { status: 204, body: null }
+    }
+    return undefined
+  }
+
+  await page.route('**/api/**', async (route: Route) => {
+    const request = route.request()
+    const url = new URL(request.url())
+    const method = request.method()
+    let body: Json = {}
+    try {
+      body = (request.postDataJSON() as Json) ?? {}
+    } catch {
+      body = {}
+    }
+    api.requests.push(`${method} ${url.pathname}`)
+    const path = url.pathname
+    let reply: { status: number; body: unknown } | undefined
+    if (path.startsWith('/api/lesen/public/covers/')) return route.fulfill({ status: 200, contentType: 'image/svg+xml', body: COVER })
+    if (method === 'POST' && path === '/api/auth/login') reply = { status: 200, body: { token: 'token-e2e', expiresAt: '2099-01-01T00:00:00Z', user: LEARNER } }
+    else if (path === '/api/auth/me/permissions') reply = { status: 200, body: PERMISSIONS }
+    else if (path === '/api/lesen/public/languages') reply = { status: 200, body: fixture.languages }
+    else if (path === '/api/lesen/public/topics') reply = { status: 200, body: fixture.topics }
+    else if (path === '/api/lesen/learner/profile') {
+      if (method === 'PUT') {
+        api.profile = body
+        reply = { status: 200, body: { ...body, createdAt: now(), updatedAt: now() } }
+      } else reply = api.profile ? { status: 200, body: api.profile } : { status: 404, body: problem(404, 'No learner profile yet') }
+    } else if (path === '/api/lesen/discover') reply = discover()
+    else if (path === '/api/lesen/readings') reply = filterCards(url)
+    else if (path.startsWith('/api/lesen/readings/')) reply = readingRoutes(method, path.slice('/api/lesen/readings/'.length).split('/'), url, body)
+    else if (path === '/api/lesen/library') {
+      const all = cards()
+      reply = {
+        status: 200,
+        body: {
+          inProgress: all.filter((c) => c.progress && !c.progress.completed),
+          bookmarked: all.filter((c) => c.bookmarked),
+          completed: all.filter((c) => c.progress?.completed)
+        }
+      }
+    } else if (path.startsWith('/api/lesen/notes/') && method === 'DELETE') {
+      const id = path.split('/').pop()
+      let found = false
+      for (const [slug, notes] of api.notes) {
+        if (notes.some((n) => n.id === id)) found = true
+        api.notes.set(
+          slug,
+          notes.filter((n) => n.id !== id)
+        )
+      }
+      reply = found ? { status: 204, body: null } : { status: 404, body: problem(404, 'Note not found') }
+    } else if (path.startsWith('/api/lesen/dictionary/')) reply = dictionaryRoutes(method, path.slice('/api/lesen/dictionary/'.length).split('/'), url)
+    else if (path === '/api/lesen/vocabulary' || path.startsWith('/api/lesen/vocabulary/'))
+      reply = vocabularyRoutes(method, path.slice('/api/lesen/vocabulary'.length).split('/').filter(Boolean), url, body)
+    if (!reply) {
+      // lo de la plataforma que core pide por su cuenta (preferencias): sin endpoint, core las guarda en el navegador
+      if (!path.startsWith('/api/auth/')) api.unexpected.push(`${method} ${path}`)
+      reply = { status: 404, body: problem(404, 'Not simulated') }
+    }
+    await route.fulfill({
+      status: reply.status,
+      contentType: reply.status < 400 ? 'application/json' : 'application/problem+json',
+      body: reply.status === 204 ? '' : JSON.stringify(reply.body)
+    })
+  })
+  return api
+}

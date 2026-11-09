@@ -1,0 +1,195 @@
+export const READER_MODULE_ID = 'reader'
+
+const es = {
+  toolbar: {
+    label: 'Herramientas de lectura',
+    back: 'Salir de la lectura',
+    settings: 'Texto y ayudas',
+    bookmark: 'Guardar para después',
+    bookmarked: 'Guardada para después',
+    notes: 'Notas',
+    fullscreen: 'Pantalla completa',
+    exitFullscreen: 'Salir de pantalla completa',
+    remaining: 'Quedan {{count}} min',
+    done: 'Casi terminas',
+    progress: 'Avance de la lectura: {{percent}} %'
+  },
+  text: {
+    label: 'Texto de la lectura. Usa las flechas para moverte por las palabras y Intro para abrir una.',
+    hint: 'Toca o pulsa cualquier palabra para ver qué significa.',
+    hintHover: 'Pasa el cursor sobre una palabra para un vistazo rápido; haz clic para ver más.',
+    translateParagraph: 'Traducir el párrafo',
+    hideParagraph: 'Ocultar la traducción',
+    noTranslation: 'Este párrafo aún no tiene traducción.',
+    oldVersion: 'Estás leyendo la versión {{version}}, la que empezaste. Hay una versión más reciente.'
+  },
+  word: {
+    loading: 'Buscando la palabra…',
+    title: 'La palabra «{{word}}»',
+    noEntry: 'Todavía no tenemos esta palabra en el diccionario.',
+    noEntryBody: 'Preferimos decirlo antes que inventar una traducción.',
+    formOf: '«{{form}}» es una forma de «{{lemma}}».',
+    meaning: 'Significa',
+    definition: 'Definición',
+    examples: 'Ejemplos',
+    synonyms: 'Sinónimos',
+    antonyms: 'Antónimos',
+    related: 'Relacionadas',
+    forms: 'Formas',
+    note: 'Ten en cuenta',
+    alternatives: 'También puede ser',
+    save: 'Guardar en mi vocabulario',
+    saving: 'Guardando…',
+    saved: 'En tu vocabulario',
+    more: 'Ver todo',
+    inContext: 'En esta oración',
+    translateSentence: 'Traducir la oración',
+    hideSentence: 'Ocultar la traducción',
+    sentenceUnavailable: 'Esta oración aún no tiene traducción.',
+    saveSentence: 'Guardar la oración',
+    sentenceSaved: 'Oración guardada en tus notas',
+    addNote: 'Añadir una nota (opcional)',
+    openEntry: 'Abrir en el diccionario'
+  },
+  settings: {
+    title: 'Texto y ayudas',
+    size: 'Tamaño de letra',
+    smaller: 'Letra más pequeña',
+    larger: 'Letra más grande',
+    leading: 'Interlineado',
+    leadings: {
+      compact: 'Junto',
+      comfortable: 'Cómodo',
+      airy: 'Amplio'
+    },
+    theme: 'Tema de lectura',
+    themes: {
+      light: 'Claro',
+      sepia: 'Sepia',
+      dark: 'Oscuro'
+    },
+    assistance: 'Ayudas',
+    highlightSaved: 'Resaltar las palabras que guardaste',
+    paragraphTranslations: 'Mostrar la traducción de cada párrafo',
+    paragraphTranslationsHint: 'Mejor apagada: intenta entender primero y traduce solo lo que necesites.',
+    followPosition: 'Volver a donde lo dejé al abrir'
+  },
+  notes: {
+    title: 'Tus notas',
+    empty: 'Aún no guardaste oraciones de esta lectura. Abre una palabra y elige «Guardar la oración».',
+    remove: 'Borrar la nota',
+    go: 'Ir a la oración'
+  },
+  end: {
+    finish: 'Terminé de leer',
+    finishing: 'Guardando…',
+    title: '¡Lectura terminada!',
+    body: 'Leíste {{words}} palabras en {{language}}.',
+    time_one: 'Le dedicaste {{count}} minuto.',
+    time_other: 'Le dedicaste {{count}} minutos.',
+    saved_one: 'Guardaste {{count}} palabra nueva.',
+    saved_other: 'Guardaste {{count}} palabras nuevas.',
+    vocabulary: 'Repasar mi vocabulario',
+    next: 'Sigue con',
+    comprehension: 'Muy pronto: unas preguntas amables para comprobar lo que entendiste.',
+    discover: 'Volver a Descubrir'
+  }
+}
+
+const en: typeof es = {
+  toolbar: {
+    label: 'Reading tools',
+    back: 'Leave the reading',
+    settings: 'Text and aids',
+    bookmark: 'Save for later',
+    bookmarked: 'Saved for later',
+    notes: 'Notes',
+    fullscreen: 'Full screen',
+    exitFullscreen: 'Exit full screen',
+    remaining: '{{count}} min left',
+    done: 'Almost done',
+    progress: 'Reading progress: {{percent}}%'
+  },
+  text: {
+    label: 'Reading text. Use the arrow keys to move between words and Enter to open one.',
+    hint: 'Tap or press any word to see what it means.',
+    hintHover: 'Hover over a word for a quick look; click to see more.',
+    translateParagraph: 'Translate paragraph',
+    hideParagraph: 'Hide translation',
+    noTranslation: 'This paragraph has no translation yet.',
+    oldVersion: 'You are reading version {{version}}, the one you started. A newer version exists.'
+  },
+  word: {
+    loading: 'Looking up the word…',
+    title: 'The word “{{word}}”',
+    noEntry: "We don't have this word in the dictionary yet.",
+    noEntryBody: "We'd rather say so than make up a translation.",
+    formOf: '“{{form}}” is a form of “{{lemma}}”.',
+    meaning: 'Means',
+    definition: 'Definition',
+    examples: 'Examples',
+    synonyms: 'Synonyms',
+    antonyms: 'Antonyms',
+    related: 'Related',
+    forms: 'Forms',
+    note: 'Keep in mind',
+    alternatives: 'It can also be',
+    save: 'Save to my vocabulary',
+    saving: 'Saving…',
+    saved: 'In your vocabulary',
+    more: 'See everything',
+    inContext: 'In this sentence',
+    translateSentence: 'Translate sentence',
+    hideSentence: 'Hide translation',
+    sentenceUnavailable: 'This sentence has no translation yet.',
+    saveSentence: 'Save sentence',
+    sentenceSaved: 'Sentence saved to your notes',
+    addNote: 'Add a note (optional)',
+    openEntry: 'Open in the dictionary'
+  },
+  settings: {
+    title: 'Text and aids',
+    size: 'Text size',
+    smaller: 'Smaller text',
+    larger: 'Larger text',
+    leading: 'Line spacing',
+    leadings: {
+      compact: 'Tight',
+      comfortable: 'Comfortable',
+      airy: 'Airy'
+    },
+    theme: 'Reading theme',
+    themes: {
+      light: 'Light',
+      sepia: 'Sepia',
+      dark: 'Dark'
+    },
+    assistance: 'Aids',
+    highlightSaved: 'Highlight words you saved',
+    paragraphTranslations: 'Show each paragraph’s translation',
+    paragraphTranslationsHint: 'Best left off: try to understand first and translate only what you need.',
+    followPosition: 'Return to where I left off when opening'
+  },
+  notes: {
+    title: 'Your notes',
+    empty: "You haven't saved any sentences from this reading. Open a word and choose “Save sentence”.",
+    remove: 'Delete note',
+    go: 'Go to the sentence'
+  },
+  end: {
+    finish: "I've finished reading",
+    finishing: 'Saving…',
+    title: 'Reading finished!',
+    body: 'You read {{words}} words in {{language}}.',
+    time_one: 'You spent {{count}} minute on it.',
+    time_other: 'You spent {{count}} minutes on it.',
+    saved_one: 'You saved {{count}} new word.',
+    saved_other: 'You saved {{count}} new words.',
+    vocabulary: 'Review my vocabulary',
+    next: 'Keep going with',
+    comprehension: 'Coming soon: a few friendly questions to check what you understood.',
+    discover: 'Back to Discover'
+  }
+}
+
+export const readerMessages = { es, en }
