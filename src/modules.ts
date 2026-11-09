@@ -1,5 +1,6 @@
 import type { WasichaiModule } from '@wasichai/core'
 import { appModule } from './modules/app/module'
+import { comprehensionModule } from './modules/comprehension/module'
 import { dictionaryModule } from './modules/dictionary/module'
 import { discoverModule } from './modules/discover/module'
 import { libraryModule } from './modules/library/module'
@@ -15,6 +16,7 @@ export const modules: WasichaiModule[] = [
   onboardingModule(),
   discoverModule(),
   readerModule(),
+  comprehensionModule(),
   libraryModule(),
   vocabularyModule(),
   dictionaryModule(),

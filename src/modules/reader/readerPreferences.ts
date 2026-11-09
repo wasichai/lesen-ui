@@ -11,6 +11,10 @@ export interface ReaderPreferences {
   leading: Leading
   theme: ReaderTheme
   highlightSaved: boolean
+  // palabras que aún no se encontraron al terminar una lectura, ni se guardaron
+  highlightNew: boolean
+  // palabras que el repaso ya da por conocidas o dominadas
+  highlightLearned: boolean
   paragraphTranslations: boolean
   followPosition: boolean
 }
@@ -20,6 +24,8 @@ export const DEFAULT_PREFERENCES: ReaderPreferences = {
   leading: 'comfortable',
   theme: 'light',
   highlightSaved: true,
+  highlightNew: false,
+  highlightLearned: false,
   paragraphTranslations: false,
   followPosition: true
 }
@@ -41,6 +47,8 @@ export function readPreferences(raw: string | null): ReaderPreferences {
     leading: pick('leading', (v) => typeof v === 'string' && v in LEADINGS),
     theme: pick('theme', (v) => v === 'light' || v === 'sepia' || v === 'dark'),
     highlightSaved: pick('highlightSaved', (v) => typeof v === 'boolean'),
+    highlightNew: pick('highlightNew', (v) => typeof v === 'boolean'),
+    highlightLearned: pick('highlightLearned', (v) => typeof v === 'boolean'),
     paragraphTranslations: pick('paragraphTranslations', (v) => typeof v === 'boolean'),
     followPosition: pick('followPosition', (v) => typeof v === 'boolean')
   }

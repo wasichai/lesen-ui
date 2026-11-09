@@ -37,7 +37,9 @@ se resumen en `tokens.json`. `src/theme/lesen.test.ts` comprueba el contrato y l
 | `lesen-reader-dark`  | Lector, oscuro                   | `#121318`  | `#e2dccf` | `#f19a7b` |
 
 Tonos de tema: `sea`, `sage`, `ochre`, `plum` (texto AA sobre superficie). Marcas del lector: `mark-saved` (palabra
-guardada), `mark-new` (subrayado de palabra nueva, fase 4) y `mark-sentence` (oración abierta, y la que suena con el audio).
+guardada, fondo), `mark-new` (palabra nueva, subrayado punteado), `success` (palabra aprendida, subrayado continuo) y
+`mark-sentence` (oración abierta, la que suena con el audio y la citada desde los resultados). Nunca solo color: cada
+marca tiene su forma.
 
 ## Tipografía
 
@@ -59,6 +61,11 @@ subrayado (`data-playing`) y su oración el fondo de `mark-sentence` (`data-spok
 escribe en el DOM fotograma a fotograma, sin pintar de nuevo los párrafos (`useAudioPlayer`). El desplazamiento sigue al
 audio hasta que quien lee mueve la página; entonces aparece «seguir la lectura». Sin audio, o si falla, el lector es el
 mismo.
+
+Comprensión y repaso (fase 4): una pregunta por pantalla, sin reloj, con controles nativos (radios, casillas, campos,
+desplegables para emparejar y botones de subir y bajar para ordenar, sin arrastrar). Los resultados se agrupan en «lo que
+entendiste bien», «para volver a mirar» y «por valorar», con la solución, la explicación y la oración del texto; sin
+rojo de examen. En el repaso, cada botón de valoración dice cuándo vuelve la palabra; espacio y 1–4 desde el teclado.
 
 ## Movimiento
 

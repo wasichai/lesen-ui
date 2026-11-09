@@ -1,5 +1,5 @@
 import { useWasichaiLinks } from '@wasichai/core'
-import { BookMarked, CheckCircle2, Sparkles } from 'lucide-react'
+import { BookMarked, CheckCircle2, ClipboardCheck, Sparkles } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -8,11 +8,11 @@ import { ReadingTile } from '../../shared/ReadingTile'
 import { ROUTES } from '../../shared/routes'
 import type { ReadingCard } from '../../shared/schemas'
 import { buttonClass } from '../../shared/ui'
-import { useComplete } from './api'
+import { useComplete, useHasAssessment } from './api'
 import { READER_MODULE_ID } from './i18n'
 
 // el final de la lectura: un botón para darla por terminada y, después, un reconocimiento sereno con lo logrado y qué
-// leer ahora. Las preguntas de comprensión llegan en la fase 4: se anuncian, no se simulan
+// leer ahora. Si la versión tiene preguntas de comprensión, se ofrecen primero; si no, no se anuncian
 export function EndOfReading({
   slug,
   version,
@@ -37,6 +37,8 @@ export function EndOfReading({
   const { t, i18n } = useTranslation(READER_MODULE_ID)
   const links = useWasichaiLinks()
   const complete = useComplete(slug)
+  const assessment = useHasAssessment(slug, version)
+  const quiz = links.has(ROUTES.quiz) && assessment.data ? `${links.to(ROUTES.quiz, { slug })}?version=${version}` : null
   const title = useRef<HTMLHeadingElement>(null)
   const done = complete.isSuccess
   useEffect(() => {
@@ -70,9 +72,14 @@ export function EndOfReading({
         <p className="mt-1 text-ink-muted">
           {t('end.time', { count: minutes })} {savedThisSession > 0 && t('end.saved', { count: savedThisSession })}
         </p>
-        <p className="mt-5 rounded-full bg-notice-soft px-4 py-2 text-secondary text-notice">{t('end.comprehension')}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link to={links.to(ROUTES.vocabulary)} className={buttonClass('primary')}>
+          {quiz && (
+            <Link to={quiz} className={buttonClass('primary')}>
+              <ClipboardCheck aria-hidden className="size-4" />
+              {t('end.comprehension', { count: assessment.data!.questions.length })}
+            </Link>
+          )}
+          <Link to={links.to(ROUTES.vocabulary)} className={buttonClass(quiz ? 'secondary' : 'primary')}>
             <BookMarked aria-hidden className="size-4" />
             {t('end.vocabulary')}
           </Link>

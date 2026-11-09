@@ -7,7 +7,10 @@ export const ROUTES = {
   reading: 'discover:reading',
   reader: 'reader:read',
   library: 'library:home',
+  quiz: 'comprehension:quiz',
+  attempt: 'comprehension:attempt',
   vocabulary: 'vocabulary:home',
+  review: 'vocabulary:review',
   dictionary: 'dictionary:home',
   entry: 'dictionary:entry',
   profile: 'profile:home'

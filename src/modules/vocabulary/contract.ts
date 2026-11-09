@@ -14,7 +14,9 @@ export const vocabularyItemSchema = z.object({
   source: z.object({ slug: z.string(), title: z.string(), version: z.number().int() }).nullable(),
   status: z.enum(['SAVED', 'LEARNING', 'FAMILIAR', 'MASTERED']),
   note: z.string().nullable(),
-  savedAt: z.string()
+  savedAt: z.string(),
+  dueAt: z.string(),
+  reviews: z.number().int()
 })
 export type VocabularyItem = z.infer<typeof vocabularyItemSchema>
 export const vocabularyPageSchema = pageOf(vocabularyItemSchema)
@@ -25,3 +27,39 @@ export function splitContext(context: string, surface: string): [string, string,
   if (at < 0) return null
   return [context.slice(0, at), surface, context.slice(at + surface.length)]
 }
+
+export const ratings = ['AGAIN', 'HARD', 'GOOD', 'EASY'] as const
+export type Rating = (typeof ratings)[number]
+export const statuses = ['SAVED', 'LEARNING', 'FAMILIAR', 'MASTERED'] as const
+
+export const reviewQueueSchema = z.object({
+  cards: z.array(
+    z.object({
+      item: vocabularyItemSchema,
+      state: z.enum(['LEARNING', 'REVIEW', 'RELEARNING']),
+      preview: z.object({ AGAIN: z.string(), HARD: z.string(), GOOD: z.string(), EASY: z.string() })
+    })
+  ),
+  due: z.number().int(),
+  nextDueAt: z.string().nullable()
+})
+export type ReviewCard = z.infer<typeof reviewQueueSchema>['cards'][number]
+
+export const reviewOutcomeSchema = z.object({
+  item: vocabularyItemSchema,
+  state: z.enum(['LEARNING', 'REVIEW', 'RELEARNING']),
+  previousStatus: z.enum(statuses)
+})
+
+export const statsSchema = z.object({
+  total: z.number().int(),
+  byStatus: z.object({ SAVED: z.number().int(), LEARNING: z.number().int(), FAMILIAR: z.number().int(), MASTERED: z.number().int() }),
+  dueNow: z.number().int(),
+  reviewedToday: z.number().int(),
+  encountered: z.number().int()
+})
+
+// los tiempos de la sentencia de origen en su audio, para escucharla en el repaso
+export const sentenceAudioSchema = z.object({
+  assets: z.array(z.object({ url: z.string(), sentences: z.array(z.object({ id: z.string(), startMs: z.number(), endMs: z.number() })) }))
+})
