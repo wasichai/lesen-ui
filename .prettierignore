@@ -1,0 +1,8 @@
+dist/
+node_modules/
+yarn.lock
+.husky/_/
+test-results/
+playwright-report/
+blob-report/
+e2e/fixtures/lesen.json

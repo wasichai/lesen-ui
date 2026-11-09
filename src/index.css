@@ -1,0 +1,281 @@
+@import 'tailwindcss';
+/* tokens y tema claro/oscuro de @wasichai/ui */
+@import '@wasichai/ui/theme.css';
+/* los temas de Lesen: página (lesen, lesen-dark) y lector (lesen-reader-*) */
+@import './theme/lesen.css';
+/* las clases de @wasichai/* llegan como texto: Tailwind las genera solo si las ve */
+@source '../node_modules/@wasichai';
+
+/* las letras de Lesen, servidas por la app (sin peticiones a terceros), variables y en woff2, con su licencia SIL OFL en
+   src/theme/fonts: Newsreader (titulares y lectura; ejes opsz y wght) y Source Sans 3 (interfaz; eje wght). Solo los
+   subconjuntos latin y latin-ext, cada uno con su unicode-range */
+@font-face {
+  font-family: 'Newsreader';
+  src: url('./theme/fonts/Newsreader-opsz-wght-italic-latin-ext.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: italic;
+  font-display: swap;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  src: url('./theme/fonts/Newsreader-opsz-wght-italic-latin.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: italic;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  src: url('./theme/fonts/Newsreader-opsz-wght-normal-latin-ext.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  src: url('./theme/fonts/Newsreader-opsz-wght-normal-latin.woff2') format('woff2');
+  font-weight: 300 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('./theme/fonts/SourceSans3-wght-italic-latin-ext.woff2') format('woff2');
+  font-weight: 300 800;
+  font-style: italic;
+  font-display: swap;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('./theme/fonts/SourceSans3-wght-italic-latin.woff2') format('woff2');
+  font-weight: 300 800;
+  font-style: italic;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('./theme/fonts/SourceSans3-wght-normal-latin-ext.woff2') format('woff2');
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
+    U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('./theme/fonts/SourceSans3-wght-normal-latin.woff2') format('woff2');
+  font-weight: 300 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+/* colores propios de Lesen como utilidades: bg-sage, text-ochre, bg-mark-saved… (los valores, en lesen.css) */
+@theme inline {
+  --color-sage: var(--sage);
+  --color-ochre: var(--ochre);
+  --color-sea: var(--sea);
+  --color-plum: var(--plum);
+  --color-mark-saved: var(--mark-saved);
+  --color-mark-saved-ink: var(--mark-saved-ink);
+  --color-mark-new: var(--mark-new);
+  --color-mark-sentence: var(--mark-sentence);
+}
+
+/* la escala tipográfica de Lesen (docs/design-system/lesen/tokens.json). font-read: titulares y lectura */
+@theme {
+  --font-read: 'Newsreader', Georgia, 'Times New Roman', serif;
+
+  --text-display: 52px;
+  --text-display--line-height: 56px;
+  --text-display--font-weight: 420;
+  --text-h1: 40px;
+  --text-h1--line-height: 46px;
+  --text-h1--font-weight: 450;
+  --text-h2: 30px;
+  --text-h2--line-height: 36px;
+  --text-h2--font-weight: 480;
+  --text-h3: 23px;
+  --text-h3--line-height: 29px;
+  --text-h3--font-weight: 540;
+  --text-h4: 19px;
+  --text-h4--line-height: 25px;
+  --text-h4--font-weight: 600;
+  --text-eyebrow: 13px;
+  --text-eyebrow--line-height: 16px;
+  --text-eyebrow--font-weight: 700;
+  --text-eyebrow--letter-spacing: 0.09em;
+  --text-body: 16px;
+  --text-body--line-height: 24px;
+  --text-secondary: 14px;
+  --text-secondary--line-height: 20px;
+  --text-label: 15px;
+  --text-label--line-height: 20px;
+  --text-label--font-weight: 600;
+
+  --container-measure: 38rem;
+  --container-page: 76rem;
+
+  --animate-rise: rise 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pop: pop 520ms cubic-bezier(0.34, 1.5, 0.64, 1) both;
+  --animate-sheet: sheet 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+  }
+
+  @keyframes sheet {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--brand-soft);
+    color: var(--ink);
+  }
+}
+
+/* el texto de una lectura: cada palabra es un botón sin aspecto de botón. Guardada: resaltada con fondo y además un punto
+   bajo la palabra (el estado nunca va solo en el color). Nueva (ayuda «marcar palabras nuevas»): subrayado de puntos */
+@layer components {
+  .reading-text {
+    font-family: var(--font-read);
+    font-size: var(--reading-size, 21px);
+    line-height: var(--reading-leading, 1.75);
+    font-optical-sizing: auto;
+    hyphens: manual;
+    overflow-wrap: break-word;
+  }
+
+  .word {
+    display: inline;
+    padding: 0.08em 0.06em;
+    margin: 0 -0.06em;
+    border-radius: 0.3em;
+    cursor: pointer;
+    color: inherit;
+    background: transparent;
+    font: inherit;
+    text-align: inherit;
+    border: 0;
+    transition: background-color 120ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .word:hover {
+    background-color: var(--brand-soft);
+  }
+
+  .word[aria-expanded='true'] {
+    background-color: var(--brand-soft);
+    box-shadow: inset 0 -2px 0 var(--brand);
+  }
+
+  .word[data-saved='true'] {
+    background-color: var(--mark-saved);
+    color: var(--mark-saved-ink);
+    background-image: radial-gradient(circle, var(--mark-saved-ink) 1.2px, transparent 1.6px);
+    background-size: 100% 4px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+  }
+
+  .word[data-new='true'] {
+    text-decoration: underline dotted var(--mark-new);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.22em;
+  }
+
+  .sentence {
+    border-radius: 0.3em;
+    transition: background-color 160ms ease;
+  }
+
+  .sentence[data-active='true'] {
+    background-color: var(--mark-sentence);
+    box-shadow: 0 0 0 0.12em var(--mark-sentence);
+  }
+
+  /* la barra de pestañas del móvil deja sitio al gesto de inicio */
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* quien pide menos movimiento no lo tiene: ni entradas, ni transiciones, ni desplazamiento suave */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
