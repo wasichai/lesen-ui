@@ -6,6 +6,7 @@ import { discoverModule } from './modules/discover/module'
 import { libraryModule } from './modules/library/module'
 import { onboardingModule } from './modules/onboarding/module'
 import { profileModule } from './modules/profile/module'
+import { progressModule } from './modules/progress/module'
 import { readerModule } from './modules/reader/module'
 import { vocabularyModule } from './modules/vocabulary/module'
 
@@ -20,5 +21,6 @@ export const modules: WasichaiModule[] = [
   libraryModule(),
   vocabularyModule(),
   dictionaryModule(),
+  progressModule(),
   profileModule()
 ]

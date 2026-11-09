@@ -18,6 +18,7 @@ import { buttonClass } from '../../shared/ui'
 import { usePageTitle } from '../../shared/useAppName'
 import { useReadingDetail } from './api'
 import { DISCOVER_MODULE_ID } from './i18n'
+import { ListsButton } from './ListsSheet'
 
 export function ReadingDetailPage() {
   return (
@@ -108,6 +109,7 @@ function Detail({ slug }: { slug: string }) {
                 <Bookmark aria-hidden className={`size-4 ${bookmarked ? 'fill-current text-brand' : ''}`} />
                 {bookmarked ? t('detail.bookmarked') : t('detail.bookmark')}
               </button>
+              <ListsButton slug={slug} />
             </div>
           </div>
         </div>

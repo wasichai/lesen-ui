@@ -1,5 +1,5 @@
 import { useAuth, useWasichaiLinks } from '@wasichai/core'
-import { BookMarked, BookOpenText, Compass, Languages, LogOut, UserRound } from 'lucide-react'
+import { BookMarked, BookOpenText, Compass, Languages, LogOut, Sprout, UserRound } from 'lucide-react'
 import type { ComponentType, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, NavLink, useLocation } from 'react-router'
@@ -16,6 +16,7 @@ const NAV: { route: RouteName; key: string; icon: ComponentType<{ className?: st
   { route: 'library', key: 'nav.library', icon: BookOpenText },
   { route: 'vocabulary', key: 'nav.vocabulary', icon: BookMarked },
   { route: 'dictionary', key: 'nav.dictionary', icon: Languages },
+  { route: 'progress', key: 'nav.progress', icon: Sprout },
   { route: 'profile', key: 'nav.profile', icon: UserRound }
 ]
 
@@ -38,7 +39,7 @@ export function LearnerLayout({ children }: { children: ReactNode }) {
         {t('nav.skip')}
       </a>
       <header className="sticky top-0 z-30 border-b border-border/70 bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/75">
-        <div className="mx-auto flex h-16 max-w-page items-center gap-6 px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-page items-center gap-4 px-4 sm:px-6 xl:gap-6">
           <NavLink to={links.to(ROUTES.discover)} className="flex items-center gap-2 rounded-full pr-2">
             <LesenMark className="size-8" />
             <span className="font-read text-[22px] font-semibold tracking-tight">{appName}</span>
@@ -51,7 +52,7 @@ export function LearnerLayout({ children }: { children: ReactNode }) {
                     to={links.to(ROUTES[route])}
                     end={route === 'discover'}
                     className={({ isActive }) =>
-                      `inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-label transition-colors ${
+                      `inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-3 text-label transition-colors xl:px-4 ${
                         isActive ? 'bg-ink text-surface' : 'text-ink hover:bg-surface-muted'
                       }`
                     }
@@ -69,8 +70,8 @@ export function LearnerLayout({ children }: { children: ReactNode }) {
             className="ml-auto inline-flex min-h-11 items-center gap-2 rounded-full px-3 text-secondary font-semibold text-ink-muted hover:bg-surface-muted hover:text-ink"
           >
             <LogOut aria-hidden className="size-4" />
-            <span className="hidden sm:inline">{t('nav.signOut')}</span>
-            <span className="sr-only sm:hidden">{t('nav.signOut')}</span>
+            {/* visible donde cabe; en escritorio estrecho, con seis secciones, solo el icono */}
+            <span className="sr-only whitespace-nowrap sm:not-sr-only lg:sr-only xl:not-sr-only">{t('nav.signOut')}</span>
           </button>
         </div>
       </header>
@@ -87,14 +88,14 @@ export function LearnerLayout({ children }: { children: ReactNode }) {
         aria-label={t('nav.label')}
         className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface-raised/95 backdrop-blur lg:hidden"
       >
-        <ul className="grid grid-cols-5">
+        <ul className="grid grid-cols-6">
           {NAV.map(({ route, key, icon: Icon }) => (
             <li key={route}>
               <NavLink
                 to={links.to(ROUTES[route])}
                 end={route === 'discover'}
                 className={({ isActive }) =>
-                  `flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-[11.5px] font-semibold leading-tight ${isActive ? 'text-brand-strong' : 'text-ink-muted'}`
+                  `flex min-h-14 flex-col items-center justify-center gap-0.5 px-0.5 text-[11px] font-semibold leading-tight ${isActive ? 'text-brand-strong' : 'text-ink-muted'}`
                 }
               >
                 {({ isActive }) => (
@@ -102,7 +103,7 @@ export function LearnerLayout({ children }: { children: ReactNode }) {
                     <span className={`grid h-7 w-12 place-items-center rounded-full transition-colors ${isActive ? 'bg-brand-soft' : ''}`}>
                       <Icon aria-hidden className="size-5" />
                     </span>
-                    <span className="max-w-full truncate">{t(key)}</span>
+                    <span className="max-w-full truncate">{t(key.replace('nav.', 'nav.tab.'))}</span>
                   </>
                 )}
               </NavLink>

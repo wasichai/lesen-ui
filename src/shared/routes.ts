@@ -7,12 +7,15 @@ export const ROUTES = {
   reading: 'discover:reading',
   reader: 'reader:read',
   library: 'library:home',
+  list: 'library:list',
   quiz: 'comprehension:quiz',
   attempt: 'comprehension:attempt',
   vocabulary: 'vocabulary:home',
   review: 'vocabulary:review',
   dictionary: 'dictionary:home',
   entry: 'dictionary:entry',
+  progress: 'progress:home',
+  week: 'progress:week',
   profile: 'profile:home'
 } as const
 

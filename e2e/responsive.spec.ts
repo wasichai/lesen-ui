@@ -15,6 +15,8 @@ const PAGES = [
   '/read/der-alte-leuchtturm/questions',
   '/vocabulary/review',
   '/dictionary?q=Meer',
+  '/progress',
+  '/progress/week',
   '/profile'
 ]
 

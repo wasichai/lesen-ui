@@ -67,6 +67,14 @@ desplegables para emparejar y botones de subir y bajar para ordenar, sin arrastr
 entendiste bien», «para volver a mirar» y «por valorar», con la solución, la explicación y la oración del texto; sin
 rojo de examen. En el repaso, cada botón de valoración dice cuándo vuelve la palabra; espacio y 1–4 desde el teclado.
 
+Progreso (fase 5): un panel editorial con pocas gráficas, en SVG o HTML propios y sin dependencias, siempre con su
+tabla o su texto para tecnologías de apoyo. Cada cifra lleva su etiqueta: «medido» con borde continuo, «estimado» con
+borde discontinuo, cursiva y «≈» delante; el nivel MCER siempre es estimado. Nada castiga un día sin leer: los días sin
+actividad son una raya neutra, nunca roja; la racha es semanal, la semana en curso solo suma y los mensajes dicen lo que
+se lleva, no lo que falta. Los logros pendientes muestran cuánto se lleva, sin candados. Con seis secciones, la barra de
+pestañas del móvil usa nombres cortos (`nav.tab.*`) y la superior, en escritorio estrecho, deja «Cerrar sesión» en el
+icono.
+
 ## Movimiento
 
 Entradas cortas (`animate-rise` 420 ms, `animate-sheet` 260 ms) y una sola celebración (`animate-pop` al terminar una

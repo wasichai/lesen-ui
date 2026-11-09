@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useLanguages, useLesenApi, useProfile, useTopics } from '../../shared/api'
 import { APP_NAMESPACE } from '../../shared/appMessages'
 import { languageName } from '../../shared/format'
+import { deviceTimeZone, GOALS_KEY, goalsSchema, useGoals, type Goals } from '../../shared/goals'
 import { LearnerLayout } from '../../shared/LearnerLayout'
 import { DIFFICULTIES, GOALS, LEVELS, profileSchema, type Profile } from '../../shared/schemas'
 import { Skeleton } from '../../shared/Skeleton'
@@ -15,17 +16,25 @@ import { usePageTitle } from '../../shared/useAppName'
 import { PROFILE_MODULE_ID } from './i18n'
 
 const MINUTES = [5, 10, 15, 20, 30, 45, 60]
+const WEEK_DAYS = [1, 2, 3, 4, 5, 6, 7]
 
 export function ProfilePage() {
   const { t } = useTranslation(PROFILE_MODULE_ID)
   usePageTitle(t('title'))
   const profile = useProfile()
-  return <LearnerLayout>{profile.data ? <ProfileForm profile={profile.data} /> : <Skeleton className="h-96" />}</LearnerLayout>
+  const goals = useGoals()
+  return (
+    <LearnerLayout>
+      {profile.data && (goals.data || goals.isError) ? <ProfileForm profile={profile.data} goals={goals.data ?? null} /> : <Skeleton className="h-96" />}
+    </LearnerLayout>
+  )
 }
+
+type GoalsDraft = Pick<Goals, 'weeklyDays' | 'weeklySummary' | 'timeZone'>
 
 const toggle = <T,>(list: T[], value: T) => (list.includes(value) ? list.filter((item) => item !== value) : [...list, value])
 
-function ProfileForm({ profile }: { profile: Profile }) {
+function ProfileForm({ profile, goals }: { profile: Profile; goals: Goals | null }) {
   const { t, i18n } = useTranslation(PROFILE_MODULE_ID)
   const { t: app } = useTranslation(APP_NAMESPACE)
   const languages = useLanguages()
@@ -35,9 +44,15 @@ function ProfileForm({ profile }: { profile: Profile }) {
   const queryClient = useQueryClient()
   const { send } = useLesenApi()
   const [draft, setDraft] = useState<Profile>(profile)
+  // sin metas guardadas todavía, los días se cuentan en la zona de este dispositivo
+  const device = deviceTimeZone()
+  const [rhythm, setRhythm] = useState<GoalsDraft | null>(
+    goals && { weeklyDays: goals.weeklyDays, weeklySummary: goals.weeklySummary, timeZone: goals.configured ? goals.timeZone : (device ?? goals.timeZone) }
+  )
   const save = useMutation({
     mutationFn: async () => {
       const saved = await send('PUT', '/lesen/learner/profile', draft, profileSchema)
+      if (rhythm) queryClient.setQueryData(GOALS_KEY, await send('PUT', '/lesen/progress/goals', rhythm, goalsSchema))
       if (!i18n.language.startsWith(saved.interfaceLanguage)) await setLocale(saved.interfaceLanguage).catch(() => undefined)
       return saved
     },
@@ -46,6 +61,10 @@ function ProfileForm({ profile }: { profile: Profile }) {
       await queryClient.invalidateQueries({ queryKey: ['me'] })
     }
   })
+  const setGoals = (change: Partial<GoalsDraft>) => {
+    save.reset()
+    setRhythm((current) => (current ? { ...current, ...change } : current))
+  }
   const all = languages.data?.languages ?? []
   const set = (change: Partial<Profile>) => {
     save.reset()
@@ -173,6 +192,43 @@ function ProfileForm({ profile }: { profile: Profile }) {
             </button>
           ))}
         </div>
+        {rhythm && (
+          <>
+            <p className="mb-1 mt-6 text-label">{t('weeklyDays')}</p>
+            <p className="mb-3 text-secondary text-ink-muted">{t('weeklyDaysHint')}</p>
+            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t('weeklyDays')}>
+              {WEEK_DAYS.map((days) => (
+                <button
+                  key={days}
+                  type="button"
+                  role="radio"
+                  aria-checked={rhythm.weeklyDays === days}
+                  className={chipClass(rhythm.weeklyDays === days)}
+                  onClick={() => setGoals({ weeklyDays: days })}
+                >
+                  {t('days', { count: days })}
+                </button>
+              ))}
+            </div>
+            <label className="mt-6 flex min-h-11 items-center gap-3">
+              <input
+                type="checkbox"
+                className="size-5 accent-[var(--brand)]"
+                checked={rhythm.weeklySummary}
+                onChange={(event) => setGoals({ weeklySummary: event.target.checked })}
+              />
+              <span>{t('weeklySummary')}</span>
+            </label>
+            <p className="mt-4 text-secondary text-ink-muted">
+              {t('timeZone', { zone: rhythm.timeZone })}
+              {device && device !== rhythm.timeZone && (
+                <button type="button" className={buttonClass('quiet', 'sm', 'ml-1')} onClick={() => setGoals({ timeZone: device })}>
+                  {t('useDeviceZone', { zone: device })}
+                </button>
+              )}
+            </p>
+          </>
+        )}
         <p className="mb-3 mt-6 text-label">{t('difficulty')}</p>
         <div className="flex flex-wrap gap-2">
           {DIFFICULTIES.map((difficulty) => (

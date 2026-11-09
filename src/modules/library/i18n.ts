@@ -7,7 +7,8 @@ const es = {
   tabs: {
     inProgress: 'En curso',
     bookmarked: 'Guardadas',
-    completed: 'Leídas'
+    completed: 'Leídas',
+    lists: 'Listas'
   },
   empty: {
     inProgress: 'Nada a medias. Elige una lectura nueva cuando quieras.',
@@ -15,7 +16,27 @@ const es = {
     completed: 'Cuando termines una lectura, aparecerá aquí.',
     search: 'Nada coincide con «{{q}}».'
   },
-  discover: 'Descubrir lecturas'
+  discover: 'Descubrir lecturas',
+  lists: {
+    new: 'Nueva lista',
+    placeholder: 'Para el viaje, con mi hija…',
+    create: 'Crear lista',
+    rename: 'Cambiar el nombre',
+    save: 'Guardar',
+    cancel: 'Cancelar',
+    delete: 'Borrar la lista',
+    confirm: '¿Borrar «{{name}}»? Las lecturas siguen en el catálogo; solo desaparece la lista.',
+    duplicate: 'Ya tienes una lista con ese nombre.',
+    error: 'No pudimos guardar la lista. Inténtalo de nuevo.',
+    empty: 'Aún no tienes listas',
+    emptyBody: 'Agrupa lecturas a tu manera. También puedes añadirlas desde la ficha de cada una.',
+    emptyList: 'Esta lista está vacía',
+    emptyListBody: 'Añade lecturas desde su ficha con «Añadir a una lista».',
+    count_one: '{{count}} lectura',
+    count_other: '{{count}} lecturas',
+    back: 'Volver a mis listas',
+    removeReading: 'Quitar «{{title}}» de la lista'
+  }
 }
 
 const en: typeof es = {
@@ -25,7 +46,8 @@ const en: typeof es = {
   tabs: {
     inProgress: 'In progress',
     bookmarked: 'Saved',
-    completed: 'Read'
+    completed: 'Read',
+    lists: 'Lists'
   },
   empty: {
     inProgress: 'Nothing half-read. Pick a new reading whenever you like.',
@@ -33,7 +55,27 @@ const en: typeof es = {
     completed: 'When you finish a reading, it will show up here.',
     search: 'Nothing matches “{{q}}”.'
   },
-  discover: 'Discover readings'
+  discover: 'Discover readings',
+  lists: {
+    new: 'New list',
+    placeholder: 'For the trip, with my daughter…',
+    create: 'Create list',
+    rename: 'Rename',
+    save: 'Save',
+    cancel: 'Cancel',
+    delete: 'Delete list',
+    confirm: 'Delete “{{name}}”? The readings stay in the catalogue; only the list goes away.',
+    duplicate: 'You already have a list with that name.',
+    error: "We couldn't save the list. Please try again.",
+    empty: 'No lists yet',
+    emptyBody: 'Group readings your way. You can also add them from each reading’s page.',
+    emptyList: 'This list is empty',
+    emptyListBody: 'Add readings from their page with “Add to a list”.',
+    count_one: '{{count}} reading',
+    count_other: '{{count}} readings',
+    back: 'Back to my lists',
+    removeReading: 'Remove “{{title}}” from the list'
+  }
 }
 
 export const libraryMessages = { es, en }

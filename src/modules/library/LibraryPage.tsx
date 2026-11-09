@@ -1,12 +1,13 @@
 import { useWasichaiLinks } from '@wasichai/core'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { BookOpen } from 'lucide-react'
+import { BookOpen, ListPlus } from 'lucide-react'
 import { useEffect, useId, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 import { z } from 'zod'
 import { useLesenApi } from '../../shared/api'
 import { EmptyState } from '../../shared/EmptyState'
+import { useLists } from '../../shared/lists'
 import { queryKeys } from '../../shared/keys'
 import { LearnerLayout } from '../../shared/LearnerLayout'
 import { ProblemState } from '../../shared/ProblemState'
@@ -18,9 +19,10 @@ import { Skeleton } from '../../shared/Skeleton'
 import { buttonClass } from '../../shared/ui'
 import { usePageTitle } from '../../shared/useAppName'
 import { LIBRARY_MODULE_ID } from './i18n'
+import { NewList } from './ListPage'
 
 const librarySchema = z.object({ inProgress: z.array(readingCardSchema), bookmarked: z.array(readingCardSchema), completed: z.array(readingCardSchema) })
-const TABS = ['inProgress', 'bookmarked', 'completed'] as const
+const TABS = ['inProgress', 'bookmarked', 'completed', 'lists'] as const
 type Tab = (typeof TABS)[number]
 
 export function LibraryPage() {
@@ -51,6 +53,7 @@ function Library() {
     placeholderData: keepPreviousData,
     retry: retryNetwork
   })
+  const lists = useLists()
   const searchId = useId()
   const select = (next: Tab) => setParams(next === 'inProgress' ? {} : { tab: next }, { replace: true })
   const onTabKey = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -61,7 +64,8 @@ function Library() {
     select(next)
     requestAnimationFrame(() => document.getElementById(`tab-${next}`)?.focus())
   }
-  const list = library.data?.[tab] ?? []
+  const list = tab === 'lists' ? [] : (library.data?.[tab] ?? [])
+  const count = (name: Tab) => (name === 'lists' ? lists.data?.length : library.data?.[name].length)
   return (
     <div className="flex flex-col gap-6">
       <header>
@@ -69,7 +73,7 @@ function Library() {
         <p className="mt-2 text-ink-muted">{t('lead')}</p>
       </header>
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div role="tablist" aria-label={t('title')} onKeyDown={onTabKey} className="inline-flex rounded-full bg-surface-muted p-1">
+        <div role="tablist" aria-label={t('title')} onKeyDown={onTabKey} className="inline-flex max-w-full flex-wrap rounded-[26px] bg-surface-muted p-1">
           {TABS.map((name) => (
             <button
               key={name}
@@ -83,7 +87,7 @@ function Library() {
               className={`min-h-11 rounded-full px-4 text-label transition-colors ${tab === name ? 'bg-surface-raised text-ink shadow-sm' : 'text-ink-muted hover:text-ink'}`}
             >
               {t(`tabs.${name}`)}
-              {library.data && <span className="ml-1.5 text-secondary text-ink-muted">{library.data[name].length}</span>}
+              {count(name) !== undefined && <span className="ml-1.5 text-secondary text-ink-muted">{count(name)}</span>}
             </button>
           ))}
         </div>
@@ -91,6 +95,7 @@ function Library() {
           {t('search')}
         </label>
         <input
+          hidden={tab === 'lists'}
           id={searchId}
           type="search"
           value={query}
@@ -101,7 +106,9 @@ function Library() {
         />
       </div>
       <div id="library-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
-        {library.isError ? (
+        {tab === 'lists' ? (
+          <Lists />
+        ) : library.isError ? (
           <ProblemState error={library.error} onRetry={() => library.refetch()} />
         ) : !library.data ? (
           <div className="grid gap-4 sm:grid-cols-2">
@@ -129,6 +136,37 @@ function Library() {
           </ul>
         )}
       </div>
+    </div>
+  )
+}
+
+// las listas propias: crear una nueva y abrir cada una
+function Lists() {
+  const { t } = useTranslation(LIBRARY_MODULE_ID)
+  const links = useWasichaiLinks()
+  const lists = useLists()
+  if (lists.isError) return <ProblemState error={lists.error} onRetry={() => lists.refetch()} />
+  if (!lists.data) return <Skeleton className="h-32" />
+  return (
+    <div className="flex flex-col gap-6">
+      <NewList />
+      {lists.data.length === 0 ? (
+        <EmptyState icon={ListPlus} title={t('lists.empty')} body={t('lists.emptyBody')} />
+      ) : (
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {lists.data.map((item) => (
+            <li key={item.id}>
+              <Link
+                to={links.to(ROUTES.list, { id: item.id })}
+                className="flex min-h-20 flex-col justify-center gap-1 rounded-[var(--radius-card)] border border-border bg-surface-raised p-4 transition-colors hover:border-border-control"
+              >
+                <span className="font-read text-h4">{item.name}</span>
+                <span className="text-secondary text-ink-muted">{t('lists.count', { count: item.count })}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

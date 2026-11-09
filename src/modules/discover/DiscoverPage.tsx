@@ -3,6 +3,7 @@ import { ArrowRight, BookOpen, Clock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { useProfile } from '../../shared/api'
+import { useGoals } from '../../shared/goals'
 import { APP_NAMESPACE } from '../../shared/appMessages'
 import { Cover } from '../../shared/Cover'
 import { EmptyState } from '../../shared/EmptyState'
@@ -17,7 +18,7 @@ import { LoadingRegion, Skeleton } from '../../shared/Skeleton'
 import { localizedLabel, TONE_CLASSES, topicTone, useTopicLabel } from '../../shared/topics'
 import { buttonClass } from '../../shared/ui'
 import { usePageTitle } from '../../shared/useAppName'
-import { useDiscover } from './api'
+import { useDiscover, useWeekGlance } from './api'
 import { DISCOVER_MODULE_ID } from './i18n'
 import { Rail, SectionHeading } from './parts'
 
@@ -84,6 +85,8 @@ function DiscoverContent() {
         />
       )}
 
+      <WeekGlance />
+
       {hero && <Hero reading={hero} />}
 
       {data.continueReading.length > 0 && (
@@ -134,6 +137,21 @@ function DiscoverContent() {
                   </span>
                 ))
             }
+          />
+        </section>
+      )}
+
+      {data.thisWeek.length > 0 && (
+        <section aria-labelledby="this-week">
+          <SectionHeading id="this-week" title={t('home.thisWeek')} lead={t('home.thisWeekLead')} />
+          <Rail
+            labelledBy="this-week"
+            readings={data.thisWeek.map((r) => r.reading)}
+            badges={(reading) => (
+              <span className="text-[12.5px] font-semibold text-ink-muted">
+                {t('home.readers', { count: data.thisWeek.find((r) => r.reading.slug === reading.slug)?.readers ?? 0 })}
+              </span>
+            )}
           />
         </section>
       )}
@@ -190,6 +208,38 @@ function DiscoverContent() {
         </section>
       )}
     </div>
+  )
+}
+
+// el aviso de la semana, solo si quien lee lo pidió en su perfil: cuánto lleva, nunca lo que le falta como reproche
+function WeekGlance() {
+  const { t } = useTranslation(DISCOVER_MODULE_ID)
+  const links = useWasichaiLinks()
+  const goals = useGoals()
+  const glance = useWeekGlance(goals.data?.weeklySummary === true)
+  if (!goals.data?.weeklySummary || !glance.data) return null
+  const week = glance.data
+  const values = { active: week.activeDays, target: week.target, minutes: week.minutes.value }
+  return (
+    <aside
+      aria-labelledby="week-glance"
+      className="-mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-[var(--radius-card)] border border-border bg-surface-raised p-4 sm:p-5"
+    >
+      <div className="min-w-0 flex-1 basis-64">
+        <h2 id="week-glance" className="font-read text-h4">
+          {t('home.glance.title')}
+        </h2>
+        <p className="text-ink-muted">
+          {week.met ? t('home.glance.met', values) : week.activeDays > 0 ? t('home.glance.progress', values) : t('home.glance.quiet')}
+        </p>
+      </div>
+      {links.has(ROUTES.week) && (
+        <Link to={links.to(ROUTES.week)} className={buttonClass('secondary', 'sm')}>
+          {t('home.glance.open')}
+          <ArrowRight aria-hidden className="size-4" />
+        </Link>
+      )}
+    </aside>
   )
 }
 

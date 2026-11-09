@@ -83,6 +83,22 @@ interface FixtureAnswer {
   explanation: string
   refs: string[]
 }
+interface Activity {
+  type: 'READING_STARTED' | 'PROGRESS' | 'READING_COMPLETED' | 'WORD_SAVED' | 'WORD_REVIEWED' | 'ASSESSMENT_SUBMITTED'
+  at: string
+  language: string
+  seconds: number
+  words: number
+}
+interface Totals {
+  seconds: number
+  started: number
+  completed: number
+  wordsRead: number
+  saved: number
+  reviewed: number
+  assessments: number
+}
 type Attempt = Json & { id: string; answers: (Json & { questionId: string; result: string; evaluator: string | null })[] }
 
 export interface FakeApi {
@@ -97,6 +113,11 @@ export interface FakeApi {
   // las entradas vistas al terminar lecturas
   encountered: Set<string>
   reviews: { vocabularyId: string; rating: string; clientId: string }[]
+  // la actividad que cuenta para el progreso, como la registra el backend (learning_activity)
+  activity: Activity[]
+  goals: { weeklyDays: number; timeZone: string; weeklySummary: boolean; configured: boolean }
+  earned: Map<string, string>
+  lists: { id: string; name: string; slugs: string[]; updatedAt: string }[]
   // lo que se pidió, como «MÉTODO /ruta»
   requests: string[]
   unexpected: string[]
@@ -126,6 +147,10 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     attempts: [],
     encountered: new Set(),
     reviews: [],
+    activity: [],
+    goals: { weeklyDays: 3, timeZone: 'UTC', weeklySummary: false, configured: false },
+    earned: new Map(),
+    lists: [],
     requests: [],
     unexpected: []
   }
@@ -221,6 +246,8 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
         continueReading: cards().filter((c) => c.progress && !c.progress.completed),
         featured: mine.filter((c) => c.featured),
         recommended,
+        // como el backend: lo terminado en los últimos 7 días, y aquí la única persona es la de la prueba
+        thisWeek: mine.filter((c) => c.progress?.completed).map((reading) => ({ reading, readers: 1 })),
         fresh: [...mine].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).slice(0, 6),
         collections: fixture.collections
           .map((c) => ({ ...c, readings: c.readings.map((slug) => mine.find((m) => m.slug === slug)).filter(Boolean) }))
@@ -228,6 +255,288 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
         topics: [...counts].map(([slug, readings]) => ({ slug, readings }))
       }
     }
+  }
+
+  function record(type: Activity['type'], language: string, extra: { seconds?: number; words?: number } = {}) {
+    api.activity.push({ type, at: now(), language, seconds: extra.seconds ?? 0, words: extra.words ?? 0 })
+  }
+
+  // la proyección por día (en la zona de las metas), como progress en el backend (ADR-0011)
+  const ZERO: Totals = { seconds: 0, started: 0, completed: 0, wordsRead: 0, saved: 0, reviewed: 0, assessments: 0 }
+  const localDay = (iso: string) =>
+    new Intl.DateTimeFormat('en-CA', { timeZone: api.goals.timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(iso))
+  const add = (t: Totals, a: Activity): Totals => ({
+    seconds: t.seconds + a.seconds,
+    started: t.started + (a.type === 'READING_STARTED' ? 1 : 0),
+    completed: t.completed + (a.type === 'READING_COMPLETED' ? 1 : 0),
+    wordsRead: t.wordsRead + (a.type === 'READING_COMPLETED' ? a.words : 0),
+    saved: t.saved + (a.type === 'WORD_SAVED' ? 1 : 0),
+    reviewed: t.reviewed + (a.type === 'WORD_REVIEWED' ? 1 : 0),
+    assessments: t.assessments + (a.type === 'ASSESSMENT_SUBMITTED' ? 1 : 0)
+  })
+  const isActive = (t: Totals) => t.seconds > 0 || t.completed > 0 || t.saved > 0 || t.reviewed > 0 || t.assessments > 0
+  const shiftDay = (date: string, days: number) => {
+    const d = new Date(`${date}T00:00:00Z`)
+    d.setUTCDate(d.getUTCDate() + days)
+    return d.toISOString().slice(0, 10)
+  }
+  const monday = (date: string) => shiftDay(date, -((new Date(`${date}T00:00:00Z`).getUTCDay() + 6) % 7))
+  function perDay(language?: string) {
+    const days = new Map<string, Totals>()
+    for (const a of api.activity) if (!language || a.language === language) days.set(localDay(a.at), add(days.get(localDay(a.at)) ?? ZERO, a))
+    return days
+  }
+  const sum = (list: Totals[]) =>
+    list.reduce(
+      (t, o) => ({
+        seconds: t.seconds + o.seconds,
+        started: t.started + o.started,
+        completed: t.completed + o.completed,
+        wordsRead: t.wordsRead + o.wordsRead,
+        saved: t.saved + o.saved,
+        reviewed: t.reviewed + o.reviewed,
+        assessments: t.assessments + o.assessments
+      }),
+      ZERO
+    )
+  const measured = (value: number) => ({ value, kind: 'MEASURED' })
+  const estimated = (value: number) => ({ value, kind: 'ESTIMATED' })
+  const dailyMinutes = () => (api.profile?.dailyMinutes as number) ?? 10
+  const dayView = (date: string, t: Totals | undefined) => ({
+    date,
+    minutes: Math.floor((t?.seconds ?? 0) / 60),
+    active: t ? isActive(t) : false,
+    goalMet: Math.floor((t?.seconds ?? 0) / 60) >= dailyMinutes()
+  })
+  function streak(today: string) {
+    const need = api.goals.weeklyDays
+    const weeks = new Map<string, number>()
+    for (const [day, t] of perDay()) if (isActive(t) && day <= today) weeks.set(monday(day), (weeks.get(monday(day)) ?? 0) + 1)
+    const met = new Set([...weeks].filter(([, n]) => n >= need).map(([w]) => w))
+    const thisWeek = monday(today)
+    let current = 0
+    for (let w = shiftDay(thisWeek, -7); met.has(w); w = shiftDay(w, -7)) current++
+    if (met.has(thisWeek)) current++
+    let best = 0
+    let run = 0
+    let previous: string | null = null
+    for (const w of [...met].sort()) {
+      run = previous && shiftDay(previous, 7) === w ? run + 1 : 1
+      best = Math.max(best, run)
+      previous = w
+    }
+    return {
+      current,
+      best: Math.max(best, current),
+      weeksMet: met.size,
+      target: need,
+      activeThisWeek: weeks.get(thisWeek) ?? 0,
+      metThisWeek: met.has(thisWeek)
+    }
+  }
+  function achievements(today: string) {
+    const all = sum([...perDay().values()])
+    const s = streak(today)
+    const value = (kind: string) =>
+      ({
+        READINGS_COMPLETED: all.completed,
+        MINUTES: Math.floor(all.seconds / 60),
+        WORDS_SAVED: all.saved,
+        WORDS_REVIEWED: all.reviewed,
+        ASSESSMENTS: all.assessments,
+        ACTIVE_DAYS: [...perDay().values()].filter(isActive).length,
+        WEEKS_MET: s.weeksMet,
+        BEST_STREAK: s.best
+      })[kind] ?? 0
+    return fixture.progress.achievements.map((rule) => {
+      const v = value(rule.kind)
+      if (v >= rule.threshold && !api.earned.has(rule.code)) api.earned.set(rule.code, now())
+      return { ...rule, value: Math.min(v, rule.threshold), earnedAt: api.earned.get(rule.code) ?? null }
+    })
+  }
+  function comprehension(language: string) {
+    const first = new Map<string, Attempt>()
+    for (const a of api.attempts) if (!first.has(a.assessmentId as string)) first.set(a.assessmentId as string, a)
+    const rows: { type: string; level: string; score: number }[] = []
+    for (const a of first.values()) {
+      const card = fixture.cards.find((c) => c.slug === a.slug)
+      if (!card || card.language !== language) continue
+      for (const answer of a.answers as unknown as { type: string; result: string }[])
+        if (['CORRECT', 'PARTIAL', 'INCORRECT'].includes(answer.result))
+          rows.push({ type: answer.type, level: card.level, score: answer.result === 'CORRECT' ? 1 : answer.result === 'PARTIAL' ? 0.5 : 0 })
+    }
+    const by = (key: (r: (typeof rows)[number]) => string) =>
+      [...new Set(rows.map(key))].sort().map((k) => {
+        const group = rows.filter((r) => key(r) === k)
+        return { key: k, answered: group.length, score: Math.round((group.reduce((n, r) => n + r.score, 0) * 100) / group.length) }
+      })
+    return {
+      answered: measured(rows.length),
+      average: rows.length ? measured(Math.round((rows.reduce((n, r) => n + r.score, 0) * 100) / rows.length)) : null,
+      byType: by((r) => r.type),
+      byLevel: by((r) => r.level)
+    }
+  }
+  function progressRoutes(method: string, rest: string[], url: URL, body: Json) {
+    if (!api.profile) return { status: 404, body: problem(404, 'No learner profile yet') }
+    const today = localDay(now())
+    if (rest[0] === 'goals') {
+      if (method === 'PUT') {
+        if (body.timeZone !== undefined) {
+          try {
+            new Intl.DateTimeFormat('en', { timeZone: body.timeZone as string })
+          } catch {
+            return { status: 400, body: problem(400, 'Invalid time zone') }
+          }
+        }
+        if (typeof body.dailyMinutes === 'number') api.profile = { ...api.profile, dailyMinutes: body.dailyMinutes }
+        api.goals = {
+          weeklyDays: (body.weeklyDays as number) ?? api.goals.weeklyDays,
+          timeZone: (body.timeZone as string) ?? api.goals.timeZone,
+          weeklySummary: (body.weeklySummary as boolean) ?? api.goals.weeklySummary,
+          configured: true
+        }
+      }
+      return { status: 200, body: { dailyMinutes: dailyMinutes(), ...api.goals } }
+    }
+    if (rest[0] === 'achievements') return { status: 200, body: achievements(today) }
+    if (rest[0] === 'weekly') {
+      const asked = url.searchParams.get('week')
+      if (asked && !/^\d{4}-\d{2}-\d{2}$/.test(asked)) return { status: 400, body: problem(400, 'Invalid week') }
+      const start = monday(asked ?? today)
+      const days = Array.from({ length: 7 }, (_, i) => shiftDay(start, i))
+      const all = perDay()
+      const week = sum(days.map((d) => all.get(d) ?? ZERO))
+      const active = days.filter((d) => d <= today && all.get(d) && isActive(all.get(d)!)).length
+      const end = shiftDay(start, 6)
+      return {
+        status: 200,
+        body: {
+          weekStart: start,
+          weekEnd: end,
+          current: start === monday(today),
+          days: days.map((d) => dayView(d, all.get(d))),
+          minutes: measured(Math.floor(week.seconds / 60)),
+          readingsCompleted: measured(week.completed),
+          wordsRead: estimated(week.wordsRead),
+          wordsSaved: measured(week.saved),
+          wordsReviewed: measured(week.reviewed),
+          assessments: measured(week.assessments),
+          activeDays: active,
+          target: api.goals.weeklyDays,
+          met: active >= api.goals.weeklyDays,
+          streak: streak(today),
+          achievements: achievements(today).filter((a) => a.earnedAt && localDay(a.earnedAt) >= start && localDay(a.earnedAt) <= end)
+        }
+      }
+    }
+    if (rest[0] === 'dashboard') {
+      const language = url.searchParams.get('language') ?? (api.profile.targetLanguage as string)
+      const all = perDay()
+      const mine = perDay(language)
+      const total = sum([...mine.values()])
+      const thisWeek = sum([...mine].filter(([d]) => d >= monday(today)).map(([, t]) => t))
+      const by = (status: string) => api.vocabulary.filter((v) => v.language === language && v.status === status).length
+      const growthFrom = shiftDay(monday(today), -49)
+      const list = achievements(today)
+      const todayMinutes = Math.floor((all.get(today)?.seconds ?? 0) / 60)
+      const c = comprehension(language)
+      return {
+        status: 200,
+        body: {
+          language,
+          timeZone: api.goals.timeZone,
+          today,
+          goal: { dailyMinutes: dailyMinutes(), todayMinutes: measured(todayMinutes), met: todayMinutes >= dailyMinutes() },
+          streak: streak(today),
+          days: Array.from({ length: 28 }, (_, i) => shiftDay(today, i - 27)).map((d) => dayView(d, all.get(d))),
+          reading: {
+            started: measured(total.started),
+            completed: measured(total.completed),
+            minutes: measured(Math.floor(total.seconds / 60)),
+            wordsRead: estimated(total.wordsRead),
+            minutesThisWeek: measured(Math.floor(thisWeek.seconds / 60)),
+            completedThisWeek: measured(thisWeek.completed)
+          },
+          vocabulary: {
+            encountered: measured([...api.encountered].filter((k) => k.startsWith(`${language}:`)).length),
+            saved: measured(api.vocabulary.filter((v) => v.language === language).length),
+            learning: estimated(by('LEARNING') + by('FAMILIAR')),
+            mastered: estimated(by('MASTERED')),
+            due: measured(api.vocabulary.filter((v) => v.language === language && v.dueAt <= now()).length),
+            growth: Array.from({ length: 8 }, (_, i) => shiftDay(growthFrom, i * 7)).map((weekStart) => ({
+              weekStart,
+              value: [...mine].filter(([d]) => d >= weekStart && d <= shiftDay(weekStart, 6)).reduce((n, [, t]) => n + t.saved, 0)
+            }))
+          },
+          comprehension: c,
+          level: {
+            level: api.profile.level,
+            kind: 'ESTIMATED',
+            signal: 'STEADY',
+            answeredAtLevel: c.byLevel.find((l) => l.key === api.profile!.level)?.answered ?? 0
+          },
+          recentAchievements: list
+            .filter((a) => a.earnedAt)
+            .sort((a, b) => b.earnedAt!.localeCompare(a.earnedAt!))
+            .slice(0, 3)
+        }
+      }
+    }
+    return undefined
+  }
+
+  function listRoutes(method: string, rest: string[], url: URL, body: Json) {
+    const summaryOf = (l: FakeApi['lists'][number], slug?: string | null) => ({
+      id: l.id,
+      name: l.name,
+      count: l.slugs.length,
+      contains: slug ? l.slugs.includes(slug) : null,
+      updatedAt: l.updatedAt
+    })
+    const viewOf = (l: FakeApi['lists'][number]) => ({
+      id: l.id,
+      name: l.name,
+      updatedAt: l.updatedAt,
+      readings: [...l.slugs].reverse().map((slug) => card(fixture.cards.find((c) => c.slug === slug)!))
+    })
+    const taken = (name: string, except?: string) => api.lists.some((l) => l.id !== except && l.name.toLowerCase() === name.toLowerCase())
+    if (rest.length === 0 && method === 'GET') {
+      const slug = url.searchParams.get('reading')
+      return { status: 200, body: [...api.lists].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).map((l) => summaryOf(l, slug)) }
+    }
+    if (rest.length === 0 && method === 'POST') {
+      const name = String(body.name ?? '').trim()
+      if (!name || name.length > 80) return { status: 400, body: problem(400, 'Invalid name') }
+      if (taken(name)) return { status: 409, body: problem(409, 'A list with that name already exists') }
+      const list = { id: `list-${api.lists.length + 1}`, name, slugs: [], updatedAt: now() }
+      api.lists.push(list)
+      return { status: 201, body: viewOf(list) }
+    }
+    const list = api.lists.find((l) => l.id === rest[0])
+    if (!list) return { status: 404, body: problem(404, 'List not found') }
+    if (rest.length === 1 && method === 'GET') return { status: 200, body: viewOf(list) }
+    if (rest.length === 1 && method === 'PATCH') {
+      const name = String(body.name ?? '').trim()
+      if (!name || name.length > 80) return { status: 400, body: problem(400, 'Invalid name') }
+      if (taken(name, list.id)) return { status: 409, body: problem(409, 'A list with that name already exists') }
+      list.name = name
+      list.updatedAt = now()
+      return { status: 200, body: viewOf(list) }
+    }
+    if (rest.length === 1 && method === 'DELETE') {
+      api.lists = api.lists.filter((l) => l !== list)
+      return { status: 204, body: null }
+    }
+    if (rest[1] === 'readings' && rest[2]) {
+      const slug = decodeURIComponent(rest[2])
+      if (!fixture.cards.some((c) => c.slug === slug)) return { status: 404, body: problem(404, 'Reading not found') }
+      if (method === 'PUT' && !list.slugs.includes(slug)) list.slugs.push(slug)
+      if (method === 'DELETE') list.slugs = list.slugs.filter((s) => s !== slug)
+      list.updatedAt = now()
+      return { status: 204, body: null }
+    }
+    return undefined
   }
 
   function readingRoutes(method: string, rest: string[], url: URL, body: Json) {
@@ -265,6 +574,9 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     }
     if (tail[0] === 'progress' && method === 'PUT') {
       const current = api.progress.get(slug!)
+      if (!current) record('READING_STARTED', base.language)
+      const extra = (body.secondsRead as number) - (current?.secondsRead ?? 0)
+      if (extra > 0) record('PROGRESS', base.language, { seconds: extra })
       const same = current?.version === body.version
       const next: Progress = {
         version: body.version as number,
@@ -280,6 +592,10 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     }
     if (tail[0] === 'completion' && method === 'POST') {
       const current = api.progress.get(slug!)
+      if (!current) record('READING_STARTED', base.language)
+      const extra = ((body.secondsRead as number) ?? 0) - (current?.secondsRead ?? 0)
+      if (extra > 0) record('PROGRESS', base.language, { seconds: extra })
+      if (!current?.completedAt) record('READING_COMPLETED', base.language, { words: base.wordCount })
       const done: Progress = {
         version: body.version as number,
         position: current?.position ?? null,
@@ -433,6 +749,7 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     }
     attempt.summary = summarize(attempt)
     api.attempts.push(attempt)
+    record('ASSESSMENT_SUBMITTED', r.content.language as string)
     return { status: 201, body: attempt }
   }
 
@@ -509,6 +826,7 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
         const rating = RATINGS.find(([r]) => r === body.rating)
         if (!rating) return { status: 400, body: problem(400, 'Invalid rating') }
         api.reviews.push({ vocabularyId: item.id, rating: rating[0], clientId: body.clientId as string })
+        record('WORD_REVIEWED', item.language)
         item.dueAt = after(rating[1])
         item.reviews += 1
         item.status = rating[0] === 'EASY' ? 'FAMILIAR' : 'LEARNING'
@@ -566,6 +884,7 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
         reviews: 0
       }
       api.vocabulary.unshift(item)
+      record('WORD_SAVED', item.language)
       return { status: 201, body: item }
     }
     const item = api.vocabulary.find((v) => v.id === rest[0])
@@ -634,6 +953,9 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     else if (path.startsWith('/api/lesen/dictionary/')) reply = dictionaryRoutes(method, path.slice('/api/lesen/dictionary/'.length).split('/'), url)
     else if (path === '/api/lesen/vocabulary' || path.startsWith('/api/lesen/vocabulary/'))
       reply = vocabularyRoutes(method, path.slice('/api/lesen/vocabulary'.length).split('/').filter(Boolean), url, body)
+    else if (path.startsWith('/api/lesen/progress/')) reply = progressRoutes(method, path.slice('/api/lesen/progress/'.length).split('/'), url, body)
+    else if (path === '/api/lesen/lists' || path.startsWith('/api/lesen/lists/'))
+      reply = listRoutes(method, path.slice('/api/lesen/lists'.length).split('/').filter(Boolean), url, body)
     if (!reply) {
       // lo de la plataforma que core pide por su cuenta (preferencias): sin endpoint, core las guarda en el navegador
       if (!path.startsWith('/api/auth/')) api.unexpected.push(`${method} ${path}`)

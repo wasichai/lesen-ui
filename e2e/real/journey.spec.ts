@@ -55,4 +55,18 @@ test('leer, escuchar, guardar, responder y repasar contra el backend', async ({ 
   await page.getByRole('button', { name: 'Mostrar respuesta' }).click()
   await page.getByRole('button', { name: /^Bien/ }).click()
   await expect(page.getByRole('button', { name: 'Mostrar respuesta' }).or(page.getByRole('heading', { name: /Repasaste/ }))).toBeVisible()
+
+  // el panel de progreso (fase 5) recoge lo de arriba: la palabra guardada y el cuestionario, medidos; el nivel, estimado
+  await page.goto('/progress')
+  await expect(page.getByRole('heading', { level: 1, name: 'Tu progreso' })).toBeVisible()
+  const saved = page
+    .getByRole('region', { name: 'Vocabulario' })
+    .locator('div')
+    .filter({ has: page.getByText('Guardadas', { exact: true }) })
+    .last()
+  await expect(saved).toContainText('medido')
+  await expect(saved).not.toContainText(/^Guardadas0/)
+  await expect(page.getByRole('region', { name: 'Comprensión' }).getByText('Media')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Tu nivel' })).toContainText('estimado')
+  await expect(page.getByRole('region', { name: 'Logros' }).getByText('Primera palabra guardada')).toBeVisible()
 })
