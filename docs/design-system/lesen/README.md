@@ -88,6 +88,43 @@ revisión) con una barra fija de guardado que dice si hay cambios sin guardar. C
 traducciones, con `lang` en cada campo. Los hallazgos de la comprobación se agrupan en «para arreglar» y «para mirar»,
 cada uno con un enlace a la pestaña donde se arregla; las palabras sin entrada se añaden al diccionario desde una hoja.
 
+Libro ilustrado (fase 7, ADR-0014 del backend): un segundo formato de lectura. El texto se reparte en páginas o dobles
+páginas y cada una tiene una maqueta de un catálogo cerrado (la del libro o la suya). En escritorio, desde 1024 px, se
+ven dos páginas a la vez (dos sueltas seguidas o una doble página); en el móvil, una por vista, y la doble página se
+apila. Las proporciones viven en `tokens.json` (`book`):
+
+| Maqueta              | Ancho | Composición                                                                                                |
+| -------------------- | ----- | ---------------------------------------------------------------------------------------------------------- |
+| `IMAGE_TOP`          | 1     | Ilustración 4:3 arriba, texto debajo                                                                       |
+| `IMAGE_BOTTOM`       | 1     | Texto arriba, ilustración 4:3 debajo                                                                       |
+| `TEXT_OVER_IMAGE`    | 1, 2  | Ilustración a sangre; el texto en una banda opaca (`surface-raised`): el contraste no depende de la imagen |
+| `VIGNETTE`           | 1     | Viñeta redonda (40 % del ancho) flotando junto al texto                                                    |
+| `TEXT_ONLY`          | 1     | Texto centrado en la página                                                                                |
+| `IMAGE_ONLY`         | 1, 2  | Solo ilustración, 3:4 (o 3:2 en doble página): una pausa                                                   |
+| `SPREAD_IMAGE_LEFT`  | 2     | Ilustración en la página izquierda, texto en la derecha (apilado en el móvil)                              |
+| `SPREAD_IMAGE_RIGHT` | 2     | Texto a la izquierda, ilustración a la derecha (apilado en el móvil)                                       |
+| `PANORAMA`           | 2     | Ilustración 12:5 que cruza el ancho, franja de texto debajo                                                |
+
+La página es una tarjeta (`surface-raised`, borde, `radius-lg`) que crece si el texto lo pide: el tamaño y el interlineado
+del lector mandan sobre la proporción. Se pasa de página con «Anterior» y «Siguiente» (44 px), con las flechas o Re Pág
+y Av Pág cuando el foco no está en una palabra, y deslizando en pantallas táctiles; las flechas del texto saltan de
+página si la palabra siguiente está en otra. Pasar de página es inmediato, sin animación. El contador («Página 2 de 7»)
+se anuncia. Cada ilustración lleva su texto alternativo en el idioma de interfaz; si faltara, un hueco del color de
+fondo con un filete del acento dice «Esta ilustración no está disponible»: nunca una imagen inventada. En el estudio,
+la pestaña «Páginas» reparte el texto, elige maquetas, sube cada ilustración y pide su texto alternativo en cada idioma.
+
+Generar con IA (fase 7, ADR-0015 del backend): en el estudio, un formulario corto (formato, idioma, nivel, tipo, largo y
+una idea opcional) encarga un libro o una lectura. El avance (`CommissionProgress`, compartido) muestra los pasos que da
+el servidor (en cola, escribiendo, dibujando, listo) con el actual anunciado y un giro solo sin movimiento reducido; si
+falla, dice por qué con sus palabras. Sin quien escriba en el servidor, el formulario no se ofrece y se dice. En
+«Páginas», «Volver a dibujar» pide otra ilustración con la misma biblia del libro, y solo con los cambios guardados.
+
+Lecturas a medida (fase 7, ADR-0016 del backend): «Pide tu lectura» (`/request`) propone el idioma, el nivel y el largo
+del perfil (un libro ilustrado en A1 y A2) y dice la cuota que queda y cuándo vuelve; agotada, el botón se desactiva y
+se dice por qué. El avance es el mismo `CommissionProgress` del estudio; lista, «Leer ahora» abre el lector. Se entra
+desde una tarjeta de Descubrir y desde «Mis lecturas a medida» en Mis lecturas, solo con el permiso
+`lectura_a_medida`.
+
 ## Movimiento
 
 Entradas cortas (`animate-rise` 420 ms, `animate-sheet` 260 ms) y una sola celebración (`animate-pop` al terminar una

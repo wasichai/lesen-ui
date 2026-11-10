@@ -1,5 +1,5 @@
 import { useAuth, useWasichaiLinks } from '@wasichai/core'
-import { ArrowRight, BookOpen, Clock } from 'lucide-react'
+import { ArrowRight, BookOpen, Clock, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { useProfile } from '../../shared/api'
@@ -40,7 +40,7 @@ function DiscoverContent() {
   const { t, i18n } = useTranslation(DISCOVER_MODULE_ID)
   const { t: app } = useTranslation(APP_NAMESPACE)
   const links = useWasichaiLinks()
-  const { user } = useAuth()
+  const { user, can } = useAuth()
   const profile = useProfile()
   const discover = useDiscover()
   const topicLabel = useTopicLabel()
@@ -86,6 +86,20 @@ function DiscoverContent() {
       )}
 
       <WeekGlance />
+
+      {can('lectura_a_medida', 'CREATE') && links.has(ROUTES.generate) && (
+        <Link
+          to={links.to(ROUTES.generate)}
+          className="group flex items-center gap-4 rounded-[var(--radius-card)] border border-border bg-surface-raised p-5 transition-colors hover:border-border-control"
+        >
+          <Sparkles aria-hidden className="size-6 shrink-0 text-brand" />
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-h4">{t('home.custom')}</span>
+            <span className="mt-0.5 block text-secondary text-ink-muted">{t('home.customLead')}</span>
+          </span>
+          <ArrowRight aria-hidden className="size-5 shrink-0 text-ink-muted transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      )}
 
       {hero && <Hero reading={hero} />}
 

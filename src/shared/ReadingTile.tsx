@@ -1,5 +1,5 @@
 import { useWasichaiLinks } from '@wasichai/core'
-import { Bookmark, CheckCircle2, Clock } from 'lucide-react'
+import { BookImage, Bookmark, CheckCircle2, Clock } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { APP_NAMESPACE } from './appMessages'
@@ -23,6 +23,12 @@ export function ReadingTile({ reading, variant = 'tall', className = '' }: { rea
         <Clock aria-hidden className="size-4" />
         {t('reading.minutes', { count: reading.minutes })}
       </span>
+      {reading.format === 'PICTURE_BOOK' && (
+        <span className="inline-flex items-center gap-1 font-semibold text-ink">
+          <BookImage aria-hidden className="size-4" />
+          {t('reading.pictureBook')}
+        </span>
+      )}
       {reading.topics[0] && <span>{topicLabel(reading.topics[0])}</span>}
       {progress?.completed && (
         <span className="inline-flex items-center gap-1 font-semibold text-success">

@@ -1,11 +1,11 @@
-import { useWasichaiLinks } from '@wasichai/core'
+import { useAuth, useWasichaiLinks } from '@wasichai/core'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { BookOpen, ListPlus } from 'lucide-react'
+import { BookOpen, ListPlus, Sparkles } from 'lucide-react'
 import { useEffect, useId, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router'
 import { z } from 'zod'
-import { useLesenApi } from '../../shared/api'
+import { useLesenApi, useMyCommissions } from '../../shared/api'
 import { EmptyState } from '../../shared/EmptyState'
 import { useLists } from '../../shared/lists'
 import { queryKeys } from '../../shared/keys'
@@ -72,6 +72,7 @@ function Library() {
         <h1 className="font-display text-h1">{t('title')}</h1>
         <p className="mt-2 text-ink-muted">{t('lead')}</p>
       </header>
+      <CustomReadings />
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div role="tablist" aria-label={t('title')} onKeyDown={onTabKey} className="inline-flex max-w-full flex-wrap rounded-[26px] bg-surface-muted p-1">
           {TABS.map((name) => (
@@ -168,5 +169,44 @@ function Lists() {
         </ul>
       )}
     </div>
+  )
+}
+
+// mis lecturas a medida (ADR-0016 del backend): las listas, para leerlas, y el enlace para pedir otra
+function CustomReadings() {
+  const { t } = useTranslation(LIBRARY_MODULE_ID)
+  const links = useWasichaiLinks()
+  const { can } = useAuth()
+  const enabled = can('lectura_a_medida', 'CREATE') && links.has(ROUTES.generate)
+  const mine = useMyCommissions(enabled)
+  const id = useId()
+  if (!enabled) return null
+  const ready = (mine.data ?? []).filter((c) => c.status === 'READY' && c.readingSlug)
+  return (
+    <section aria-labelledby={id} className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface-raised p-4 sm:p-5">
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 id={id} className="mr-auto flex items-center gap-2 font-display text-h4">
+          <Sparkles aria-hidden className="size-5 text-brand" />
+          {t('custom.title')}
+        </h2>
+        <Link to={links.to(ROUTES.generate)} className={buttonClass('secondary', 'sm')}>
+          {t('custom.ask')}
+        </Link>
+      </div>
+      {ready.length === 0 ? (
+        <p className="text-secondary text-ink-muted">{t('custom.none')}</p>
+      ) : (
+        <ul className="flex flex-wrap gap-2">
+          {ready.slice(0, 6).map((c) => (
+            <li key={c.id}>
+              <Link to={links.to(ROUTES.reader, { slug: c.readingSlug! })} className={buttonClass('ghost', 'sm')}>
+                <BookOpen aria-hidden className="size-4" />
+                {c.request.prompt || t(`custom.format.${c.request.format}`)}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }

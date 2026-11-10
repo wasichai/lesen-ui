@@ -21,7 +21,7 @@ test('una editora publica una lectura nueva con audio y preguntas contra el back
   await page.waitForURL(/\/studio$/)
   await page.getByLabel('Título', { exact: true }).fill('Der kleine Hafen')
   await page.getByLabel('Slug').fill(slug)
-  await page.getByLabel('Idioma de la lectura').selectOption('de')
+  await page.getByRole('region', { name: 'Nueva lectura' }).getByLabel('Idioma de la lectura').selectOption('de')
   await page.getByRole('button', { name: 'Crear borrador' }).click()
   await page.waitForURL(/\/studio\/drafts\//)
 

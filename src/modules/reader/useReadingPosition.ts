@@ -14,17 +14,22 @@ export function useReadingPosition({
   version,
   index,
   stored,
-  container
+  container,
+  override
 }: {
   slug: string
   version: number
   index: ReaderIndex | null
   stored: Progress | null
   container: React.RefObject<HTMLElement | null>
+  // un libro dice él mismo dónde está quien lee (la página que se ve): sin observar el desplazamiento
+  override?: string | null
 }) {
   const client = useApiClient()
   const queryClient = useQueryClient()
-  const [position, setPosition] = useState<string | null>(stored?.version === version ? stored.position : null)
+  const [observed, setPosition] = useState<string | null>(stored?.version === version ? stored.position : null)
+  const position = override !== undefined ? (override ?? observed) : observed
+  const observing = override === undefined
   const visible = useRef(new Set<string>())
   const sessionMs = useRef(0)
   const shownSince = useRef<number | null>(typeof document !== 'undefined' && document.visibilityState === 'visible' ? Date.now() : null)
@@ -62,7 +67,7 @@ export function useReadingPosition({
   // qué oraciones se ven: el observador las anota y la posición es la primera del texto
   useEffect(() => {
     const root = container.current
-    if (!root || !index || typeof IntersectionObserver === 'undefined') return
+    if (!observing || !root || !index || typeof IntersectionObserver === 'undefined') return
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -78,7 +83,7 @@ export function useReadingPosition({
     )
     root.querySelectorAll('[data-sentence]').forEach((element) => observer.observe(element))
     return () => observer.disconnect()
-  }, [container, index])
+  }, [container, index, observing])
 
   useEffect(() => {
     if (!position) return

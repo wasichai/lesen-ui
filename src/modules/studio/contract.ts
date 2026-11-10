@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { levelSchema } from '../../shared/schemas'
+import { levelSchema, pageLayoutSchema, readingFormatSchema } from '../../shared/schemas'
 
 // studio/** del backend (docs/architecture/api-design.md §Estudio editorial, ADR-0012)
 export const DRAFT_STATUSES = ['DRAFT', 'IN_REVIEW', 'PUBLISHED', 'DISCARDED'] as const
@@ -23,6 +23,17 @@ const texts = z.record(z.string(), z.string())
 
 export const sentenceSchema = z.object({ text: z.string(), translations: texts.default({}), senses: texts.default({}) })
 export const paragraphSchema = z.object({ sentences: z.array(sentenceSchema), translations: texts.default({}) })
+// una página de un libro ilustrado (ADR-0014 del backend): cuántos párrafos consecutivos lleva, su ancho, su maqueta si no
+// es la del libro y su ilustración (archivo, texto alternativo por idioma y la escena para quien ilustra)
+export const illustrationSchema = z.object({ file: z.string().nullable().default(null), alt: texts.default({}), scene: z.string().nullable().default(null) })
+export const pageSchema = z.object({
+  span: z.union([z.literal(1), z.literal(2)]).default(1),
+  layout: pageLayoutSchema.nullable().default(null),
+  paragraphs: z.number().int().nonnegative(),
+  illustration: illustrationSchema.nullable().default(null)
+})
+export type DraftPage = z.infer<typeof pageSchema>
+export type DraftIllustration = z.infer<typeof illustrationSchema>
 export const documentSchema = z.object({
   slug: z.string(),
   language: z.string(),
@@ -34,7 +45,10 @@ export const documentSchema = z.object({
   title: z.string(),
   subtitle: z.string().nullable().optional(),
   summary: z.string(),
-  paragraphs: z.array(paragraphSchema)
+  paragraphs: z.array(paragraphSchema),
+  format: readingFormatSchema.default('TEXT'),
+  layout: pageLayoutSchema.nullable().default(null),
+  pages: z.array(pageSchema).default([])
 })
 export type Document = z.infer<typeof documentSchema>
 export type DraftSentence = z.infer<typeof sentenceSchema>
@@ -60,7 +74,7 @@ export type Question = z.infer<typeof questionSchema>
 export const eventSchema = z.object({
   draftId: z.string(),
   slug: z.string(),
-  action: z.enum(['CREATED', 'SAVED', 'AUDIO_ATTACHED', 'AUDIO_REMOVED', 'SUBMITTED', 'RETURNED', 'PUBLISHED', 'DISCARDED']),
+  action: z.enum(['CREATED', 'GENERATED', 'SAVED', 'AUDIO_ATTACHED', 'AUDIO_REMOVED', 'SUBMITTED', 'RETURNED', 'PUBLISHED', 'DISCARDED']),
   actor: z.string(),
   note: z.string().nullable(),
   version: z.number().int().nullable(),

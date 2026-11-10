@@ -8,11 +8,21 @@ const es = {
     bookmark: 'Guardar para después',
     bookmarked: 'Guardada para después',
     notes: 'Notas',
+    export: 'Exportar',
     fullscreen: 'Pantalla completa',
     exitFullscreen: 'Salir de pantalla completa',
     remaining: 'Quedan {{count}} min',
     done: 'Casi terminas',
     progress: 'Avance de la lectura: {{percent}} %'
+  },
+  book: {
+    label: 'Libro ilustrado',
+    navigation: 'Pasar de página',
+    previous: 'Anterior',
+    next: 'Siguiente',
+    page: 'Página {{page}} de {{total}}',
+    pages: 'Páginas {{first}} y {{last}} de {{total}}',
+    illustrationMissing: 'Esta ilustración no está disponible.'
   },
   text: {
     label: 'Texto de la lectura. Usa las flechas para moverte por las palabras y Intro para abrir una.',
@@ -127,11 +137,21 @@ const en: typeof es = {
     bookmark: 'Save for later',
     bookmarked: 'Saved for later',
     notes: 'Notes',
+    export: 'Export',
     fullscreen: 'Full screen',
     exitFullscreen: 'Exit full screen',
     remaining: '{{count}} min left',
     done: 'Almost done',
     progress: 'Reading progress: {{percent}}%'
+  },
+  book: {
+    label: 'Picture book',
+    navigation: 'Turn the page',
+    previous: 'Previous',
+    next: 'Next',
+    page: 'Page {{page}} of {{total}}',
+    pages: 'Pages {{first}} and {{last}} of {{total}}',
+    illustrationMissing: 'This illustration is not available.'
   },
   text: {
     label: 'Reading text. Use the arrow keys to move between words and Enter to open one.',

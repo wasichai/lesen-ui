@@ -5,7 +5,8 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const base = (process.argv[2] ?? 'http://localhost:8095') + '/api'
-const READINGS = ['der-alte-leuchtturm', 'der-fuchs-im-garten', 'a-morning-in-lisbon']
+// ein-sonntag-bei-oma: el libro ilustrado de la demostración (ADR-0014 del backend)
+const READINGS = ['der-alte-leuchtturm', 'der-fuchs-im-garten', 'a-morning-in-lisbon', 'ein-sonntag-bei-oma']
 // la narración solo de esta lectura: las otras dos hacen de lecturas sin audio (el lector sigue igual)
 const WITH_AUDIO = ['der-alte-leuchtturm']
 // las preguntas de comprensión de esta lectura, y sus soluciones y explicaciones (de un intento en blanco), para que la

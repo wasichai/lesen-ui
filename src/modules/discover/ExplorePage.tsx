@@ -115,7 +115,11 @@ function Explore() {
               body={t('explore.emptyBody')}
               action={
                 count > 0 && (
-                  <button type="button" className={buttonClass('secondary')} onClick={() => update({ levels: [], topic: null, duration: null, q: '' })}>
+                  <button
+                    type="button"
+                    className={buttonClass('secondary')}
+                    onClick={() => update({ levels: [], topic: null, duration: null, format: null, q: '' })}
+                  >
                     {t('explore.clear')}
                   </button>
                 )
@@ -236,11 +240,27 @@ function FilterPanel({ filters, update, language }: { filters: Filters; update: 
           ))}
         </div>
       </fieldset>
+      <fieldset>
+        <legend className="text-label">{t('explore.format')}</legend>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {(['TEXT', 'PICTURE_BOOK'] as const).map((format) => (
+            <button
+              key={format}
+              type="button"
+              aria-pressed={filters.format === format}
+              className={chipClass(filters.format === format)}
+              onClick={() => update({ format: filters.format === format ? null : format })}
+            >
+              {t(`explore.formats.${format}`)}
+            </button>
+          ))}
+        </div>
+      </fieldset>
       {count > 0 && (
         <button
           type="button"
           className={buttonClass('quiet', 'sm', 'self-start px-0')}
-          onClick={() => update({ levels: [], topic: null, duration: null, q: '' })}
+          onClick={() => update({ levels: [], topic: null, duration: null, format: null, q: '' })}
         >
           <X aria-hidden className="size-4" />
           {t('explore.clear')}
