@@ -7,6 +7,7 @@ import { LEVELS } from '../../shared/schemas'
 import { localizedLabel } from '../../shared/topics'
 import { buttonClass, chipClass } from '../../shared/ui'
 import { useUploadCover } from './api'
+import { toBook, toText } from './pagesModel'
 import type { Document } from './contract'
 import type { Edited } from './DraftPage'
 import { STUDIO_MODULE_ID } from './i18n'
@@ -71,6 +72,24 @@ export function DetailsTab({ edited, onChange }: { edited: Edited; onChange: (ne
             />
           </label>
         </div>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1 text-label">{t('details.format')}</legend>
+          <span className="text-secondary text-ink-muted">{t('details.formatHint')}</span>
+          <div className="flex flex-wrap gap-2">
+            {(['TEXT', 'PICTURE_BOOK'] as const).map((format) => (
+              <button
+                key={format}
+                type="button"
+                aria-pressed={doc.format === format}
+                className={chipClass(doc.format === format)}
+                onClick={() => onChange({ ...edited, document: format === 'PICTURE_BOOK' ? toBook(doc) : toText(doc) })}
+              >
+                {doc.format === format && <Check aria-hidden className="size-4" />}
+                {t(`format.${format}`)}
+              </button>
+            ))}
+          </div>
+        </fieldset>
         <label className="flex min-h-11 items-center gap-3">
           <input type="checkbox" className="size-5 accent-[var(--brand)]" checked={doc.featured} onChange={(e) => set({ featured: e.target.checked })} />
           <span>{t('details.featured')}</span>

@@ -116,7 +116,8 @@ const es = {
     start: 'Empezar a leer',
     reread: 'Volver a leer',
     bookmarked: 'Guardada para después',
-    noCover: 'Sin portada'
+    noCover: 'Sin portada',
+    pictureBook: 'Libro ilustrado'
   },
   state: {
     loading: 'Cargando…',
@@ -249,7 +250,8 @@ const en: typeof es = {
     start: 'Start reading',
     reread: 'Read again',
     bookmarked: 'Saved for later',
-    noCover: 'No cover'
+    noCover: 'No cover',
+    pictureBook: 'Picture book'
   },
   state: {
     loading: 'Loading…',

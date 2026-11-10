@@ -15,7 +15,8 @@ import { useDraft, useSaveDraft } from './api'
 import { AudioTab } from './AudioTab'
 import type { Document, Draft, Question } from './contract'
 import { DetailsTab } from './DetailsTab'
-import { isDirty, localSentences, normalizeQuestion, TABS, translateInto, type Tab } from './draftModel'
+import { isDirty, localSentences, normalizeQuestion, tabsFor, translateInto, type Tab } from './draftModel'
+import { PagesTab } from './PagesTab'
 import { STUDIO_MODULE_ID } from './i18n'
 import { QuestionsTab } from './QuestionsTab'
 import { ReviewTab } from './ReviewTab'
@@ -52,14 +53,14 @@ function Editor({ draft, save }: { draft: Draft; save: ReturnType<typeof useSave
   const queryClient = useQueryClient()
   const languages = useLanguages()
   const [params, setParams] = useSearchParams()
-  const tab: Tab = (TABS as string[]).includes(params.get('tab') ?? '') ? (params.get('tab') as Tab) : 'details'
   const [edited, setEdited] = useState<Edited>({ document: draft.document, questions: draft.questions })
+  // las páginas, solo en un libro ilustrado
+  const TABS = tabsFor(edited.document)
+  const tab: Tab = (TABS as string[]).includes(params.get('tab') ?? '') ? (params.get('tab') as Tab) : 'details'
   const editable = draft.status === 'DRAFT'
   const dirty = editable && isDirty(draft, edited)
-  const into = translateInto(
-    (languages.data?.languages ?? []).filter((l) => l.interfaceLanguage).map((l) => l.code),
-    draft.language
-  )
+  const interfaceLanguages = (languages.data?.languages ?? []).filter((l) => l.interfaceLanguage).map((l) => l.code)
+  const into = translateInto(interfaceLanguages, draft.language)
   const conflict = save.error instanceof ApiError && save.error.status === 409
 
   // salir con cambios sin guardar pregunta antes
@@ -140,6 +141,7 @@ function Editor({ draft, save }: { draft: Draft; save: ReturnType<typeof useSave
         <fieldset disabled={!editable} className="min-w-0">
           {tab === 'details' && <DetailsTab edited={edited} onChange={setEdited} />}
           {tab === 'text' && <TextTab edited={edited} onChange={setEdited} language={draft.language} into={into} />}
+          {tab === 'pages' && <PagesTab edited={edited} onChange={setEdited} language={draft.language} interfaceLanguages={interfaceLanguages} />}
           {tab === 'questions' && (
             <QuestionsTab
               edited={edited}

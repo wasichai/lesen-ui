@@ -4,7 +4,7 @@ import { activeCount, parseFilters, toApiQuery, toSearchParams } from './catalog
 describe('filtros del catálogo', () => {
   it('lee la URL y descarta lo que no es válido', () => {
     const filters = parseFilters(new URLSearchParams('level=A2&level=Z9&level=A2&topic=travel&duration=forever&sort=POPULAR&q=Meer'), 'de')
-    expect(filters).toEqual({ language: 'de', levels: ['A2'], topic: 'travel', duration: null, q: 'Meer', sort: 'POPULAR' })
+    expect(filters).toEqual({ language: 'de', levels: ['A2'], topic: 'travel', duration: null, format: null, q: 'Meer', sort: 'POPULAR' })
   })
 
   it('«todos los idiomas» se dice en la URL y el idioma por defecto no', () => {

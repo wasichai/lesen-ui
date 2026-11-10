@@ -1,7 +1,8 @@
+import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { fakeApi } from './api'
+import { fakeApi, seedDraft } from './api'
 
 // fase 6: una editora publica una lectura nueva con audio y preguntas sin tocar JSON, y cada lectura tiene su historial
 const MP3 = readFileSync(join(import.meta.dirname, 'fixtures', 'audio', 'der-alte-leuchtturm.mp3'))
@@ -122,4 +123,44 @@ test('quien solo lee no tiene estudio', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Estudio' })).toHaveCount(0)
   await page.goto('/studio')
   await expect(page.getByRole('heading', { name: 'El estudio es para el equipo editorial' })).toBeVisible()
+})
+
+test('una editora convierte una lectura en libro ilustrado y diseña sus páginas', async ({ page }) => {
+  const api = await fakeApi(page, { as: 'editor' })
+  seedDraft(api)
+  await page.goto('/studio/drafts/draft-seed')
+  await expect(page.getByRole('tab', { name: 'Páginas' })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Libro ilustrado' }).click()
+  await page.getByRole('tab', { name: 'Páginas' }).click()
+
+  // la maqueta del libro, y otra para la segunda página; la primera se une con la siguiente
+  await page.getByLabel('Maqueta del libro').selectOption('IMAGE_BOTTOM')
+  const second = page.getByRole('listitem', { name: 'Página 2' })
+  await second.getByLabel('Maqueta').selectOption('TEXT_ONLY')
+  await expect(second.getByText('Esta maqueta no lleva ilustración.')).toBeVisible()
+  const first = page.getByRole('listitem', { name: 'Página 1' })
+  await expect(first.getByText('Falta la ilustración.')).toBeVisible()
+
+  // la ilustración de la primera página con su texto alternativo
+  await first.getByLabel('Subir la ilustración de la página 1').setInputFiles({ name: 'bild.png', mimeType: 'image/png', buffer: Buffer.from('png') })
+  await first.getByLabel('Texto alternativo en español').fill('Un faro junto al mar')
+  await expect(first.getByText('Falta el texto alternativo en algún idioma.')).toBeVisible()
+  await first.getByLabel('Texto alternativo en inglés').fill('A lighthouse by the sea')
+  await expect(first.getByText('Falta el texto alternativo en algún idioma.')).toHaveCount(0)
+  await first.getByRole('button', { name: 'Unir con la siguiente' }).click()
+
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
+  expect(results.violations.map((v) => v.id)).toEqual([])
+
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(page.getByText('Guardado.')).toBeVisible()
+  const document = api.drafts[0]!.document
+  expect(document).toMatchObject({ format: 'PICTURE_BOOK', layout: 'IMAGE_BOTTOM' })
+  expect(document.pages![0]).toMatchObject({
+    span: 1,
+    layout: null,
+    paragraphs: 2,
+    illustration: { file: 'illustration-0123456789abcdef01234567.png', alt: { es: 'Un faro junto al mar', en: 'A lighthouse by the sea' } }
+  })
+  expect((document.pages as { paragraphs: number }[]).reduce((n, p) => n + p.paragraphs, 0)).toBe(document.paragraphs.length)
 })

@@ -31,7 +31,10 @@ const doc = (texts: string[][]): Document => ({
   featured: false,
   title: 'T',
   summary: 'S',
-  paragraphs: texts.map((sentences) => ({ sentences: sentences.map((text) => ({ text, translations: {}, senses: {} })), translations: {} }))
+  paragraphs: texts.map((sentences) => ({ sentences: sentences.map((text) => ({ text, translations: {}, senses: {} })), translations: {} })),
+  format: 'TEXT',
+  layout: null,
+  pages: []
 })
 const texts = (d: Document) => d.paragraphs.map((p) => p.sentences.map((s) => s.text))
 

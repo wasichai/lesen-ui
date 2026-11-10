@@ -17,6 +17,8 @@ import { useRovingToolbar } from '../../shared/useRovingToolbar'
 import { READER_THEMES } from '../../theme/themes'
 import { useContent, useKnownWords, useProgress, useReadingAudio, useReadingDetail, useSavedKeys } from './api'
 import { AudioBar } from './AudioBar'
+import { isBook } from './bookModel'
+import { BookReader } from './BookReader'
 import { buildIndex, neighbourParagraph, rangeOf, seekToWord } from './audioSync'
 import type { Progress, ReadingContent, Token } from './contract'
 import { EndOfReading } from './EndOfReading'
@@ -102,7 +104,25 @@ function Reader({
   const savedAtStart = useRef<number | null>(null)
   if (savedAtStart.current === null && savedKeys.data) savedAtStart.current = savedKeys.data.length
   const article = useRef<HTMLElement>(null)
-  const { position, percent, seconds } = useReadingPosition({ slug, version: content.version, index, stored, container: article })
+  // un libro ilustrado (ADR-0014 del backend) pasa de página en página: él dice dónde está quien lee
+  const pages = isBook(content) ? content.pages : null
+  const [bookAt, setBookAt] = useState<{ sentence: string | null; last: boolean }>({ sentence: null, last: false })
+  const [bookAnchor, setBookAnchor] = useState<{ sentence: string; at: number } | null>(() => {
+    const cited = window.location.hash.slice(1)
+    if (/^p\d+s\d+$/.test(cited)) return { sentence: cited, at: 0 }
+    if (prefs.preferences.followPosition && stored?.position && stored.version === content.version && !stored.completed)
+      return { sentence: stored.position, at: 0 }
+    return null
+  })
+  const onBookPosition = useCallback((sentence: string | null, last: boolean) => setBookAt({ sentence, last }), [])
+  const { position, percent, seconds } = useReadingPosition({
+    slug,
+    version: content.version,
+    index,
+    stored,
+    container: article,
+    override: pages ? bookAt.sentence : undefined
+  })
   const bookmark = useBookmark(slug)
   const bookmarked = bookmark.isPending ? (bookmark.variables ?? reading.bookmarked) : reading.bookmarked
   const canHover = useCanHover()
@@ -122,16 +142,24 @@ function Reader({
   // seguir la lectura: el texto se desplaza con la voz hasta que la persona desplaza por su cuenta
   const following = useRef(true)
   const [followingView, setFollowingView] = useState(true)
-  const onSpokenWord = useCallback((tokenId: string | null) => {
-    if (!tokenId || !following.current) return
-    const element = document.getElementById(`w-${tokenId}`)
-    if (!element) return
-    const rect = element.getBoundingClientRect()
-    if (rect.top < window.innerHeight * 0.18 || rect.bottom > window.innerHeight * 0.68) {
-      const reduced = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      element.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
-    }
-  }, [])
+  const onSpokenWord = useCallback(
+    (tokenId: string | null) => {
+      if (!tokenId || !following.current) return
+      if (pages) {
+        const sentence = index.sentenceOfWord.get(tokenId)
+        if (sentence) setBookAnchor((previous) => (previous?.sentence === sentence ? previous : { sentence, at: Date.now() }))
+        return
+      }
+      const element = document.getElementById(`w-${tokenId}`)
+      if (!element) return
+      const rect = element.getBoundingClientRect()
+      if (rect.top < window.innerHeight * 0.18 || rect.bottom > window.innerHeight * 0.68) {
+        const reduced = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        element.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' })
+      }
+    },
+    [index, pages]
+  )
   const player = useAudioPlayer({ src: asset?.url ?? null, index: audioIndex, slug, version: content.version, onWord: onSpokenWord })
   const follow = useCallback(() => {
     following.current = true
@@ -165,6 +193,8 @@ function Reader({
   useEffect(() => {
     if (restored.current) return
     restored.current = true
+    // un libro abre en la página de la oración citada o guardada (bookAnchor)
+    if (pages) return
     // un enlace a una oración (desde los resultados de las preguntas) gana a la posición guardada: se centra y se marca
     const cited = window.location.hash.slice(1)
     if (/^p\d+s\d+$/.test(cited) && index.sentences.some((s) => s.id === cited)) {
@@ -177,7 +207,7 @@ function Reader({
     // la posición se anota con la oración más alta de la franja de lectura (15 % bajo el borde): vuelve a ponerse ahí
     const target = document.getElementById(stored.position)
     if (target) window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.18 })
-  }, [content.version, index, preferences.followPosition, stored])
+  }, [content.version, index, pages, preferences.followPosition, stored])
 
   useEffect(() => {
     const onChange = () => setFullscreen(document.fullscreenElement !== null)
@@ -280,7 +310,7 @@ function Reader({
       </header>
 
       <main id="content" className="px-5 pb-40 pt-10 sm:px-8" style={style}>
-        <article ref={article} className="mx-auto max-w-measure" aria-labelledby="reading-title">
+        <article ref={article} className={`mx-auto ${pages ? 'max-w-6xl' : 'max-w-measure'}`} aria-labelledby="reading-title">
           <header className="mb-10">
             <div className="mb-4 flex items-center gap-3">
               <LevelBadge level={reading.level} />
@@ -296,36 +326,81 @@ function Reader({
             )}
             <p className="mt-6 rounded-full bg-surface-muted px-4 py-2 text-secondary text-ink-muted">{canHover ? t('text.hintHover') : t('text.hint')}</p>
           </header>
-          <ReaderText
-            slug={slug}
-            version={content.version}
-            language={content.language}
-            paragraphs={content.paragraphs}
-            index={index}
-            currentWord={currentWord}
-            setCurrentWord={setCurrentWord}
-            openWord={open?.token.id ?? preview?.token.id ?? null}
-            saved={saved}
-            highlightSaved={preferences.highlightSaved}
-            newWords={newWords}
-            learnedWords={learnedWords}
-            activeSentence={open ? (index.sentenceOfWord.get(open.token.id) ?? null) : null}
-            showParagraphTranslations={preferences.paragraphTranslations}
-            translationLanguage={translationLanguage}
-            events={events}
-            onListenParagraph={audioIndex ? listenParagraph : undefined}
-          />
-          <EndOfReading
-            slug={slug}
-            version={content.version}
-            reading={reading}
-            related={detail.related}
-            language={content.language}
-            seconds={seconds}
-            savedThisSession={savedThisSession}
-            alreadyDone={stored?.completed === true && stored.version === content.version}
-            atEnd={percent >= 100 || position === index.sentences.at(-1)?.id}
-          />
+          {pages ? (
+            <BookReader
+              content={content}
+              pages={pages}
+              index={index}
+              accent={reading.accent}
+              interfaceLanguage={translationLanguage}
+              anchor={bookAnchor}
+              onPosition={onBookPosition}
+              text={{
+                slug,
+                version: content.version,
+                language: content.language,
+                index,
+                currentWord,
+                setCurrentWord,
+                openWord: open?.token.id ?? preview?.token.id ?? null,
+                saved,
+                highlightSaved: preferences.highlightSaved,
+                newWords,
+                learnedWords,
+                activeSentence: open ? (index.sentenceOfWord.get(open.token.id) ?? null) : null,
+                showParagraphTranslations: preferences.paragraphTranslations,
+                translationLanguage,
+                events,
+                onListenParagraph: audioIndex ? listenParagraph : undefined
+              }}
+              after={
+                <EndOfReading
+                  slug={slug}
+                  version={content.version}
+                  reading={reading}
+                  related={detail.related}
+                  language={content.language}
+                  seconds={seconds}
+                  savedThisSession={savedThisSession}
+                  alreadyDone={stored?.completed === true && stored.version === content.version}
+                  atEnd={bookAt.last}
+                />
+              }
+            />
+          ) : (
+            <>
+              <ReaderText
+                slug={slug}
+                version={content.version}
+                language={content.language}
+                paragraphs={content.paragraphs}
+                index={index}
+                currentWord={currentWord}
+                setCurrentWord={setCurrentWord}
+                openWord={open?.token.id ?? preview?.token.id ?? null}
+                saved={saved}
+                highlightSaved={preferences.highlightSaved}
+                newWords={newWords}
+                learnedWords={learnedWords}
+                activeSentence={open ? (index.sentenceOfWord.get(open.token.id) ?? null) : null}
+                showParagraphTranslations={preferences.paragraphTranslations}
+                translationLanguage={translationLanguage}
+                events={events}
+                onListenParagraph={audioIndex ? listenParagraph : undefined}
+              />
+              <EndOfReading
+                slug={slug}
+                version={content.version}
+                reading={reading}
+                related={detail.related}
+                language={content.language}
+                seconds={seconds}
+                savedThisSession={savedThisSession}
+                alreadyDone={stored?.completed === true && stored.version === content.version}
+                atEnd={percent >= 100 || position === index.sentences.at(-1)?.id}
+              />
+            </>
+          )}
         </article>
       </main>
 
@@ -410,6 +485,7 @@ function Reader({
           language={content.language}
           onGo={(sentenceRef) => {
             setPanel(null)
+            if (pages) setBookAnchor({ sentence: sentenceRef, at: Date.now() })
             requestAnimationFrame(() => document.getElementById(sentenceRef)?.scrollIntoView({ block: 'center' }))
           }}
         />

@@ -7,6 +7,24 @@ export const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const
 export const levelSchema = z.enum(LEVELS)
 export type Level = z.infer<typeof levelSchema>
 
+// el catálogo cerrado de maquetas de un libro ilustrado (ADR-0014 del backend): ancho que admite (1 página, 2 páginas),
+// si lleva ilustración y si va sin texto. Lo comparten el lector y el estudio
+export const PAGE_LAYOUTS = {
+  IMAGE_TOP: { spans: [1], illustrated: true, textless: false },
+  IMAGE_BOTTOM: { spans: [1], illustrated: true, textless: false },
+  TEXT_OVER_IMAGE: { spans: [1, 2], illustrated: true, textless: false },
+  VIGNETTE: { spans: [1], illustrated: true, textless: false },
+  TEXT_ONLY: { spans: [1], illustrated: false, textless: false },
+  IMAGE_ONLY: { spans: [1, 2], illustrated: true, textless: true },
+  SPREAD_IMAGE_LEFT: { spans: [2], illustrated: true, textless: false },
+  SPREAD_IMAGE_RIGHT: { spans: [2], illustrated: true, textless: false },
+  PANORAMA: { spans: [2], illustrated: true, textless: false }
+} as const satisfies Record<string, { spans: readonly number[]; illustrated: boolean; textless: boolean }>
+export type PageLayout = keyof typeof PAGE_LAYOUTS
+export const pageLayoutSchema = z.enum(Object.keys(PAGE_LAYOUTS) as [PageLayout, ...PageLayout[]])
+export const readingFormatSchema = z.enum(['TEXT', 'PICTURE_BOOK'])
+export type ReadingFormat = z.infer<typeof readingFormatSchema>
+
 export const GOALS = ['TRAVEL', 'WORK', 'STUDY', 'CULTURE', 'FAMILY', 'FUN', 'EXAM'] as const
 export const DIFFICULTIES = ['COMFORTABLE', 'BALANCED', 'CHALLENGING'] as const
 
@@ -55,7 +73,9 @@ export const readingCardSchema = z.object({
   publishedAt: z.string(),
   bookmarked: z.boolean(),
   progress: z.object({ percent: z.number().int().min(0).max(100), version: z.number().int(), completed: z.boolean(), updatedAt: z.string() }).nullable(),
-  readers: z.number().int().nonnegative()
+  readers: z.number().int().nonnegative(),
+  // texto o libro ilustrado (ADR-0014 del backend); un backend anterior no lo manda y es un texto
+  format: readingFormatSchema.default('TEXT')
 })
 export type ReadingCard = z.infer<typeof readingCardSchema>
 

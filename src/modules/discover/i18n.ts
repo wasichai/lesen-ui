@@ -53,6 +53,11 @@ const es = {
     level: 'Nivel',
     topic: 'Tema',
     allTopics: 'Todos los temas',
+    format: 'Formato',
+    formats: {
+      TEXT: 'Texto',
+      PICTURE_BOOK: 'Libro ilustrado'
+    },
     duration: 'Duración',
     durations: {
       short: 'Hasta 3 min',
@@ -156,6 +161,11 @@ const en: typeof es = {
     level: 'Level',
     topic: 'Topic',
     allTopics: 'All topics',
+    format: 'Format',
+    formats: {
+      TEXT: 'Text',
+      PICTURE_BOOK: 'Picture book'
+    },
     duration: 'Length',
     durations: {
       short: 'Up to 3 min',

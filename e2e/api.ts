@@ -54,6 +54,9 @@ interface StudioDraft {
     subtitle?: string | null
     summary: string
     paragraphs: { sentences: { text: string; translations: Record<string, string>; senses: Record<string, string> }[]; translations: Record<string, string> }[]
+    format?: string
+    layout?: string | null
+    pages?: Json[]
   }
   questions: Json[]
   audio: { file: string; url: string; format: string; durationMs: number; voice: string; license: string; timedWords: number } | null
@@ -240,6 +243,8 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     const max = p.get('maxMinutes')
     if (min) list = list.filter((c) => c.minutes >= Number(min))
     if (max) list = list.filter((c) => c.minutes <= Number(max))
+    const format = p.get('format')
+    if (format) list = list.filter((c) => (c as { format?: string }).format === format)
     const q = p.get('q')?.toLowerCase()
     if (q) list = list.filter((c) => [c.title, c.subtitle ?? '', c.summary].some((text) => text.toLowerCase().includes(q)))
     const status = p.get('status')
@@ -714,6 +719,11 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
         }
       }
     }
+    if (rest[0] === 'illustrations' && method === 'POST')
+      return {
+        status: 201,
+        body: { file: 'illustration-0123456789abcdef01234567.png', kind: 'ILLUSTRATION', contentType: 'image/png', sizeBytes: 68, sha256: '0'.repeat(64) }
+      }
     if (rest[0] === 'covers' && method === 'POST')
       return {
         status: 201,
@@ -1224,6 +1234,7 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     const path = url.pathname
     let reply: { status: number; body: unknown } | undefined
     if (path.startsWith('/api/lesen/public/covers/')) return route.fulfill({ status: 200, contentType: 'image/svg+xml', body: COVER })
+    if (path.startsWith('/api/lesen/public/illustrations/')) return route.fulfill({ status: 200, contentType: 'image/svg+xml', body: COVER })
     if (path.startsWith('/api/lesen/public/audio/')) return fulfillAudio(route, path.split('/').pop()!)
     if (method === 'POST' && path === '/api/auth/login')
       reply = { status: 200, body: { token: 'token-e2e', expiresAt: '2099-01-01T00:00:00Z', user: editor ? EDITOR : LEARNER } }

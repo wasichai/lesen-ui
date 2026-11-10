@@ -145,6 +145,18 @@ export function useUploadCover() {
   })
 }
 
+// la ilustración de una página de un libro (ADR-0014 del backend): devuelve el archivo para esa página
+export function useUploadIllustration() {
+  const upload = useUpload()
+  return useMutation({
+    mutationFn: (file: File) => {
+      const form = new FormData()
+      form.append('file', file)
+      return upload('/lesen/studio/illustrations', form, mediaSchema)
+    }
+  })
+}
+
 export function useAddEntry() {
   const { send } = useLesenApi()
   const queryClient = useQueryClient()
