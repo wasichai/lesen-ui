@@ -1,0 +1,34 @@
+/* la firma de «Atlas»: geometría. La destacada plana con un círculo bermellón que asoma por la esquina, la portada recta y
+   un cuadrado ultramar delante de cada titular de sección; nada de sombras blandas */
+:root[data-direction='atlas'] [data-ui='hero'] {
+  border-radius: var(--radius-card);
+}
+
+:root[data-direction='atlas'] [data-ui='hero']::before {
+  content: '';
+  position: absolute;
+  top: -72px;
+  right: -72px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+:root[data-direction='atlas'] [data-ui='hero-glow'] {
+  display: none;
+}
+
+:root[data-direction='atlas'] [data-ui='hero'] a > * {
+  rotate: none;
+}
+
+:root[data-direction='atlas'] [data-ui='section-heading'] h2::before {
+  content: '';
+  display: inline-block;
+  width: 0.4em;
+  height: 0.4em;
+  margin-right: 0.4em;
+  background: var(--brand);
+  vertical-align: 0.12em;
+}

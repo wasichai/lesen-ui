@@ -1,0 +1,33 @@
+/* la firma de «Musgo»: formas orgánicas. La destacada sin borde, con una esquina de hoja y un claro de luz verde en vez
+   del degradado de la portada; una hoja pequeña delante de cada titular de sección */
+:root[data-direction='musgo'] [data-ui='hero'] {
+  border-color: transparent;
+  border-radius: 40px 40px 40px 12px;
+  background: var(--surface-muted);
+}
+
+:root[data-direction='musgo'] [data-ui='hero-glow'] {
+  opacity: 1;
+  background: radial-gradient(70% 90% at 100% 0%, var(--brand-soft), transparent 70%) !important;
+}
+
+:root[data-direction='musgo'] [data-ui='section-heading'] h2::before {
+  content: '';
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-right: 0.4em;
+  border-radius: 0 100% 0 100%;
+  background: var(--sage);
+  vertical-align: 0.08em;
+}
+
+:root[data-direction='musgo'] [data-ui='nav-item'][aria-current='page'] {
+  background: var(--brand-soft);
+  color: var(--brand-strong);
+}
+
+:root[data-direction='musgo'] [data-ui='panel'],
+:root[data-direction='musgo'] [data-ui='metric'] {
+  border-color: transparent;
+}

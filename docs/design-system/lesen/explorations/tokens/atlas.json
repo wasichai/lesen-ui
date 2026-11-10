@@ -1,0 +1,135 @@
+{
+  "id": "atlas",
+  "name": "Atlas",
+  "concept": "Minimal premium con un guiño cultural: neutros casi blancos y casi negros, un único acento ultramar y el bermellón reservado para el momento.",
+  "font": {
+    "display": "'Geist', 'Segoe UI', system-ui, sans-serif",
+    "read": "'Newsreader', Georgia, 'Times New Roman', serif",
+    "sans": "'Geist', 'Segoe UI', system-ui, sans-serif"
+  },
+  "type": {
+    "display": { "weight": 600, "tracking": "-0.045em" },
+    "h1": { "weight": 600, "tracking": "-0.035em" },
+    "h2": { "weight": 600, "tracking": "-0.028em" },
+    "h3": { "weight": 600, "tracking": "-0.018em" },
+    "h4": { "weight": 600, "tracking": "-0.01em" },
+    "eyebrow": { "weight": 600, "tracking": "0.12em" },
+    "label": { "weight": 550 }
+  },
+  "shape": {
+    "radius": { "base": "6px", "sm": "4px", "md": "6px", "lg": "8px", "xl": "12px", "card": "6px" },
+    "button": "9999px",
+    "chip": "9999px"
+  },
+  "shadow": {
+    "light": {
+      "card": "0 0 0 1px rgb(14 15 18 / 8%)",
+      "raised": "0 0 0 1px rgb(14 15 18 / 8%), 0 8px 24px -12px rgb(14 15 18 / 22%)",
+      "overlay": "0 0 0 1px rgb(14 15 18 / 8%), 0 24px 48px rgb(14 15 18 / 16%)"
+    },
+    "dark": {
+      "card": "0 0 0 1px rgb(242 242 238 / 9%)",
+      "raised": "0 0 0 1px rgb(242 242 238 / 9%), 0 8px 24px -12px rgb(0 0 0 / 70%)",
+      "overlay": "0 0 0 1px rgb(242 242 238 / 10%), 0 24px 48px rgb(0 0 0 / 60%)"
+    }
+  },
+  "color": {
+    "light": {
+      "surface": "#fafaf8",
+      "surface-muted": "#f0f0ed",
+      "surface-raised": "#ffffff",
+      "border": "#e2e2de",
+      "border-control": "#75756f",
+      "ink": "#0e0f12",
+      "ink-muted": "#50525a",
+      "brand": "#1c3fd1",
+      "brand-strong": "#142fa3",
+      "brand-soft": "#e5e9fc",
+      "on-brand": "#ffffff",
+      "focus": "#1c3fd1",
+      "accent": "#d6361f",
+      "sea": "#19606f",
+      "sage": "#3e6a4a",
+      "ochre": "#845a00",
+      "plum": "#7a3d6e",
+      "danger": "#b42318",
+      "danger-soft": "#fbe5e1",
+      "on-danger": "#ffffff",
+      "success": "#1e6b45",
+      "success-soft": "#e1f0e7",
+      "warning": "#855000",
+      "warning-soft": "#f6ebd3",
+      "notice": "#19606f",
+      "notice-soft": "#e0eef1",
+      "mark-saved": "#ffe58f",
+      "mark-new": "#d6361f",
+      "mark-sentence": "#eceef8"
+    },
+    "dark": {
+      "surface": "#0c0c0e",
+      "surface-muted": "#060607",
+      "surface-raised": "#17171b",
+      "border": "#2a2a30",
+      "border-control": "#7a7a84",
+      "ink": "#f2f2ee",
+      "ink-muted": "#a8a8a2",
+      "brand": "#8fa3ff",
+      "brand-strong": "#b8c4ff",
+      "brand-soft": "#1b2350",
+      "on-brand": "#0a0f2e",
+      "focus": "#8fa3ff",
+      "accent": "#ff7a5c",
+      "sea": "#7fcbd9",
+      "sage": "#9fcfaa",
+      "ochre": "#e6bf6a",
+      "plum": "#e0a6d4",
+      "danger": "#ff8a7a",
+      "danger-soft": "#3a1814",
+      "on-danger": "#200805",
+      "success": "#86cfa0",
+      "success-soft": "#13281c",
+      "warning": "#e6bf6a",
+      "warning-soft": "#2f250c",
+      "notice": "#7fcbd9",
+      "notice-soft": "#11282d",
+      "mark-saved": "#4f4416",
+      "mark-saved-ink": "#fff3c8",
+      "mark-new": "#ff7a5c",
+      "mark-sentence": "#1e2030"
+    },
+    "reader-light": {
+      "surface": "#fffffd",
+      "surface-muted": "#f5f5f2",
+      "surface-raised": "#ffffff",
+      "border": "#e5e5e0",
+      "ink": "#15161a",
+      "ink-muted": "#55575e",
+      "mark-sentence": "#eef0f9"
+    },
+    "reader-sepia": {
+      "surface": "#f3ecdd",
+      "surface-muted": "#e9e0cc",
+      "surface-raised": "#f8f2e5",
+      "border": "#d8cbb2",
+      "border-control": "#7a6d55",
+      "ink": "#2f2a22",
+      "ink-muted": "#5b5040",
+      "brand": "#1a3ac2",
+      "brand-strong": "#12298f",
+      "brand-soft": "#dfdff0",
+      "mark-saved": "#efd88c",
+      "mark-new": "#b52d18",
+      "mark-sentence": "#e8dfca"
+    },
+    "reader-dark": {
+      "surface": "#0a0a0c",
+      "surface-muted": "#050506",
+      "surface-raised": "#141418",
+      "border": "#26262c",
+      "ink": "#e6e6e1",
+      "ink-muted": "#a0a09a",
+      "mark-saved": "#4a3f14",
+      "mark-sentence": "#1b1d2b"
+    }
+  }
+}

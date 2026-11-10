@@ -1,0 +1,131 @@
+{
+  "id": "musgo",
+  "name": "Musgo",
+  "concept": "Calma natural: crecimiento intelectual sereno. Arena, musgo y pizarra mineral; acento contenido y formas orgánicas suaves.",
+  "font": {
+    "display": "'Source Serif 4', Georgia, 'Times New Roman', serif",
+    "read": "'Source Serif 4', Georgia, 'Times New Roman', serif",
+    "sans": "'Manrope', 'Segoe UI', system-ui, sans-serif"
+  },
+  "type": {
+    "display": { "weight": 500, "tracking": "-0.015em" },
+    "h1": { "weight": 520, "tracking": "-0.01em" },
+    "h2": { "weight": 560, "tracking": "-0.005em" },
+    "h3": { "weight": 600, "tracking": "0em" },
+    "h4": { "weight": 640, "tracking": "0em" },
+    "eyebrow": { "weight": 700, "tracking": "0.1em" },
+    "label": { "weight": 650 }
+  },
+  "shape": {
+    "radius": { "base": "12px", "sm": "8px", "md": "12px", "lg": "18px", "xl": "26px", "card": "22px" },
+    "button": "14px",
+    "chip": "9999px"
+  },
+  "shadow": {
+    "light": {
+      "card": "0 12px 32px -14px rgb(34 52 40 / 22%)",
+      "raised": "0 18px 40px -18px rgb(34 52 40 / 28%)",
+      "overlay": "0 22px 48px rgb(29 42 36 / 18%)"
+    },
+    "dark": { "card": "0 12px 32px -14px rgb(0 0 0 / 55%)", "raised": "0 18px 40px -18px rgb(0 0 0 / 65%)", "overlay": "0 22px 48px rgb(0 0 0 / 55%)" }
+  },
+  "color": {
+    "light": {
+      "surface": "#f3efe6",
+      "surface-muted": "#e9e3d6",
+      "surface-raised": "#faf8f2",
+      "border": "#d9d2c1",
+      "border-control": "#7c7a68",
+      "ink": "#1d2a24",
+      "ink-muted": "#4d5a52",
+      "brand": "#2f5e45",
+      "brand-strong": "#224633",
+      "brand-soft": "#dfe9df",
+      "on-brand": "#ffffff",
+      "focus": "#2f5f7a",
+      "accent": "#a0522d",
+      "sea": "#2f5f6e",
+      "sage": "#4f6a3e",
+      "ochre": "#7f5b17",
+      "plum": "#6b4a5e",
+      "danger": "#a5301f",
+      "danger-soft": "#f6e2da",
+      "on-danger": "#ffffff",
+      "success": "#2d6a3a",
+      "success-soft": "#e1ecdc",
+      "warning": "#7d5000",
+      "warning-soft": "#f3e6c9",
+      "notice": "#2f5f6e",
+      "notice-soft": "#dde9ea",
+      "mark-saved": "#eadb9f",
+      "mark-new": "#a0522d",
+      "mark-sentence": "#e6e7d5"
+    },
+    "dark": {
+      "surface": "#141a17",
+      "surface-muted": "#0e1311",
+      "surface-raised": "#1c2420",
+      "border": "#2c3631",
+      "border-control": "#7b877f",
+      "ink": "#e8e6dc",
+      "ink-muted": "#a9ada0",
+      "brand": "#9fcaa9",
+      "brand-strong": "#c2e0c8",
+      "brand-soft": "#213429",
+      "on-brand": "#0d1a12",
+      "focus": "#93bfd6",
+      "accent": "#e3a27e",
+      "sea": "#8fc3cf",
+      "sage": "#b2cc98",
+      "ochre": "#dcbf7a",
+      "plum": "#d2adc4",
+      "danger": "#f09080",
+      "danger-soft": "#3a1d18",
+      "on-danger": "#1c0b08",
+      "success": "#93cfa0",
+      "success-soft": "#16291b",
+      "warning": "#dfb768",
+      "warning-soft": "#2e250f",
+      "notice": "#8fc3cf",
+      "notice-soft": "#142629",
+      "mark-saved": "#4a4422",
+      "mark-saved-ink": "#f2ecd6",
+      "mark-new": "#e3a27e",
+      "mark-sentence": "#24302a"
+    },
+    "reader-light": {
+      "surface": "#faf8f1",
+      "surface-muted": "#f1eee4",
+      "surface-raised": "#fffefa",
+      "border": "#e0dccd",
+      "ink": "#202b25",
+      "ink-muted": "#535f57",
+      "mark-sentence": "#ebecdc"
+    },
+    "reader-sepia": {
+      "surface": "#efe6d2",
+      "surface-muted": "#e5dac2",
+      "surface-raised": "#f4ecdc",
+      "border": "#d3c5a7",
+      "border-control": "#786a50",
+      "ink": "#332b1d",
+      "ink-muted": "#5a4c36",
+      "brand": "#2d5a40",
+      "brand-strong": "#21432f",
+      "brand-soft": "#dbe0cc",
+      "mark-saved": "#e6d08a",
+      "mark-new": "#94491f",
+      "mark-sentence": "#e3d8bd"
+    },
+    "reader-dark": {
+      "surface": "#101512",
+      "surface-muted": "#0b0f0d",
+      "surface-raised": "#18201b",
+      "border": "#27312b",
+      "ink": "#dcdccf",
+      "ink-muted": "#a1a598",
+      "mark-saved": "#45401f",
+      "mark-sentence": "#1f2924"
+    }
+  }
+}

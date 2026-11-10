@@ -1,0 +1,48 @@
+/* la firma de «Gaceta»: lo que los tokens no dicen. Filetes de imprenta en las cabeceras, la destacada como una portada de
+   revista (sin degradado, la portada recta) y la navegación subrayada. Solo usa los ganchos data-ui de los componentes */
+:root[data-direction='gaceta'] [data-ui='topbar'] {
+  border-bottom: 1px solid var(--ink);
+}
+
+:root[data-direction='gaceta'] [data-ui='nav-item'][aria-current='page'] {
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  box-shadow: inset 0 -2px 0 var(--brand);
+}
+
+:root[data-direction='gaceta'] [data-ui='section-heading'] {
+  position: relative;
+  border-top: 2px solid var(--ink);
+  padding-top: 14px;
+}
+
+:root[data-direction='gaceta'] [data-ui='section-heading']::before {
+  content: '';
+  position: absolute;
+  inset: 4px 0 auto;
+  border-top: 1px solid var(--accent);
+}
+
+:root[data-direction='gaceta'] [data-ui='hero'] {
+  border-width: 2px 0 1px;
+  border-color: var(--ink);
+  border-radius: 0;
+  background: transparent;
+}
+
+:root[data-direction='gaceta'] [data-ui='hero-glow'] {
+  display: none;
+}
+
+:root[data-direction='gaceta'] [data-ui='hero'] a > * {
+  rotate: none;
+}
+
+:root[data-direction='gaceta'] [data-ui='panel'],
+:root[data-direction='gaceta'] [data-ui='metric'] {
+  border-width: 1px 0 0;
+  border-color: var(--ink);
+  border-radius: 0;
+  background: transparent;
+}
