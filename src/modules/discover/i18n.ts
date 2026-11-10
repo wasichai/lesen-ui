@@ -2,6 +2,8 @@ export const DISCOVER_MODULE_ID = 'discover'
 
 const es = {
   home: {
+    custom: 'Pide una lectura escrita para ti',
+    customLead: 'A tu nivel y con tus palabras, en texto o como libro ilustrado.',
     title: 'Descubrir',
     greeting: {
       morning: 'Buenos días',
@@ -110,6 +112,8 @@ const es = {
 
 const en: typeof es = {
   home: {
+    custom: 'Ask for a reading written for you',
+    customLead: 'At your level and with your words, as text or as a picture book.',
     title: 'Discover',
     greeting: {
       morning: 'Good morning',

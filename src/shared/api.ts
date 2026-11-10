@@ -1,11 +1,12 @@
 import { ApiError, useApiClient } from '@wasichai/core'
 import { useQuery } from '@tanstack/react-query'
 import { useCallback } from 'react'
-import type { z } from 'zod'
+import { z } from 'zod'
+import { isRunning } from './commission'
 import { parseContract } from './contract'
 import { queryKeys } from './keys'
 import { retryNetwork } from './retry'
-import { languageCatalogSchema, profileSchema, topicTreeSchema } from './schemas'
+import { commissionSchema, languageCatalogSchema, profileSchema, topicTreeSchema } from './schemas'
 
 // las llamadas a /api/lesen con el cliente de @wasichai/core (token, problem+json → ApiError) y el contrato validado con zod
 export function useLesenApi() {
@@ -59,4 +60,16 @@ export function useTopics() {
 export function useProfile() {
   const { get } = useLesenApi()
   return useQuery({ queryKey: queryKeys.profile, queryFn: () => orNull(get('/lesen/learner/profile', profileSchema)), staleTime: 60_000, retry: retryNetwork })
+}
+
+// mis lecturas a medida (ADR-0016 del backend): los encargos de quien lee. Sin permiso, no se piden
+export function useMyCommissions(enabled: boolean) {
+  const { get } = useLesenApi()
+  return useQuery({
+    queryKey: ['me', 'generations'],
+    queryFn: () => get('/lesen/generations', z.array(commissionSchema)),
+    enabled,
+    refetchInterval: (query) => (query.state.data?.some((c) => isRunning(c.status)) ? 2500 : false),
+    retry: retryNetwork
+  })
 }

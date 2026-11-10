@@ -112,6 +112,12 @@ el servidor (en cola, escribiendo, dibujando, listo) con el actual anunciado y u
 falla, dice por qué con sus palabras. Sin quien escriba en el servidor, el formulario no se ofrece y se dice. En
 «Páginas», «Volver a dibujar» pide otra ilustración con la misma biblia del libro, y solo con los cambios guardados.
 
+Lecturas a medida (fase 7, ADR-0016 del backend): «Pide tu lectura» (`/request`) propone el idioma, el nivel y el largo
+del perfil (un libro ilustrado en A1 y A2) y dice la cuota que queda y cuándo vuelve; agotada, el botón se desactiva y
+se dice por qué. El avance es el mismo `CommissionProgress` del estudio; lista, «Leer ahora» abre el lector. Se entra
+desde una tarjeta de Descubrir y desde «Mis lecturas a medida» en Mis lecturas, solo con el permiso
+`lectura_a_medida`.
+
 ## Movimiento
 
 Entradas cortas (`animate-rise` 420 ms, `animate-sheet` 260 ms) y una sola celebración (`animate-pop` al terminar una

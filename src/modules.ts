@@ -3,6 +3,7 @@ import { appModule } from './modules/app/module'
 import { comprehensionModule } from './modules/comprehension/module'
 import { dictionaryModule } from './modules/dictionary/module'
 import { discoverModule } from './modules/discover/module'
+import { generateModule } from './modules/generate/module'
 import { libraryModule } from './modules/library/module'
 import { onboardingModule } from './modules/onboarding/module'
 import { profileModule } from './modules/profile/module'
@@ -19,6 +20,7 @@ export const modules: WasichaiModule[] = [
   onboardingModule(),
   discoverModule(),
   readerModule(),
+  generateModule(),
   comprehensionModule(),
   libraryModule(),
   vocabularyModule(),

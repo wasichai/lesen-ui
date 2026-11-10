@@ -30,7 +30,7 @@ const READINGS = fixture.readings as unknown as Record<string, FixtureReading | 
 
 const STORAGE_PREFIX = 'lesen'
 export const LEARNER = { id: 'u-lena', email: 'lena@demo.lesen.test', displayName: 'Lena Lectora', organizationId: 'org-demo', roles: ['LECTOR'] }
-const PERMISSIONS = { admin: false, capabilities: [], objects: { lectura: ['READ'], cuaderno: ['READ', 'UPDATE'] } }
+const PERMISSIONS = { admin: false, capabilities: [], objects: { lectura: ['READ'], cuaderno: ['READ', 'UPDATE'], lectura_a_medida: ['CREATE'] } }
 // la editora de la demostración: estudio con PUBLICAR, sin cuaderno (no tiene perfil de lectora)
 export const EDITOR = { id: 'u-edith', email: 'editor@demo.lesen.test', displayName: 'Edith', organizationId: 'org-demo', roles: ['EDITOR'] }
 const EDITOR_PERMISSIONS = { admin: false, capabilities: [], objects: { lectura: ['READ'], estudio: ['READ', 'UPDATE', 'PUBLICAR'] } }
@@ -161,6 +161,9 @@ export interface FakeApi {
   commissions: Json[]
   // si el servidor simulado tiene quien escriba y quien dibuje
   generation: { available: boolean; illustrations: boolean }
+  // las lecturas a medida de quien lee (ADR-0016 del backend) y su cuota
+  mine: Json[]
+  quota: { dailyLimit: number; dailyUsed: number; monthlyBooksLimit: number; monthlyBooksUsed: number; resetsAt: string | null }
   // lo que se pidió, como «MÉTODO /ruta»
   requests: string[]
   unexpected: string[]
@@ -199,6 +202,8 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     entries: [],
     commissions: [],
     generation: { available: true, illustrations: true },
+    mine: [],
+    quota: { dailyLimit: 3, dailyUsed: 0, monthlyBooksLimit: 4, monthlyBooksUsed: 0, resetsAt: null },
     requests: [],
     unexpected: []
   }
@@ -748,6 +753,49 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
         api.drafts.unshift(draft)
         Object.assign(commission, { draftId: draft.id, directedBy: book ? 'generation' : null, illustrations: book ? paragraphs : 0 })
       }
+    }
+    return { status: 200, body: commission }
+  }
+  // las lecturas a medida: cada consulta avanza el encargo un paso; lista, es el libro de la demostración (en el backend
+  // sería una lectura privada nueva, que se lee con las mismas rutas)
+  function privateRoutes(method: string, rest: string[], body: Json) {
+    if (editor) return { status: 403, body: problem(403, 'Forbidden') }
+    if (rest[0] === 'quota') return { status: 200, body: api.quota }
+    if (rest.length === 0 && method === 'GET') return { status: 200, body: api.mine }
+    if (rest.length === 0 && method === 'POST') {
+      const request = { minutes: 2, kind: 'STORY', format: 'TEXT', topics: [], prompt: null, ...body }
+      const book = request.format === 'PICTURE_BOOK'
+      if (api.quota.dailyUsed >= api.quota.dailyLimit || (book && api.quota.monthlyBooksUsed >= api.quota.monthlyBooksLimit))
+        return { status: 429, body: problem(429, 'You have used your readings for now') }
+      api.quota.dailyUsed += 1
+      if (book) api.quota.monthlyBooksUsed += 1
+      const commission = {
+        id: `mine-${api.mine.length + 1}`,
+        target: 'PRIVATE',
+        status: 'QUEUED',
+        request,
+        draftId: null,
+        readingSlug: null,
+        reason: null,
+        findings: [],
+        directedBy: null,
+        illustrations: null,
+        createdAt: now(),
+        updatedAt: now()
+      }
+      api.mine.unshift(commission)
+      return { status: 202, body: commission }
+    }
+    const commission = api.mine.find((c) => c.id === rest[0])
+    if (!commission) return { status: 404, body: problem(404, 'Generation not found') }
+    const book = (commission.request as Json).format === 'PICTURE_BOOK'
+    const steps = book ? STEPS : STEPS.filter((s) => s !== 'ILLUSTRATING')
+    const at = steps.indexOf(commission.status as string)
+    if (at < steps.length - 1) {
+      commission.status = steps[at + 1]!
+      commission.updatedAt = now()
+      if (commission.status === 'READY')
+        Object.assign(commission, { readingSlug: 'ein-sonntag-bei-oma', directedBy: book ? 'agent' : null, illustrations: book ? 5 : 0 })
     }
     return { status: 200, body: commission }
   }
@@ -1327,6 +1375,7 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     if (method === 'POST' && path === '/api/auth/login')
       reply = { status: 200, body: { token: 'token-e2e', expiresAt: '2099-01-01T00:00:00Z', user: editor ? EDITOR : LEARNER } }
     else if (path === '/api/auth/me/permissions') reply = { status: 200, body: editor ? EDITOR_PERMISSIONS : PERMISSIONS }
+    else if (path === '/api/lesen/generations' || path.startsWith('/api/lesen/generations/')) reply = privateRoutes(method, path.split('/').slice(4), body)
     else if (path.startsWith('/api/lesen/studio/')) reply = studioRoutes(method, path.slice('/api/lesen/studio/'.length).split('/'), body, request)
     else if (path === '/api/lesen/public/languages') reply = { status: 200, body: fixture.languages }
     else if (path === '/api/lesen/public/topics') reply = { status: 200, body: fixture.topics }

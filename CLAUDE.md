@@ -25,7 +25,7 @@ Packages, fijados todos a la misma versión exacta.
    estudio (`studio/api.ts`), con el token y la base del cliente de core, porque este fuerza JSON.
 6. **Lógica fuera de los componentes**: funciones puras con pruebas (`readerModel.ts`, `catalogFilters.ts`,
    `onboardingModel.ts`, `readerPreferences.ts`, `progressModel.ts`, `draftModel.ts`,
-   `bookModel.ts`, `pagesModel.ts`) y hooks.
+   `bookModel.ts`, `pagesModel.ts`, `generateModel.ts`, `shared/commission.ts`) y hooks.
 7. **Accesibilidad WCAG 2.2 AA**: los tokens pasan `lesen.test.ts` (contraste), objetivos de 44 px, foco visible, `lang`
    en todo texto del idioma de estudio, movimiento reducido. `e2e/a11y.spec.ts` corre axe.
 8. **Nada inventado**: si el backend no tiene la entrada o la traducción, la interfaz lo dice.
