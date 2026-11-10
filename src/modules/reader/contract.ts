@@ -1,17 +1,30 @@
 import { z } from 'zod'
 import { entrySchema, entrySummarySchema } from '../../shared/entry'
+import { pageLayoutSchema, readingFormatSchema } from '../../shared/schemas'
 
 export const tokenSchema = z.object({ id: z.string(), text: z.string(), kind: z.enum(['WORD', 'PUNCT']), space: z.boolean(), entry: z.string().nullable() })
 export const sentenceSchema = z.object({ id: z.string(), tokens: z.array(tokenSchema) })
 export const paragraphSchema = z.object({ id: z.string(), sentences: z.array(sentenceSchema) })
+export const pageSchema = z.object({
+  id: z.string(),
+  span: z.union([z.literal(1), z.literal(2)]),
+  layout: pageLayoutSchema,
+  paragraphs: z.array(z.string()),
+  illustration: z.object({ src: z.string(), alt: z.record(z.string(), z.string()) }).nullable()
+})
 export const contentSchema = z.object({
   slug: z.string(),
   version: z.number().int().positive(),
   language: z.string(),
   current: z.boolean(),
-  paragraphs: z.array(paragraphSchema)
+  paragraphs: z.array(paragraphSchema),
+  // un libro ilustrado (ADR-0014 del backend): páginas con su maqueta ya resuelta y los ids de sus párrafos
+  format: readingFormatSchema.default('TEXT'),
+  layout: pageLayoutSchema.nullable().default(null),
+  pages: z.array(pageSchema).nullable().default(null)
 })
 export type ReadingContent = z.infer<typeof contentSchema>
+export type BookPage = z.infer<typeof pageSchema>
 export type Paragraph = z.infer<typeof paragraphSchema>
 export type Sentence = z.infer<typeof sentenceSchema>
 export type Token = z.infer<typeof tokenSchema>

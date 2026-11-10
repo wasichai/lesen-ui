@@ -16,6 +16,9 @@ import {
   type Question
 } from './contract'
 
+import { commissionSchema, type CommissionRequest } from '../../shared/schemas'
+import { pollInterval } from '../../shared/commission'
+
 const KEY = ['studio'] as const
 
 export function useDrafts() {
@@ -145,6 +148,18 @@ export function useUploadCover() {
   })
 }
 
+// la ilustración de una página de un libro (ADR-0014 del backend): devuelve el archivo para esa página
+export function useUploadIllustration() {
+  const upload = useUpload()
+  return useMutation({
+    mutationFn: (file: File) => {
+      const form = new FormData()
+      form.append('file', file)
+      return upload('/lesen/studio/illustrations', form, mediaSchema)
+    }
+  })
+}
+
 export function useAddEntry() {
   const { send } = useLesenApi()
   const queryClient = useQueryClient()
@@ -155,4 +170,51 @@ export function useAddEntry() {
     }) => send('POST', '/lesen/studio/dictionary/entries', input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [...KEY, 'check'] })
   })
+}
+
+// los encargos del estudio (ADR-0015 del backend): si hay quien escriba y quien dibuje, los míos, uno y crear
+export function useCommissionStatus() {
+  const { get } = useLesenApi()
+  return useQuery({
+    queryKey: [...KEY, 'generations', 'status'],
+    queryFn: () => get('/lesen/studio/generations/status', z.object({ available: z.boolean(), illustrations: z.boolean() })),
+    retry: retryNetwork
+  })
+}
+
+export function useCommissions() {
+  const { get } = useLesenApi()
+  return useQuery({ queryKey: [...KEY, 'generations'], queryFn: () => get('/lesen/studio/generations', z.array(commissionSchema)), retry: retryNetwork })
+}
+
+export function useCommission(id: string | null) {
+  const { get } = useLesenApi()
+  const queryClient = useQueryClient()
+  return useQuery({
+    queryKey: [...KEY, 'generation', id],
+    queryFn: async () => {
+      const commission = await get(`/lesen/studio/generations/${encodeURIComponent(id!)}`, commissionSchema)
+      // terminado: el borrador nuevo entra en la lista
+      if (commission.status === 'READY') void queryClient.invalidateQueries({ queryKey: [...KEY, 'drafts'] })
+      return commission
+    },
+    enabled: id !== null,
+    refetchInterval: (query) => pollInterval(query.state.data),
+    retry: retryNetwork
+  })
+}
+
+export function useCommissionCreate() {
+  const { send } = useLesenApi()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: CommissionRequest) => send('POST', '/lesen/studio/generations', input, commissionSchema),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [...KEY, 'generations'] })
+  })
+}
+
+// volver a dibujar la ilustración de una página con la biblia del libro
+export function useRedraw(id: string) {
+  const { send } = useLesenApi()
+  return useStudioMutation((page: number) => send('POST', `/lesen/studio/drafts/${encodeURIComponent(id)}/pages/${page}/illustration`, undefined, draftSchema))
 }

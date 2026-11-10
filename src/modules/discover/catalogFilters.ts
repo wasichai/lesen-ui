@@ -1,4 +1,4 @@
-import { LEVELS, type Level } from '../../shared/schemas'
+import { LEVELS, type Level, type ReadingFormat } from '../../shared/schemas'
 
 // los filtros del catálogo viven en la URL (se comparten, se recargan, el botón atrás funciona). Esto los traduce entre
 // la URL, la pantalla y la API, sin React
@@ -12,6 +12,8 @@ export interface Filters {
   levels: Level[]
   topic: string | null
   duration: Duration | null
+  // texto o libro ilustrado (ADR-0014 del backend); null: los dos
+  format: ReadingFormat | null
   q: string
   sort: Sort
 }
@@ -28,11 +30,13 @@ export function parseFilters(params: URLSearchParams, defaultLanguage: string | 
   const duration = params.get('duration')
   const sort = params.get('sort')
   const language = params.get('language')
+  const format = params.get('format')
   return {
     language: language === 'all' ? null : (language ?? defaultLanguage),
     levels: [...new Set(levels)],
     topic: params.get('topic')?.slice(0, 120) || null,
     duration: (DURATIONS as readonly string[]).includes(duration ?? '') ? (duration as Duration) : null,
+    format: format === 'TEXT' || format === 'PICTURE_BOOK' ? format : null,
     q: (params.get('q') ?? '').slice(0, 64),
     sort: (SORTS as readonly string[]).includes(sort ?? '') ? (sort as Sort) : 'RECENT'
   }
@@ -44,6 +48,7 @@ export function toSearchParams(filters: Filters, defaultLanguage: string | null)
   for (const level of filters.levels) params.append('level', level)
   if (filters.topic) params.set('topic', filters.topic)
   if (filters.duration) params.set('duration', filters.duration)
+  if (filters.format) params.set('format', filters.format)
   if (filters.q.trim()) params.set('q', filters.q.trim())
   if (filters.sort !== 'RECENT') params.set('sort', filters.sort)
   return params
@@ -59,6 +64,7 @@ export function toApiQuery(filters: Filters, page: number): string {
     if (min !== null) params.set('minMinutes', String(min))
     if (max !== null) params.set('maxMinutes', String(max))
   }
+  if (filters.format) params.set('format', filters.format)
   if (filters.q.trim()) params.set('q', filters.q.trim())
   params.set('sort', filters.sort)
   params.set('page', String(page))
@@ -67,5 +73,5 @@ export function toApiQuery(filters: Filters, page: number): string {
 }
 
 export function activeCount(filters: Filters): number {
-  return filters.levels.length + (filters.topic ? 1 : 0) + (filters.duration ? 1 : 0) + (filters.q.trim() ? 1 : 0)
+  return filters.levels.length + (filters.topic ? 1 : 0) + (filters.duration ? 1 : 0) + (filters.format ? 1 : 0) + (filters.q.trim() ? 1 : 0)
 }

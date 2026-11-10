@@ -1,10 +1,13 @@
+import { paragraphAdded, paragraphRemoved } from './pagesModel'
 import type { Document, DraftParagraph, DraftSentence, Issue, Item, Question, QuestionType, SentenceRef } from './contract'
 
 // la lógica del editor del estudio, sin React: cambios del documento, preguntas nuevas de cada tipo y a qué pestaña lleva
 // cada hallazgo de la comprobación
 
-export type Tab = 'details' | 'text' | 'questions' | 'audio' | 'review'
-export const TABS: Tab[] = ['details', 'text', 'questions', 'audio', 'review']
+export type Tab = 'details' | 'text' | 'pages' | 'questions' | 'audio' | 'review'
+export const TABS: Tab[] = ['details', 'text', 'pages', 'questions', 'audio', 'review']
+// las pestañas de un documento: las páginas, solo en un libro ilustrado
+export const tabsFor = (doc: Document): Tab[] => (doc.format === 'PICTURE_BOOK' ? TABS : TABS.filter((tab) => tab !== 'pages'))
 
 // el slug a partir del título: minúsculas, sin acentos, palabras unidas por guiones
 export function slugify(title: string): string {
@@ -70,14 +73,14 @@ export function removeSentence(doc: Document, p: number, s: number): Document {
   return removeParagraph(doc, p)
 }
 
-export const addParagraph = (doc: Document, after: number): Document => ({
-  ...doc,
-  paragraphs: [...doc.paragraphs.slice(0, after + 1), emptyParagraph(), ...doc.paragraphs.slice(after + 1)]
-})
+// en un libro, el párrafo nuevo va a la página del anterior
+export const addParagraph = (doc: Document, after: number): Document =>
+  paragraphAdded({ ...doc, paragraphs: [...doc.paragraphs.slice(0, after + 1), emptyParagraph(), ...doc.paragraphs.slice(after + 1)] }, after + 1)
 
 export function removeParagraph(doc: Document, p: number): Document {
   const paragraphs = doc.paragraphs.filter((_, i) => i !== p)
-  return { ...doc, paragraphs: paragraphs.length ? paragraphs : [emptyParagraph()] }
+  if (!paragraphs.length) return { ...doc, paragraphs: [emptyParagraph()] }
+  return paragraphRemoved({ ...doc, paragraphs }, p)
 }
 
 export function move<T>(list: T[], index: number, delta: number): T[] {
@@ -153,10 +156,14 @@ export function normalizeQuestion(question: Question): Question {
 export function issueTab(issue: Issue): Tab {
   switch (issue.code) {
     case 'FIELD':
+      if (issue.ref === 'pages' || issue.ref === 'layout' || issue.ref?.startsWith('pages[')) return 'pages'
       return issue.ref === 'paragraphs' || issue.ref?.startsWith('paragraphs[') ? 'text' : 'details'
     case 'TRANSLATION_MISSING':
     case 'UNCHANGED':
       return 'text'
+    case 'ILLUSTRATION_MISSING':
+    case 'ALT_MISSING':
+      return 'pages'
     case 'QUESTION':
     case 'NO_QUESTIONS':
     case 'PROMPT_MISSING':

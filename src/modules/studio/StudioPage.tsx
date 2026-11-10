@@ -1,3 +1,4 @@
+import { GeneratePanel } from './GeneratePanel'
 import { ApiError, useWasichaiLinks } from '@wasichai/core'
 import { FilePlus2, History, PenLine } from 'lucide-react'
 import { useId, useState } from 'react'
@@ -99,6 +100,8 @@ function Studio() {
           </ul>
         )}
       </section>
+
+      <GeneratePanel />
 
       <NewReading />
 

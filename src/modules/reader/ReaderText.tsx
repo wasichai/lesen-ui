@@ -31,7 +31,8 @@ export function ReaderText({
   showParagraphTranslations,
   translationLanguage,
   events,
-  onListenParagraph
+  onListenParagraph,
+  onMoveTo
 }: {
   slug: string
   version: number
@@ -51,14 +52,17 @@ export function ReaderText({
   events: WordEvents
   // con audio: escuchar solo ese párrafo
   onListenParagraph?: (paragraphId: string) => void
+  // en un libro: antes de enfocar una palabra de otra página, pasar a esa página
+  onMoveTo?: (wordId: string) => void
 }) {
   const { t } = useTranslation(READER_MODULE_ID)
   const focusWord = useCallback(
     (id: string) => {
+      onMoveTo?.(id)
       setCurrentWord(id)
       document.querySelector<HTMLElement>(`[data-token="${CSS.escape(id)}"]`)?.focus()
     },
-    [setCurrentWord]
+    [onMoveTo, setCurrentWord]
   )
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const id = (event.target as HTMLElement).dataset.token

@@ -19,7 +19,8 @@ export const ROUTES = {
   profile: 'profile:home',
   studio: 'studio:home',
   studioDraft: 'studio:draft',
-  studioHistory: 'studio:history'
+  studioHistory: 'studio:history',
+  generate: 'generate:home'
 } as const
 
 export type RouteName = keyof typeof ROUTES

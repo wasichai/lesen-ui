@@ -10,6 +10,9 @@ export const CONTENT: ReadingContent = {
   version: 1,
   language: 'de',
   current: true,
+  format: 'TEXT',
+  layout: null,
+  pages: null,
   paragraphs: [
     {
       id: 'p1',

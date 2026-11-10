@@ -16,6 +16,12 @@ const es = {
     completed: 'Cuando termines una lectura, aparecerá aquí.',
     search: 'Nada coincide con «{{q}}».'
   },
+  custom: {
+    title: 'Mis lecturas a medida',
+    ask: 'Pedir una',
+    none: 'Todavía no pediste ninguna: escritas para ti, a tu nivel.',
+    format: { PICTURE_BOOK: 'Libro ilustrado', TEXT: 'Lectura' }
+  },
   discover: 'Descubrir lecturas',
   lists: {
     new: 'Nueva lista',
@@ -54,6 +60,12 @@ const en: typeof es = {
     bookmarked: 'Save readings for later from their page.',
     completed: 'When you finish a reading, it will show up here.',
     search: 'Nothing matches “{{q}}”.'
+  },
+  custom: {
+    title: 'My custom readings',
+    ask: 'Ask for one',
+    none: 'You have not asked for any yet: written for you, at your level.',
+    format: { PICTURE_BOOK: 'Picture book', TEXT: 'Reading' }
   },
   discover: 'Discover readings',
   lists: {

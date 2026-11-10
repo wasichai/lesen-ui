@@ -30,7 +30,7 @@ const READINGS = fixture.readings as unknown as Record<string, FixtureReading | 
 
 const STORAGE_PREFIX = 'lesen'
 export const LEARNER = { id: 'u-lena', email: 'lena@demo.lesen.test', displayName: 'Lena Lectora', organizationId: 'org-demo', roles: ['LECTOR'] }
-const PERMISSIONS = { admin: false, capabilities: [], objects: { lectura: ['READ'], cuaderno: ['READ', 'UPDATE'] } }
+const PERMISSIONS = { admin: false, capabilities: [], objects: { lectura: ['READ'], cuaderno: ['READ', 'UPDATE'], lectura_a_medida: ['CREATE'] } }
 // la editora de la demostración: estudio con PUBLICAR, sin cuaderno (no tiene perfil de lectora)
 export const EDITOR = { id: 'u-edith', email: 'editor@demo.lesen.test', displayName: 'Edith', organizationId: 'org-demo', roles: ['EDITOR'] }
 const EDITOR_PERMISSIONS = { admin: false, capabilities: [], objects: { lectura: ['READ'], estudio: ['READ', 'UPDATE', 'PUBLICAR'] } }
@@ -54,6 +54,9 @@ interface StudioDraft {
     subtitle?: string | null
     summary: string
     paragraphs: { sentences: { text: string; translations: Record<string, string>; senses: Record<string, string> }[]; translations: Record<string, string> }[]
+    format?: string
+    layout?: string | null
+    pages?: Json[]
   }
   questions: Json[]
   audio: { file: string; url: string; format: string; durationMs: number; voice: string; license: string; timedWords: number } | null
@@ -154,6 +157,13 @@ export interface FakeApi {
   // el estudio: borradores, lecturas publicadas desde él y entradas añadidas al diccionario
   drafts: StudioDraft[]
   entries: string[]
+  // los encargos del estudio (ADR-0015 del backend): avanzan un paso cada vez que se consultan
+  commissions: Json[]
+  // si el servidor simulado tiene quien escriba y quien dibuje
+  generation: { available: boolean; illustrations: boolean }
+  // las lecturas a medida de quien lee (ADR-0016 del backend) y su cuota
+  mine: Json[]
+  quota: { dailyLimit: number; dailyUsed: number; monthlyBooksLimit: number; monthlyBooksUsed: number; resetsAt: string | null }
   // lo que se pidió, como «MÉTODO /ruta»
   requests: string[]
   unexpected: string[]
@@ -190,6 +200,10 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     lists: [],
     drafts: [],
     entries: [],
+    commissions: [],
+    generation: { available: true, illustrations: true },
+    mine: [],
+    quota: { dailyLimit: 3, dailyUsed: 0, monthlyBooksLimit: 4, monthlyBooksUsed: 0, resetsAt: null },
     requests: [],
     unexpected: []
   }
@@ -240,6 +254,8 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     const max = p.get('maxMinutes')
     if (min) list = list.filter((c) => c.minutes >= Number(min))
     if (max) list = list.filter((c) => c.minutes <= Number(max))
+    const format = p.get('format')
+    if (format) list = list.filter((c) => (c as { format?: string }).format === format)
     const q = p.get('q')?.toLowerCase()
     if (q) list = list.filter((c) => [c.title, c.subtitle ?? '', c.summary].some((text) => text.toLowerCase().includes(q)))
     const status = p.get('status')
@@ -670,6 +686,119 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     updatedBy: d.updatedBy,
     updatedAt: d.updatedAt
   })
+  // un encargo: cada consulta lo avanza un paso; al terminar deja un borrador de libro ilustrado hecho de la lectura
+  // de la demostración, con sus páginas e ilustraciones, como lo entregaría el backend
+  const STEPS = ['QUEUED', 'WRITING', 'ILLUSTRATING', 'READY']
+  function commissionRoutes(method: string, rest: string[], body: Json) {
+    if (rest[1] === 'status' && method === 'GET') return { status: 200, body: api.generation }
+    if (rest.length === 1 && method === 'GET') return { status: 200, body: api.commissions }
+    if (rest.length === 1 && method === 'POST') {
+      if (!api.generation.available) return { status: 503, body: problem(503, 'Reading generation is not configured on this server') }
+      const request = { minutes: 2, kind: 'STORY', format: 'TEXT', topics: [], prompt: null, ...body }
+      const commission = {
+        id: `generation-${api.commissions.length + 1}`,
+        target: 'STUDIO',
+        status: 'QUEUED',
+        request,
+        draftId: null,
+        readingSlug: null,
+        reason: null,
+        findings: [],
+        directedBy: null,
+        illustrations: null,
+        createdAt: now(),
+        updatedAt: now()
+      }
+      api.commissions.unshift(commission)
+      return { status: 202, body: commission }
+    }
+    const commission = api.commissions.find((c) => c.id === rest[1])
+    if (!commission) return { status: 404, body: problem(404, 'Generation not found') }
+    const book = (commission.request as Json).format === 'PICTURE_BOOK'
+    const steps = book ? STEPS : STEPS.filter((s) => s !== 'ILLUSTRATING')
+    const at = steps.indexOf(commission.status as string)
+    if (at < steps.length - 1) {
+      commission.status = steps[at + 1]!
+      commission.updatedAt = now()
+      if (commission.status === 'READY') {
+        const draft = structuredClone(STUDIO_DRAFT)
+        const paragraphs = draft.document.paragraphs.length
+        Object.assign(draft, {
+          id: `draft-generated-${api.drafts.length + 1}`,
+          slug: `ein-buch-${commission.id}`,
+          status: 'DRAFT',
+          baseVersion: null,
+          events: []
+        })
+        draft.document = {
+          ...draft.document,
+          slug: draft.slug,
+          title: 'Ein Buch am Meer',
+          format: book ? 'PICTURE_BOOK' : 'TEXT',
+          layout: book ? 'IMAGE_TOP' : null,
+          pages: book
+            ? Array.from({ length: paragraphs }, (_, i) => ({
+                span: 1,
+                layout: null,
+                paragraphs: 1,
+                illustration: {
+                  file: `illustration-${i}0123456789abcdef0123456.png`,
+                  alt: { es: `Ilustración ${i + 1}`, en: `Illustration ${i + 1}` },
+                  scene: `Escena ${i + 1}`
+                }
+              }))
+            : []
+        }
+        event(draft, 'GENERATED', `${book ? 'PICTURE_BOOK' : 'TEXT'} A1`)
+        api.drafts.unshift(draft)
+        Object.assign(commission, { draftId: draft.id, directedBy: book ? 'generation' : null, illustrations: book ? paragraphs : 0 })
+      }
+    }
+    return { status: 200, body: commission }
+  }
+  // las lecturas a medida: cada consulta avanza el encargo un paso; lista, es el libro de la demostración (en el backend
+  // sería una lectura privada nueva, que se lee con las mismas rutas)
+  function privateRoutes(method: string, rest: string[], body: Json) {
+    if (editor) return { status: 403, body: problem(403, 'Forbidden') }
+    if (rest[0] === 'quota') return { status: 200, body: api.quota }
+    if (rest.length === 0 && method === 'GET') return { status: 200, body: api.mine }
+    if (rest.length === 0 && method === 'POST') {
+      const request = { minutes: 2, kind: 'STORY', format: 'TEXT', topics: [], prompt: null, ...body }
+      const book = request.format === 'PICTURE_BOOK'
+      if (api.quota.dailyUsed >= api.quota.dailyLimit || (book && api.quota.monthlyBooksUsed >= api.quota.monthlyBooksLimit))
+        return { status: 429, body: problem(429, 'You have used your readings for now') }
+      api.quota.dailyUsed += 1
+      if (book) api.quota.monthlyBooksUsed += 1
+      const commission = {
+        id: `mine-${api.mine.length + 1}`,
+        target: 'PRIVATE',
+        status: 'QUEUED',
+        request,
+        draftId: null,
+        readingSlug: null,
+        reason: null,
+        findings: [],
+        directedBy: null,
+        illustrations: null,
+        createdAt: now(),
+        updatedAt: now()
+      }
+      api.mine.unshift(commission)
+      return { status: 202, body: commission }
+    }
+    const commission = api.mine.find((c) => c.id === rest[0])
+    if (!commission) return { status: 404, body: problem(404, 'Generation not found') }
+    const book = (commission.request as Json).format === 'PICTURE_BOOK'
+    const steps = book ? STEPS : STEPS.filter((s) => s !== 'ILLUSTRATING')
+    const at = steps.indexOf(commission.status as string)
+    if (at < steps.length - 1) {
+      commission.status = steps[at + 1]!
+      commission.updatedAt = now()
+      if (commission.status === 'READY')
+        Object.assign(commission, { readingSlug: 'ein-sonntag-bei-oma', directedBy: book ? 'agent' : null, illustrations: book ? 5 : 0 })
+    }
+    return { status: 200, body: commission }
+  }
   function studioRoutes(method: string, rest: string[], body: Json, request: Route['request'] extends () => infer R ? R : never) {
     if (!editor) return { status: 403, body: problem(403, 'Forbidden') }
     const open = (d: StudioDraft) => d.status === 'DRAFT' || d.status === 'IN_REVIEW'
@@ -714,6 +843,23 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
         }
       }
     }
+    if (rest[0] === 'generations') return commissionRoutes(method, rest, body)
+    if (rest[0] === 'drafts' && rest[2] === 'pages' && rest[4] === 'illustration' && method === 'POST') {
+      const draft = api.drafts.find((d) => d.id === rest[1])
+      const n = Number(rest[3])
+      const page = draft?.document.pages?.[n - 1] as { illustration?: { file: string | null } | null } | undefined
+      if (!draft || !page) return { status: 404, body: problem(404, 'Page not found') }
+      page.illustration = { ...(page.illustration ?? {}), file: `illustration-redrawn${n}${draft.revision}abcdef012345678.png` }
+      draft.revision += 1
+      draft.updatedAt = now()
+      event(draft, 'SAVED')
+      return { status: 200, body: studioView(draft) }
+    }
+    if (rest[0] === 'illustrations' && method === 'POST')
+      return {
+        status: 201,
+        body: { file: 'illustration-0123456789abcdef01234567.png', kind: 'ILLUSTRATION', contentType: 'image/png', sizeBytes: 68, sha256: '0'.repeat(64) }
+      }
     if (rest[0] === 'covers' && method === 'POST')
       return {
         status: 201,
@@ -1224,12 +1370,14 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     const path = url.pathname
     let reply: { status: number; body: unknown } | undefined
     if (path.startsWith('/api/lesen/public/covers/')) return route.fulfill({ status: 200, contentType: 'image/svg+xml', body: COVER })
+    if (path.startsWith('/api/lesen/public/illustrations/')) return route.fulfill({ status: 200, contentType: 'image/svg+xml', body: COVER })
     if (path.startsWith('/api/lesen/public/audio/')) return fulfillAudio(route, path.split('/').pop()!)
     const exported = /^\/api\/lesen\/readings\/([^/]+)\/versions\/(\d+)\/export$/.exec(path)
     if (exported && method === 'GET') return fulfillExport(route, exported[1]!, Number(exported[2]), url)
     if (method === 'POST' && path === '/api/auth/login')
       reply = { status: 200, body: { token: 'token-e2e', expiresAt: '2099-01-01T00:00:00Z', user: editor ? EDITOR : LEARNER } }
     else if (path === '/api/auth/me/permissions') reply = { status: 200, body: editor ? EDITOR_PERMISSIONS : PERMISSIONS }
+    else if (path === '/api/lesen/generations' || path.startsWith('/api/lesen/generations/')) reply = privateRoutes(method, path.split('/').slice(4), body)
     else if (path.startsWith('/api/lesen/studio/')) reply = studioRoutes(method, path.slice('/api/lesen/studio/'.length).split('/'), body, request)
     else if (path === '/api/lesen/public/languages') reply = { status: 200, body: fixture.languages }
     else if (path === '/api/lesen/public/topics') reply = { status: 200, body: fixture.topics }
