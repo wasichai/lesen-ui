@@ -286,11 +286,11 @@ function Reader({
               <LevelBadge level={reading.level} />
               {!content.current && <span className="text-secondary text-ink-muted">{t('text.oldVersion', { version: content.version })}</span>}
             </div>
-            <h1 id="reading-title" className="font-read text-h1 sm:text-display" lang={content.language}>
+            <h1 id="reading-title" className="font-display text-h1 sm:text-display" lang={content.language}>
               {reading.title}
             </h1>
             {reading.subtitle && (
-              <p className="mt-2 font-read text-h3 italic text-ink-muted" lang={content.language}>
+              <p className="mt-2 font-display text-h3 italic text-ink-muted" lang={content.language}>
                 {reading.subtitle}
               </p>
             )}

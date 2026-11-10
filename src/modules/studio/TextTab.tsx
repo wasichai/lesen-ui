@@ -19,7 +19,7 @@ export function TextTab({ edited, onChange, language, into }: { edited: Edited; 
         {doc.paragraphs.map((paragraph, p) => (
           <li key={p} className="rounded-[var(--radius-card)] border border-border bg-surface-raised p-4 sm:p-5">
             <div className="mb-4 flex flex-wrap items-center gap-2">
-              <h2 className="mr-auto font-read text-h4">{t('text.paragraph', { n: p + 1 })}</h2>
+              <h2 className="mr-auto font-display text-h4">{t('text.paragraph', { n: p + 1 })}</h2>
               <button
                 type="button"
                 className={buttonClass('ghost', 'icon')}

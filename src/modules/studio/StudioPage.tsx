@@ -56,12 +56,12 @@ function Studio() {
   return (
     <div className="flex flex-col gap-12">
       <header>
-        <h1 className="font-read text-h1">{t('home.title')}</h1>
+        <h1 className="font-display text-h1">{t('home.title')}</h1>
         <p className="mt-2 max-w-2xl text-ink-muted">{t('home.lead')}</p>
       </header>
 
       <section aria-labelledby="open-drafts">
-        <h2 id="open-drafts" className="mb-4 font-read text-h2">
+        <h2 id="open-drafts" className="mb-4 font-display text-h2">
           {t('home.drafts')}
         </h2>
         {drafts.isError ? (
@@ -85,7 +85,7 @@ function Studio() {
                       {draft.baseVersion ? ` · ${t('home.fromVersion', { version: draft.baseVersion })}` : ''}
                     </span>
                   </span>
-                  <span className="font-read text-h4" lang={draft.language}>
+                  <span className="font-display text-h4" lang={draft.language}>
                     {draft.title}
                   </span>
                   <span className="text-secondary text-ink-muted">
@@ -103,7 +103,7 @@ function Studio() {
       <NewReading />
 
       <section aria-labelledby="published">
-        <h2 id="published" className="mb-4 font-read text-h2">
+        <h2 id="published" className="mb-4 font-display text-h2">
           {t('home.published')}
         </h2>
         {published.isError ? (
@@ -117,7 +117,7 @@ function Studio() {
             {published.data.map((reading) => (
               <li key={reading.slug} className="flex flex-wrap items-center gap-x-4 gap-y-2 p-4">
                 <div className="min-w-0 flex-1 basis-60">
-                  <p className="font-read text-h4" lang={reading.language}>
+                  <p className="font-display text-h4" lang={reading.language}>
                     {reading.title}
                   </p>
                   <p className="text-secondary text-ink-muted">
@@ -173,7 +173,7 @@ function NewReading() {
   const error = create.error
   return (
     <section aria-labelledby={`${id}-title`} className="rounded-[var(--radius-card)] border border-border bg-surface-raised p-5 sm:p-6">
-      <h2 id={`${id}-title`} className="font-read text-h3">
+      <h2 id={`${id}-title`} className="font-display text-h3">
         {t('home.new')}
       </h2>
       <p className="mt-1 text-secondary text-ink-muted">{t('home.newLead')}</p>

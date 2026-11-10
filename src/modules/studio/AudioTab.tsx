@@ -24,7 +24,7 @@ export function AudioTab({ draft, dirty }: { draft: Draft; dirty: boolean }) {
   return (
     <div className="grid gap-8 lg:grid-cols-2">
       <section aria-labelledby="audio-current" className="flex flex-col gap-3">
-        <h2 id="audio-current" className="font-read text-h3">
+        <h2 id="audio-current" className="font-display text-h3">
           {t('audio.current')}
         </h2>
         {draft.audio ? (
@@ -50,7 +50,7 @@ export function AudioTab({ draft, dirty }: { draft: Draft; dirty: boolean }) {
       </section>
       {editable && (
         <section aria-labelledby="audio-upload" className="flex flex-col gap-4">
-          <h2 id="audio-upload" className="font-read text-h3">
+          <h2 id="audio-upload" className="font-display text-h3">
             {t('audio.upload')}
           </h2>
           <p className="text-ink-muted">{t('audio.lead')}</p>

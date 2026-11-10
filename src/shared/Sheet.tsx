@@ -28,7 +28,7 @@ export function Sheet({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={`overflow-y-auto overscroll-contain p-6 ${placement}`} aria-describedby={describedBy}>
         {side === 'bottom' && <div aria-hidden className="mx-auto -mt-2 mb-4 h-1.5 w-12 rounded-full bg-border" />}
-        <DialogTitle className={hideTitle ? 'sr-only' : 'pr-10 font-read text-h3'}>{title}</DialogTitle>
+        <DialogTitle className={hideTitle ? 'sr-only' : 'pr-10 font-display text-h3'}>{title}</DialogTitle>
         {children}
       </DialogContent>
     </Dialog>

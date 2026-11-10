@@ -109,24 +109,31 @@
   --color-mark-sentence: var(--mark-sentence);
 }
 
-/* la escala tipográfica de Lesen (docs/design-system/lesen/tokens.json). font-read: titulares y lectura */
+/* la escala tipográfica de Lesen (docs/design-system/lesen/tokens.json). font-display: titulares y la marca; font-read: el
+   texto en el idioma que se estudia. Hoy las dos son Newsreader; las direcciones de exploración las separan */
 @theme {
   --font-read: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
 
   --text-display: 52px;
   --text-display--line-height: 56px;
+  --text-display--letter-spacing: normal;
   --text-display--font-weight: 420;
   --text-h1: 40px;
   --text-h1--line-height: 46px;
+  --text-h1--letter-spacing: normal;
   --text-h1--font-weight: 450;
   --text-h2: 30px;
   --text-h2--line-height: 36px;
+  --text-h2--letter-spacing: normal;
   --text-h2--font-weight: 480;
   --text-h3: 23px;
   --text-h3--line-height: 29px;
+  --text-h3--letter-spacing: normal;
   --text-h3--font-weight: 540;
   --text-h4: 19px;
   --text-h4--line-height: 25px;
+  --text-h4--letter-spacing: normal;
   --text-h4--font-weight: 600;
   --text-eyebrow: 13px;
   --text-eyebrow--line-height: 16px;

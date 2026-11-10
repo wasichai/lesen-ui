@@ -73,7 +73,7 @@ function Results({ attempt }: { attempt: Attempt }) {
         <div aria-hidden className="grid size-14 place-items-center rounded-full bg-brand text-on-brand">
           <Sparkles className="size-7" />
         </div>
-        <h1 ref={title} tabIndex={-1} className="font-read text-h1">
+        <h1 ref={title} tabIndex={-1} className="font-display text-h1">
           {t('results.title')}
         </h1>
         <p className="text-[20px] font-semibold">
@@ -92,7 +92,7 @@ function Results({ attempt }: { attempt: Attempt }) {
         if (answers.length === 0) return null
         return (
           <section key={group} aria-labelledby={`group-${group}`} className="flex flex-col gap-4">
-            <h2 id={`group-${group}`} className="font-read text-h2">
+            <h2 id={`group-${group}`} className="font-display text-h2">
               {heading[group]}
             </h2>
             <ul className="flex flex-col gap-4">
@@ -147,7 +147,7 @@ function AnswerCard({
   return (
     <article className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface-raised p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <h3 className="max-w-prose font-read text-h4 leading-snug">{question.prompt}</h3>
+        <h3 className="max-w-prose font-display text-h4 leading-snug">{question.prompt}</h3>
         <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-secondary font-bold ${TONES[answer.result]}`}>
           <Icon aria-hidden className={`size-4 ${answer.result === 'PENDING' ? 'animate-spin motion-reduce:animate-none' : ''}`} />
           {t(`results.result.${answer.result}`)}

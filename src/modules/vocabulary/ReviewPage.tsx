@@ -112,7 +112,7 @@ function Session({ cards, nextDueAt, onMore }: SessionProps) {
         <div aria-hidden className="grid size-16 animate-pop place-items-center rounded-full bg-brand text-on-brand">
           <CalendarCheck className="size-8" />
         </div>
-        <h1 ref={heading} tabIndex={-1} className="font-read text-h1">
+        <h1 ref={heading} tabIndex={-1} className="font-display text-h1">
           {t('review.done', { count: done })}
         </h1>
         <p className="text-ink-muted">{t('review.doneBody')}</p>
@@ -162,15 +162,15 @@ function Session({ cards, nextDueAt, onMore }: SessionProps) {
           </p>
         )}
         {mode === 'meaning' && (
-          <p className="font-read text-display leading-none" lang={item.language}>
+          <p className="font-display text-display leading-none" lang={item.language}>
             {item.lemma}
           </p>
         )}
-        {mode === 'recall' && <p className="font-read text-h1">{item.translations.join(', ')}</p>}
+        {mode === 'recall' && <p className="font-display text-h1">{item.translations.join(', ')}</p>}
         {revealed && (
           <div className="flex w-full flex-col items-center gap-3 border-t border-border pt-5" aria-live="polite">
             {mode === 'recall' ? (
-              <p className="font-read text-h1" lang={item.language}>
+              <p className="font-display text-h1" lang={item.language}>
                 {item.lemma}
               </p>
             ) : (

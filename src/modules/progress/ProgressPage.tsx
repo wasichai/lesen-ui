@@ -49,7 +49,7 @@ function Progress() {
   return (
     <div className="flex flex-col gap-8">
       <header>
-        <h1 className="font-read text-h1">{t('title')}</h1>
+        <h1 className="font-display text-h1">{t('title')}</h1>
         <p className="mt-2 max-w-2xl text-ink-muted">{t('lead')}</p>
         <p className="mt-3 flex flex-wrap items-center gap-2 text-secondary text-ink-muted">
           {t('language', { language: languageName(data.language, i18n.language) })} · {t('legend')}
@@ -82,7 +82,7 @@ function Today({ data }: { data: Dashboard }) {
   const percent = goalPercent(minutes, data.goal.dailyMinutes)
   return (
     <Card title={t('today.title')}>
-      <p className="font-read text-h2 tabular-nums">{t('today.minutes', { minutes, goal: data.goal.dailyMinutes })}</p>
+      <p className="font-display text-h2 tabular-nums">{t('today.minutes', { minutes, goal: data.goal.dailyMinutes })}</p>
       <ProgressBar percent={percent} label={t('today.goalLabel')} />
       <p className="text-ink-muted">
         {data.goal.met ? t('today.met') : minutes > 0 ? t('today.progress', { minutes, goal: data.goal.dailyMinutes }) : t('today.rest')}
@@ -108,7 +108,7 @@ function Week({ data }: { data: Dashboard }) {
         )
       }
     >
-      <p className="font-read text-h2">{t('streak.days', { active: streak.activeThisWeek, target: streak.target })}</p>
+      <p className="font-display text-h2">{t('streak.days', { active: streak.activeThisWeek, target: streak.target })}</p>
       <ol className="flex gap-2" aria-label={t('streak.days', { active: streak.activeThisWeek, target: streak.target })}>
         {days.map((day) => (
           <li key={day.date} className="flex flex-col items-center gap-1">
@@ -222,7 +222,7 @@ function Level({ data }: { data: Dashboard }) {
   return (
     <Card title={t('level.title')}>
       <p className="flex flex-wrap items-baseline gap-2">
-        <span className="font-read text-h2">
+        <span className="font-display text-h2">
           <span aria-hidden>≈ </span>
           {level.level}
         </span>

@@ -54,7 +54,7 @@ function Dictionary() {
   return (
     <div className="flex flex-col gap-8">
       <header>
-        <h1 className="font-read text-h1">{t('title')}</h1>
+        <h1 className="font-display text-h1">{t('title')}</h1>
         <p className="mt-2 text-ink-muted">{t('lead', { language: study, ui })}</p>
       </header>
       <form
@@ -117,7 +117,7 @@ function Dictionary() {
             <Skeleton className="h-24" />
           ) : results.data.length === 0 ? (
             <div className="rounded-[var(--radius-card)] border border-dashed border-border p-6">
-              <p className="font-read text-h4">{t('none', { q: submitted })}</p>
+              <p className="font-display text-h4">{t('none', { q: submitted })}</p>
               <p className="mt-1 text-ink-muted">{t('noneBody')}</p>
             </div>
           ) : (
@@ -128,7 +128,7 @@ function Dictionary() {
 
       <div className="grid gap-8 md:grid-cols-2">
         <section aria-labelledby="favorites">
-          <h2 id="favorites" className="mb-3 flex items-center gap-2 font-read text-h3">
+          <h2 id="favorites" className="mb-3 flex items-center gap-2 font-display text-h3">
             <Star aria-hidden className="size-5 text-ochre" />
             {t('favorites')}
           </h2>
@@ -136,7 +136,7 @@ function Dictionary() {
         </section>
         <section aria-labelledby="history">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 id="history" className="flex items-center gap-2 font-read text-h3">
+            <h2 id="history" className="flex items-center gap-2 font-display text-h3">
               <History aria-hidden className="size-5 text-sea" />
               {t('history')}
             </h2>
@@ -192,7 +192,7 @@ function EntryList({ entries }: { entries: EntrySummary[] }) {
       {entries.map((entry) => (
         <li key={entry.key}>
           <Link to={links.to(ROUTES.entry, { key: entry.key })} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-5 py-3.5 hover:bg-surface-muted">
-            <span className="font-read text-h4" lang={entry.language}>
+            <span className="font-display text-h4" lang={entry.language}>
               {entry.lemma}
             </span>
             <span className="text-secondary italic text-ink-muted">{app(`pos.${entry.pos}`, { defaultValue: entry.pos })}</span>

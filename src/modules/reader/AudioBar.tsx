@@ -40,6 +40,7 @@ export function AudioBar({
   return (
     <section
       aria-label={t('audio.label')}
+      data-ui="audio-bar"
       className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface-raised/95 font-sans shadow-[0_-8px_24px_rgb(0_0_0/6%)] backdrop-blur"
     >
       <div className="mx-auto flex max-w-5xl flex-col gap-1 px-3 py-2 sm:px-4">

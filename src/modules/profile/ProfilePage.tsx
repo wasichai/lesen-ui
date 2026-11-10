@@ -84,7 +84,7 @@ function ProfileForm({ profile, goals }: { profile: Profile; goals: Goals | null
       }}
     >
       <header>
-        <h1 className="font-read text-h1">{t('title')}</h1>
+        <h1 className="font-display text-h1">{t('title')}</h1>
         <p className="mt-2 text-ink-muted">{t('lead')}</p>
       </header>
 
@@ -281,7 +281,7 @@ function ProfileForm({ profile, goals }: { profile: Profile; goals: Goals | null
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-4 border-t border-border pt-8">
-      <h2 className="font-read text-h3">{title}</h2>
+      <h2 className="font-display text-h3">{title}</h2>
       <div>{children}</div>
     </section>
   )

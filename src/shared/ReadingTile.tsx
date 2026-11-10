@@ -52,7 +52,7 @@ export function ReadingTile({ reading, variant = 'tall', className = '' }: { rea
           <div className="flex items-center gap-2">
             <LevelBadge level={reading.level} />
           </div>
-          <h3 className="font-read text-h4 leading-snug group-hover:underline group-hover:underline-offset-4" lang={reading.language}>
+          <h3 className="font-display text-h4 leading-snug group-hover:underline group-hover:underline-offset-4" lang={reading.language}>
             {reading.title}
           </h3>
           {meta}
@@ -63,14 +63,14 @@ export function ReadingTile({ reading, variant = 'tall', className = '' }: { rea
   }
   return (
     <Link to={to} className={`group flex flex-col gap-3 ${className}`}>
-      <div className="relative transition-transform duration-300 group-hover:-translate-y-1">
-        <Cover src={reading.cover} accent={reading.accent} className="shadow-[0_10px_24px_rgb(48_34_20/12%)]" />
+      <div data-ui="tile-cover" className="relative transition-transform duration-300 group-hover:-translate-y-1">
+        <Cover src={reading.cover} accent={reading.accent} className="shadow-[var(--shadow-cover)]" />
         <div className="absolute left-3 top-3">
           <LevelBadge level={reading.level} tone="onImage" />
         </div>
       </div>
       <div className="flex flex-col gap-1.5 px-0.5">
-        <h3 className="font-read text-h4 leading-snug group-hover:underline group-hover:underline-offset-4" lang={reading.language}>
+        <h3 className="font-display text-h4 leading-snug group-hover:underline group-hover:underline-offset-4" lang={reading.language}>
           {reading.title}
         </h3>
         {meta}

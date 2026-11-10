@@ -9,10 +9,10 @@ import { achievementPercent, bars, dayName, hoursAndMinutes, shortDate } from '.
 export function MetricValue({ label, metric, format }: { label: string; metric: Metric; format?: (value: number) => string }) {
   const estimated = metric.kind === 'ESTIMATED'
   return (
-    <div className="flex min-w-0 flex-col gap-1 rounded-[var(--radius-card)] border border-border bg-surface-raised p-4">
+    <div data-ui="metric" className="flex min-w-0 flex-col gap-1 rounded-[var(--radius-card)] border border-border bg-surface-raised p-4">
       <dt className="text-secondary text-ink-muted">{label}</dt>
       <dd className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <span className="font-read text-h2 tabular-nums">
+        <span className="font-display text-h2 tabular-nums">
           {estimated && <span aria-hidden>≈ </span>}
           {format ? format(metric.value) : metric.value.toLocaleString()}
         </span>
@@ -193,9 +193,13 @@ export function Card({ title, children, action, id }: { title: string; children:
   const generated = useId()
   const heading = id ?? generated
   return (
-    <section aria-labelledby={heading} className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface-raised p-5 sm:p-6">
+    <section
+      aria-labelledby={heading}
+      data-ui="panel"
+      className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface-raised p-5 sm:p-6"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id={heading} className="font-read text-h3">
+        <h2 id={heading} className="font-display text-h3">
           {title}
         </h2>
         {action}

@@ -56,7 +56,7 @@ function Vocabulary() {
     <div className="flex flex-col gap-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-read text-h1">{t('title')}</h1>
+          <h1 className="font-display text-h1">{t('title')}</h1>
           <p className="mt-2 text-ink-muted">{t('lead')}</p>
         </div>
         {words.data && total > 0 && <p className="text-label">{t('count', { count: total })}</p>}
@@ -144,7 +144,7 @@ function DueCard() {
         {due > 0 ? <Repeat className="size-6" /> : <CalendarCheck className="size-6" />}
       </div>
       <div className="min-w-0 flex-1">
-        <h2 id="due-title" className="font-read text-h3">
+        <h2 id="due-title" className="font-display text-h3">
           {due > 0 ? t('due.title', { count: due }) : t('due.none')}
         </h2>
         <p className="text-secondary text-ink-muted">
@@ -183,7 +183,7 @@ function WordCard({ item }: { item: VocabularyItem }) {
     <article className="flex h-full flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface-raised p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-read text-h3" lang={item.language}>
+          <h2 className="font-display text-h3" lang={item.language}>
             {item.lemma}
           </h2>
           <p className="text-secondary italic text-ink-muted">{app(`pos.${item.pos}`, { defaultValue: item.pos })}</p>

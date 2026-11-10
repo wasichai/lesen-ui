@@ -38,11 +38,11 @@ export function LearnerLayout({ children }: { children: ReactNode }) {
       >
         {t('nav.skip')}
       </a>
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/75">
+      <header data-ui="topbar" className="sticky top-0 z-30 border-b border-border/70 bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/75">
         <div className="mx-auto flex h-16 max-w-page items-center gap-4 px-4 sm:px-6 xl:gap-6">
           <NavLink to={links.to(ROUTES.discover)} className="flex items-center gap-2 rounded-full pr-2">
             <LesenMark className="size-8" />
-            <span className="font-read text-[22px] font-semibold tracking-tight">{appName}</span>
+            <span className="font-display text-[22px] font-semibold tracking-tight">{appName}</span>
           </NavLink>
           <nav aria-label={t('nav.label')} className="hidden flex-1 lg:block">
             <ul className="flex items-center gap-1">
@@ -51,6 +51,7 @@ export function LearnerLayout({ children }: { children: ReactNode }) {
                   <NavLink
                     to={links.to(ROUTES[route])}
                     end={route === 'discover'}
+                    data-ui="nav-item"
                     className={({ isActive }) =>
                       `inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full px-3 text-label transition-colors xl:px-4 ${
                         isActive ? 'bg-ink text-surface' : 'text-ink hover:bg-surface-muted'
@@ -97,6 +98,7 @@ export function LearnerLayout({ children }: { children: ReactNode }) {
       </main>
       <nav
         aria-label={t('nav.label')}
+        data-ui="tabbar"
         className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface-raised/95 backdrop-blur lg:hidden"
       >
         <ul className="grid grid-cols-6">
@@ -105,6 +107,7 @@ export function LearnerLayout({ children }: { children: ReactNode }) {
               <NavLink
                 to={links.to(ROUTES[route])}
                 end={route === 'discover'}
+                data-ui="tab-item"
                 className={({ isActive }) =>
                   `flex min-h-14 flex-col items-center justify-center gap-0.5 px-0.5 text-[11px] font-semibold leading-tight ${isActive ? 'text-brand-strong' : 'text-ink-muted'}`
                 }

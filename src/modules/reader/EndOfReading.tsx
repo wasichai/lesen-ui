@@ -65,7 +65,7 @@ export function EndOfReading({
         <div aria-hidden className="grid size-20 animate-pop place-items-center rounded-full bg-brand text-on-brand shadow-lg">
           <Sparkles className="size-9" />
         </div>
-        <h2 id="end-title" ref={title} tabIndex={-1} className="mt-5 font-read text-h1">
+        <h2 id="end-title" ref={title} tabIndex={-1} className="mt-5 font-display text-h1">
           {t('end.title')}
         </h2>
         <p className="mt-3 text-[18px]">{t('end.body', { words: reading.wordCount, language: languageName(language, i18n.language) })}</p>
@@ -90,7 +90,7 @@ export function EndOfReading({
       </div>
       {related.length > 0 && (
         <div className="mt-10">
-          <h3 className="mb-4 font-read text-h3">{t('end.next')}</h3>
+          <h3 className="mb-4 font-display text-h3">{t('end.next')}</h3>
           <ul className="grid grid-cols-2 gap-5 sm:grid-cols-4">
             {related.slice(0, 4).map((r) => (
               <li key={r.slug}>

@@ -17,7 +17,7 @@ export function EmptyState({
       <div aria-hidden className="grid size-20 place-items-center rounded-full bg-brand-soft text-brand-strong">
         <Icon className="size-9" />
       </div>
-      <h2 className="font-read text-h3">{title}</h2>
+      <h2 className="font-display text-h3">{title}</h2>
       {body && <p className="text-ink-muted">{body}</p>}
       {action}
     </div>
