@@ -23,6 +23,12 @@ tranquilo para leer mucho rato. La lectura manda; la interfaz se aparta.
 | Botánica            | Verdes y ocres, ilustración de hojas en todas partes, esquinas muy redondas           | Encantadora en portadas, cansa en sesiones largas; queda como tonos de tema (sage, ochre) |
 | Biblioteca nocturna | Oscuro por defecto, dorados, tipografía display muy contrastada                       | Espectacular en la portada, peor para leer de día; queda como tema oscuro del lector      |
 
+### Exploración de 2026-11
+
+Cuatro direcciones nuevas (Gaceta, Pulso, Musgo y Atlas), comparadas con Papel y tinta sobre las pantallas reales desde
+un laboratorio que solo existe en desarrollo. Ninguna está aplicada: la auditoría, las direcciones, la comparación y la
+recomendación están en [`explorations/`](explorations/README.md).
+
 ## Tokens
 
 Los valores viven en `src/theme/lesen.css` (cinco temas que ponen todos los tokens de `@wasichai/ui` más los propios) y
