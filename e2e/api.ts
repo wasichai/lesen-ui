@@ -75,7 +75,15 @@ export const PROFILE = {
   difficulty: 'BALANCED'
 }
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
+// las portadas reales que capturó capture.mjs (e2e/fixtures/covers); sin ella, un rectángulo liso
 const COVER = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800"><rect width="600" height="800" fill="#2f5d62"/></svg>'
+function cover(file: string): string {
+  try {
+    return readFileSync(join(import.meta.dirname, 'fixtures', 'covers', file), 'utf8')
+  } catch {
+    return COVER
+  }
+}
 
 interface Progress {
   version: number
@@ -1223,7 +1231,7 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     api.requests.push(`${method} ${url.pathname}`)
     const path = url.pathname
     let reply: { status: number; body: unknown } | undefined
-    if (path.startsWith('/api/lesen/public/covers/')) return route.fulfill({ status: 200, contentType: 'image/svg+xml', body: COVER })
+    if (path.startsWith('/api/lesen/public/covers/')) return route.fulfill({ status: 200, contentType: 'image/svg+xml', body: cover(path.split('/').pop()!) })
     if (path.startsWith('/api/lesen/public/audio/')) return fulfillAudio(route, path.split('/').pop()!)
     if (method === 'POST' && path === '/api/auth/login')
       reply = { status: 200, body: { token: 'token-e2e', expiresAt: '2099-01-01T00:00:00Z', user: editor ? EDITOR : LEARNER } }

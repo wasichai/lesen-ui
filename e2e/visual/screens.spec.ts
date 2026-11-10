@@ -1,28 +1,65 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { fakeApi } from '../api'
 
 const VIEWPORTS = { small: 360, phone: 390, tablet: 768, laptop: 1024, desktop: 1440, wide: 1920 } as const
 const chosen = (process.env.VISUAL_VIEWPORTS?.split(',') ?? Object.keys(VIEWPORTS)) as (keyof typeof VIEWPORTS)[]
-const SCREENS = [
+// VISUAL_DIRECTION=gaceta (o pulso, musgo, atlas) pinta las pantallas con una dirección de exploración del laboratorio de
+// diseño (docs/design-system/lesen/explorations); sin ella, la identidad actual
+const direction = process.env.VISUAL_DIRECTION
+const dark = Boolean(process.env.VISUAL_DARK)
+
+interface Screen {
+  name: string
+  path: string
+  profile?: null
+  reader?: 'light' | 'sepia' | 'dark'
+  // lo que se hace antes de la captura: abrir el vistazo de una palabra
+  act?: (page: Page) => Promise<void>
+}
+
+const SCREENS: Screen[] = [
   { name: 'onboarding', path: '/welcome', profile: null },
   { name: 'discover', path: '/discover' },
   { name: 'explore', path: '/explore' },
   { name: 'detail', path: '/readings/der-alte-leuchtturm' },
   { name: 'reader', path: '/read/der-alte-leuchtturm' },
+  { name: 'reader-sepia', path: '/read/der-alte-leuchtturm', reader: 'sepia' },
+  { name: 'reader-dark', path: '/read/der-alte-leuchtturm', reader: 'dark' },
+  {
+    name: 'reader-word',
+    path: '/read/der-alte-leuchtturm',
+    act: async (page) => {
+      await page.locator('[data-token="p1s1t2"]').hover()
+      await page.getByRole('dialog', { name: 'La palabra «verbringt»' }).getByText('pasar (tiempo)').waitFor()
+    }
+  },
   { name: 'library', path: '/library' },
   { name: 'vocabulary', path: '/vocabulary' },
   { name: 'dictionary', path: '/dictionary?q=Meer' },
+  { name: 'progress', path: '/progress' },
+  { name: 'week', path: '/progress/week' },
   { name: 'profile', path: '/profile' }
 ]
+
+const suffix = `${direction ? `-${direction}` : ''}${dark ? '-dark' : ''}`
 
 for (const viewport of chosen)
   for (const screen of SCREENS)
     test(`${screen.name} @ ${viewport}`, async ({ page }) => {
       await page.setViewportSize({ width: VIEWPORTS[viewport], height: 900 })
-      if (process.env.VISUAL_DARK) await page.emulateMedia({ colorScheme: 'dark' })
+      if (dark) await page.emulateMedia({ colorScheme: 'dark' })
+      await page.addInitScript(
+        ({ reader, direction }) => {
+          if (reader) localStorage.setItem('lesen.reader', JSON.stringify({ theme: reader }))
+          if (direction) localStorage.setItem('lesen.lab', JSON.stringify({ direction }))
+        },
+        { reader: screen.reader, direction }
+      )
       await fakeApi(page, { profile: screen.profile })
       await page.goto(screen.path)
       await page.locator('main, form').first().waitFor()
       await page.waitForLoadState('networkidle')
-      await expect(page).toHaveScreenshot(`${screen.name}-${viewport}${process.env.VISUAL_DARK ? '-dark' : ''}.png`, { fullPage: true, animations: 'disabled' })
+      await page.evaluate(() => document.fonts.ready)
+      if (screen.act) await screen.act(page)
+      await expect(page).toHaveScreenshot(`${screen.name}-${viewport}${suffix}.png`, { fullPage: !screen.act, animations: 'disabled' })
     })
