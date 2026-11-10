@@ -31,6 +31,7 @@ const es = {
     translateParagraph: 'Traducir el párrafo',
     hideParagraph: 'Ocultar la traducción',
     noTranslation: 'Este párrafo aún no tiene traducción.',
+    imageError: 'Esta imagen no se pudo cargar.',
     oldVersion: 'Estás leyendo la versión {{version}}, la que empezaste. Hay una versión más reciente.'
   },
   word: {
@@ -160,6 +161,7 @@ const en: typeof es = {
     translateParagraph: 'Translate paragraph',
     hideParagraph: 'Hide translation',
     noTranslation: 'This paragraph has no translation yet.',
+    imageError: 'This image could not be loaded.',
     oldVersion: 'You are reading version {{version}}, the one you started. A newer version exists.'
   },
   word: {

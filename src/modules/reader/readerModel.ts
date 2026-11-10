@@ -1,4 +1,4 @@
-import type { ReadingContent, Sentence, Token } from './contract'
+import type { Block, ImageBlock, Paragraph, ReadingContent, Sentence, Token } from './contract'
 
 // el lector sin React: orden de oraciones y palabras, avance, tiempo restante y navegación con teclado
 
@@ -93,4 +93,22 @@ export function topmost(index: ReaderIndex, visible: Iterable<string>): string |
 // segundos de lectura a enviar: los que ya tenía guardados más los de esta sesión, solo mientras la página se ve
 export function totalSeconds(stored: number, sessionMs: number): number {
   return stored + Math.floor(sessionMs / 1000)
+}
+
+// el orden de lectura: los párrafos con las imágenes entre ellos donde las pone el servidor (ADR-0018 del backend). Sin
+// bloques, los párrafos tal cual. Un bloque que remite a un párrafo que no está se salta: nada se inventa
+export type ReadingItem = { kind: 'paragraph'; paragraph: Paragraph } | { kind: 'image'; image: ImageBlock }
+
+export function readingOrder(paragraphs: Paragraph[], blocks: Block[] | null | undefined): ReadingItem[] {
+  if (!blocks?.length) return paragraphs.map((paragraph) => ({ kind: 'paragraph', paragraph }))
+  const byId = new Map(paragraphs.map((p) => [p.id, p]))
+  const items: ReadingItem[] = []
+  for (const block of blocks) {
+    if (block.type === 'image') items.push({ kind: 'image', image: block })
+    else {
+      const paragraph = byId.get(block.id)
+      if (paragraph) items.push({ kind: 'paragraph', paragraph })
+    }
+  }
+  return items
 }

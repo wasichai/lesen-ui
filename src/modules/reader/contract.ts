@@ -12,6 +12,17 @@ export const pageSchema = z.object({
   paragraphs: z.array(z.string()),
   illustration: z.object({ src: z.string(), alt: z.record(z.string(), z.string()) }).nullable()
 })
+// el orden de lectura de un texto con imágenes entre párrafos (ADR-0018 del backend): un párrafo, por su id, o una imagen
+export const imageBlockSchema = z.object({
+  type: z.literal('image'),
+  id: z.string(),
+  url: z.string(),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  alt: z.string(),
+  caption: z.string().nullable().optional()
+})
+export const blockSchema = z.discriminatedUnion('type', [z.object({ type: z.literal('paragraph'), id: z.string() }), imageBlockSchema])
 export const contentSchema = z.object({
   slug: z.string(),
   version: z.number().int().positive(),
@@ -21,10 +32,13 @@ export const contentSchema = z.object({
   // un libro ilustrado (ADR-0014 del backend): páginas con su maqueta ya resuelta y los ids de sus párrafos
   format: readingFormatSchema.default('TEXT'),
   layout: pageLayoutSchema.nullable().default(null),
-  pages: z.array(pageSchema).nullable().default(null)
+  pages: z.array(pageSchema).nullable().default(null),
+  blocks: z.array(blockSchema).nullable().default(null)
 })
 export type ReadingContent = z.infer<typeof contentSchema>
 export type BookPage = z.infer<typeof pageSchema>
+export type ImageBlock = z.infer<typeof imageBlockSchema>
+export type Block = z.infer<typeof blockSchema>
 export type Paragraph = z.infer<typeof paragraphSchema>
 export type Sentence = z.infer<typeof sentenceSchema>
 export type Token = z.infer<typeof tokenSchema>

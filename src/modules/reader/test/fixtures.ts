@@ -12,6 +12,7 @@ export const content: ReadingContent = {
   format: 'TEXT',
   layout: null,
   pages: null,
+  blocks: null,
   paragraphs: [
     {
       id: 'p1',

@@ -2,7 +2,9 @@ import { Headphones, Languages } from 'lucide-react'
 import { memo, useCallback, useEffect, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useTranslations } from './api'
-import type { Paragraph, Token } from './contract'
+import type { Block, Paragraph, Token } from './contract'
+import { InlineFigure } from './InlineFigure'
+import { readingOrder } from './readerModel'
 import { READER_MODULE_ID } from './i18n'
 import { neighbourSentenceWord, neighbourWord, type ReaderIndex } from './readerModel'
 
@@ -32,7 +34,8 @@ export function ReaderText({
   translationLanguage,
   events,
   onListenParagraph,
-  onMoveTo
+  onMoveTo,
+  blocks
 }: {
   slug: string
   version: number
@@ -54,6 +57,8 @@ export function ReaderText({
   onListenParagraph?: (paragraphId: string) => void
   // en un libro: antes de enfocar una palabra de otra página, pasar a esa página
   onMoveTo?: (wordId: string) => void
+  // el orden de lectura con las imágenes entre párrafos (ADR-0018 del backend); sin él, los párrafos en orden
+  blocks?: Block[] | null
 }) {
   const { t } = useTranslation(READER_MODULE_ID)
   const focusWord = useCallback(
@@ -83,26 +88,30 @@ export function ReaderText({
   const tabStop = currentWord ?? index.words[0]?.id ?? null
   return (
     <div role="group" aria-label={t('text.label')} onKeyDown={onKeyDown} lang={language} className="reading-text flex flex-col gap-[1.1em]">
-      {paragraphs.map((paragraph) => (
-        <ParagraphView
-          key={paragraph.id}
-          slug={slug}
-          version={version}
-          paragraph={paragraph}
-          tabStop={tabStop && index.paragraphOfSentence.get(index.sentenceOfWord.get(tabStop) ?? '') === paragraph.id ? tabStop : null}
-          openWord={openWord && index.paragraphOfSentence.get(index.sentenceOfWord.get(openWord) ?? '') === paragraph.id ? openWord : null}
-          saved={saved}
-          highlightSaved={highlightSaved}
-          newWords={newWords}
-          learnedWords={learnedWords}
-          activeSentence={activeSentence && index.paragraphOfSentence.get(activeSentence) === paragraph.id ? activeSentence : null}
-          showTranslation={showParagraphTranslations}
-          translationLanguage={translationLanguage}
-          events={events}
-          onFocusWord={setCurrentWord}
-          onListen={onListenParagraph}
-        />
-      ))}
+      {readingOrder(paragraphs, blocks).map((item) =>
+        item.kind === 'image' ? (
+          <InlineFigure key={item.image.id} image={item.image} language={language} />
+        ) : (
+          <ParagraphView
+            key={item.paragraph.id}
+            slug={slug}
+            version={version}
+            paragraph={item.paragraph}
+            tabStop={tabStop && index.paragraphOfSentence.get(index.sentenceOfWord.get(tabStop) ?? '') === item.paragraph.id ? tabStop : null}
+            openWord={openWord && index.paragraphOfSentence.get(index.sentenceOfWord.get(openWord) ?? '') === item.paragraph.id ? openWord : null}
+            saved={saved}
+            highlightSaved={highlightSaved}
+            newWords={newWords}
+            learnedWords={learnedWords}
+            activeSentence={activeSentence && index.paragraphOfSentence.get(activeSentence) === item.paragraph.id ? activeSentence : null}
+            showTranslation={showParagraphTranslations}
+            translationLanguage={translationLanguage}
+            events={events}
+            onFocusWord={setCurrentWord}
+            onListen={onListenParagraph}
+          />
+        )
+      )}
     </div>
   )
 }

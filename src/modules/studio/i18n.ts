@@ -159,7 +159,21 @@ const es = {
     addParagraph: 'Añadir párrafo',
     removeParagraph: 'Quitar el párrafo {{n}}',
     up: 'Subir el párrafo {{n}}',
-    down: 'Bajar el párrafo {{n}}'
+    down: 'Bajar el párrafo {{n}}',
+    image: {
+      label: 'Imagen {{n}}',
+      add: 'Añadir una imagen tras el párrafo {{n}}',
+      addFirst: 'Añadir una imagen antes del primer párrafo',
+      up: 'Mover arriba la imagen {{n}}',
+      down: 'Mover abajo la imagen {{n}}',
+      remove: 'Quitar la imagen {{n}}',
+      upload: 'Subir la imagen {{n}}',
+      pending: 'Sin imagen todavía: no se publica sin ella.',
+      alt: 'Texto alternativo',
+      altHint: 'Lo que muestra la imagen, en el idioma de la lectura, para quien no la ve.',
+      altMissing: 'Falta el texto alternativo: sin él no se publica.',
+      caption: 'Pie de imagen (opcional)'
+    }
   },
   questions: {
     lead: 'Cada pregunta cita las oraciones donde está la respuesta. Los textos van en los idiomas de quien lee.',
@@ -277,6 +291,8 @@ const es = {
     AUDIO_MULTIWORD: '{{detail}} tramos de los tiempos tenían varias palabras: sus palabras quedan sin tiempo.',
     UNCHANGED: 'El texto es el de la versión publicada: no habrá versión nueva.',
     ILLUSTRATION_MISSING: 'Falta la ilustración de la página {{ref}}.',
+    IMAGE_MISSING: 'Falta el archivo de una imagen entre párrafos ({{ref}}).',
+    IMAGE_ALT_MISSING: 'Falta el texto alternativo de una imagen entre párrafos ({{ref}}).',
     ALT_MISSING: 'Falta el texto alternativo en {{language}} de la ilustración de la página {{ref}}.',
     QUESTIONS_LOCKED: 'Alguien ya respondió las preguntas de la versión publicada: para cambiarlas, cambia también el texto.',
     other: '{{code}} {{ref}} {{detail}}'
@@ -483,7 +499,21 @@ const en: typeof es = {
     addParagraph: 'Add paragraph',
     removeParagraph: 'Remove paragraph {{n}}',
     up: 'Move paragraph {{n}} up',
-    down: 'Move paragraph {{n}} down'
+    down: 'Move paragraph {{n}} down',
+    image: {
+      label: 'Image {{n}}',
+      add: 'Add an image after paragraph {{n}}',
+      addFirst: 'Add an image before the first paragraph',
+      up: 'Move image {{n}} up',
+      down: 'Move image {{n}} down',
+      remove: 'Remove image {{n}}',
+      upload: 'Upload image {{n}}',
+      pending: 'No image yet: it is not published without one.',
+      alt: 'Alt text',
+      altHint: 'What the image shows, in the language of the reading, for someone who cannot see it.',
+      altMissing: 'The alt text is missing: it is not published without it.',
+      caption: 'Caption (optional)'
+    }
   },
   questions: {
     lead: 'Each question cites the sentences that hold the answer. Texts go in the learners’ languages.',
@@ -601,6 +631,8 @@ const en: typeof es = {
     AUDIO_MULTIWORD: '{{detail}} timing cues had several words: those words have no timing.',
     UNCHANGED: 'The text is the published version’s: there will be no new version.',
     ILLUSTRATION_MISSING: 'The illustration for page {{ref}} is missing.',
+    IMAGE_MISSING: 'The file of an image between paragraphs is missing ({{ref}}).',
+    IMAGE_ALT_MISSING: 'The alt text of an image between paragraphs is missing ({{ref}}).',
     ALT_MISSING: 'The {{language}} alt text for the illustration on page {{ref}} is missing.',
     QUESTIONS_LOCKED: 'Someone already answered the published version’s questions: to change them, change the text too.',
     other: '{{code}} {{ref}} {{detail}}'
