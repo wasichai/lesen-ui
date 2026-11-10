@@ -91,4 +91,32 @@ Las capturas completas, de 14 pantallas a seis anchos en claro y en oscuro, se g
 
 ## Móvil (Flutter)
 
-<!-- mobile -->
+Son los goldens de `lesen-app` (`test/design/goldens/<dirección>/`, generados con
+`flutter test --tags design --run-skipped`): las mismas pantallas con `FakeBackend` y las fuentes reales, en un teléfono
+de 390×844 en claro y oscuro y en una tableta de 1024×768 en claro.
+
+**Lo que muestran y lo que no.** En Flutter el laboratorio aplica los tokens: color, familias, pesos, tracking y radios
+de botones, chips y tarjetas. La firma visual de la web (filetes de Gaceta, la destacada de color de Pulso, la hoja de
+Musgo, el círculo de Atlas) todavía no está en Flutter, así que allí las direcciones se diferencian menos. Al adoptar una
+dirección, su firma se implementa como widgets propios en las dos plataformas.
+
+![Descubrir, teléfono, claro](captures/flutter-discover-phone.jpg)
+![Descubrir, teléfono, oscuro](captures/flutter-discover-phone-dark.jpg)
+![Catálogo, teléfono](captures/flutter-catalog-phone.jpg)
+![Lector, teléfono](captures/flutter-reader-phone.jpg)
+![Hoja del diccionario, teléfono](captures/flutter-word-panel-phone.jpg)
+![Vocabulario, teléfono](captures/flutter-vocabulary-phone.jpg)
+![Progreso, teléfono, oscuro](captures/flutter-progress-phone-dark.jpg)
+![Lector con panel lateral, tableta](captures/flutter-reader-tablet.jpg)
+
+Para tener en cuenta al mirar los goldens:
+
+- **Transcripción fonética:** en Gaceta (IBM Plex Sans) y Atlas (Geist) sale en cuadritos (ɐ, ʁ) porque en las pruebas
+  no hay fuente de reserva. En un dispositivo la pone el sistema, pero hay que comprobarlo; si se adopta una de las dos,
+  la transcripción debería ir en la fuente de lectura, que sí tiene esos signos.
+- **Papel del lector en oscuro:** el papel sigue la preferencia del lector y no el modo de la app (igual que hoy), así
+  que el lector y el diccionario «oscuros» salen sobre papel claro.
+- **Fallo previo, no de la exploración:** el reproductor a pantalla completa se desborda 18 px a 390 dp (`TransportRow`)
+  en todas las direcciones, también en `main`.
+- **Peso de las fuentes en Flutter:** las TTF variables completas suman unos 6,5 MB y solo van en el flavor dev.
+  `flutter build web` no admite flavors, así que en la build web de Flutter las familias nuevas caen en las de reserva.
