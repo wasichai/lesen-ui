@@ -1,10 +1,11 @@
 import { useWasichaiLinks } from '@wasichai/core'
-import { ArrowLeft, Bookmark, Maximize2, Minimize2, NotebookText, Type } from 'lucide-react'
+import { ArrowLeft, Bookmark, BookDown, Maximize2, Minimize2, NotebookText, Type } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { useProfile } from '../../shared/api'
 import { LevelBadge } from '../../shared/LevelBadge'
+import { ExportSheet } from '../../shared/export/ExportSheet'
 import { useBookmark } from '../../shared/mutations'
 import { ProblemState } from '../../shared/ProblemState'
 import { ROUTES } from '../../shared/routes'
@@ -110,7 +111,7 @@ function Reader({
   const [currentWord, setCurrentWord] = useState<string | null>(null)
   const [open, setOpen] = useState<{ token: Token; element: HTMLElement } | null>(null)
   const [preview, setPreview] = useState<{ token: Token; element: HTMLElement } | null>(null)
-  const [panel, setPanel] = useState<'settings' | 'notes' | null>(null)
+  const [panel, setPanel] = useState<'settings' | 'notes' | 'export' | null>(null)
   const [fullscreen, setFullscreen] = useState(false)
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const toolbar = useRovingToolbar<HTMLDivElement>()
@@ -258,6 +259,15 @@ function Reader({
             </button>
             <button
               type="button"
+              className={buttonClass('ghost', 'icon')}
+              aria-label={t('toolbar.export')}
+              aria-haspopup="dialog"
+              onClick={() => setPanel('export')}
+            >
+              <BookDown aria-hidden className="size-5" />
+            </button>
+            <button
+              type="button"
               className={buttonClass('ghost', 'icon', 'hidden sm:inline-flex')}
               aria-label={fullscreen ? t('toolbar.exitFullscreen') : t('toolbar.fullscreen')}
               aria-pressed={fullscreen}
@@ -401,6 +411,7 @@ function Reader({
         />
       )}
 
+      <ExportSheet slug={slug} version={content.version} title={reading.title} open={panel === 'export'} onOpenChange={(next) => !next && setPanel(null)} />
       <Sheet open={panel === 'settings'} onOpenChange={(next) => !next && setPanel(null)} title={t('settings.title')} side={wide ? 'right' : 'bottom'}>
         <ReaderSettings preferences={preferences} update={update} />
       </Sheet>
