@@ -3,9 +3,9 @@ import { fakeApi } from '../api'
 
 const VIEWPORTS = { small: 360, phone: 390, tablet: 768, laptop: 1024, desktop: 1440, wide: 1920 } as const
 const chosen = (process.env.VISUAL_VIEWPORTS?.split(',') ?? Object.keys(VIEWPORTS)) as (keyof typeof VIEWPORTS)[]
-// VISUAL_DIRECTION=gaceta (o pulso, musgo, atlas) pinta las pantallas con una dirección de exploración del laboratorio de
-// diseño (docs/design-system/lesen/explorations); sin ella, la identidad actual
-const direction = process.env.VISUAL_DIRECTION
+// VISUAL_DIRECTION=gaceta (o pulso, atlas, papel) pinta las pantallas con otra identidad del perfil; sin ella, la de por
+// defecto (Musgo). Las capturas de Papel y tinta no llevan sufijo: son las de antes de que hubiera identidades
+const direction = process.env.VISUAL_DIRECTION ?? 'musgo'
 const dark = Boolean(process.env.VISUAL_DARK)
 
 interface Screen {
@@ -41,7 +41,7 @@ const SCREENS: Screen[] = [
   { name: 'profile', path: '/profile' }
 ]
 
-const suffix = `${direction ? `-${direction}` : ''}${dark ? '-dark' : ''}`
+const suffix = `${direction === 'papel' ? '' : `-${direction}`}${dark ? '-dark' : ''}`
 
 for (const viewport of chosen)
   for (const screen of SCREENS)
@@ -51,10 +51,12 @@ for (const viewport of chosen)
       await page.addInitScript(
         ({ reader, direction }) => {
           if (reader) localStorage.setItem('lesen.reader', JSON.stringify({ theme: reader }))
-          if (direction) localStorage.setItem('lesen.lab', JSON.stringify({ direction }))
+          localStorage.setItem('lesen.direction', direction)
         },
         { reader: screen.reader, direction }
       )
+      // el saludo y las semanas dependen de la hora: un reloj fijo hace las capturas repetibles
+      await page.clock.setFixedTime(new Date('2026-11-10T09:00:00+01:00'))
       await fakeApi(page, { profile: screen.profile })
       await page.goto(screen.path)
       await page.locator('main, form').first().waitFor()

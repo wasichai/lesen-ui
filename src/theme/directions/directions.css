@@ -1,0 +1,13 @@
+/* las identidades que se eligen en el perfil (src/theme/direction.ts): sus letras y sus cuatro direcciones. Cada una
+   vuelve a pintar los temas de Lesen bajo <html data-direction="…">; sin atributo, Papel y tinta (lesen.css). Musgo es la
+   de por defecto. <id>.css son sus tokens (generados desde docs/design-system/lesen/explorations/tokens);
+   <id>.signature.css, su firma sobre los ganchos data-ui de los componentes */
+@import './fonts.css';
+@import './gaceta.css';
+@import './gaceta.signature.css';
+@import './pulso.css';
+@import './pulso.signature.css';
+@import './musgo.css';
+@import './musgo.signature.css';
+@import './atlas.css';
+@import './atlas.signature.css';

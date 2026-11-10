@@ -1,7 +1,9 @@
-# Exploración de identidad visual (2026-11)
+# Identidades visuales (exploración de 2026-11)
 
-Cuatro direcciones nuevas para la identidad de Lesen, en web y en Flutter, comparadas con la de hoy («Papel y tinta»).
-**Ninguna está aplicada a producción.** La decisión es de producto y se recoge en una ADR nueva cuando se tome.
+Cuatro direcciones nuevas para la identidad de Lesen, en web y en Flutter, comparadas con «Papel y tinta».
+**Decisión:** las cinco se ofrecen en el perfil, para que cada persona elija la suya, y **Musgo es la de por defecto**
+(ADR-0011 de lesen-app, que reemplaza la ADR-0008). La elección se guarda en el dispositivo; las preferencias de la
+cuenta aún no tienen dónde guardarla, y el campo se ha pedido al backend.
 
 | Documento                                    | Contenido                                                                                             |
 | -------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -15,34 +17,34 @@ Cuatro direcciones nuevas para la identidad de Lesen, en web y en Flutter, compa
 | `tokens/<id>.json`                           | La fuente compartida de cada dirección (web y Flutter la leen igual)                                  |
 | `captures/`                                  | Hojas de comparación de las cinco identidades, generadas con la suite visual                          |
 
-## El laboratorio de diseño
-
-Las direcciones se ven sobre las pantallas reales, con sus datos y sus interacciones; no son maquetas.
+## Cómo funciona
 
 ### Web (lesen-ui)
 
-- **Arrancar:** `yarn dev`. Abajo a la izquierda aparece el botón «Laboratorio de diseño», que elige la dirección y el
-  tema de la página (como la app, claro u oscuro). El tema del lector se elige en el lector, con «Aa».
-- **Enlazar una dirección:** `?direction=gaceta` (o `pulso`, `musgo`, `atlas`). Con un navegador automatizado el botón
-  no se pinta; `?lab` lo fuerza.
-- **Cómo funciona:**
-  - `src/dev/design-lab` pone `data-direction` en `<html>`.
-  - Cada `src/theme/explorations/<id>.css` vuelve a pintar los cinco temas de Lesen bajo ese atributo.
-  - `<id>.signature.css` añade la firma visual de la dirección sobre los ganchos `data-ui` de los componentes, que no
-    tienen estilo propio.
-  - `main.tsx` lo importa solo tras `import.meta.env.DEV`, así que la build no lo contiene; se comprueba con un grep en
-    `dist/`.
-- **Generar:** los `<id>.css` salen de `tokens/<id>.json` con `node scripts/design-directions.mjs`, que comprueba el
-  contraste y no escribe nada si hay un par por debajo de AA (`--check` solo comprueba). No se editan a mano.
-- **Capturas:**
+- **Elegir:** Perfil → Apariencia de la app → Identidad (cinco opciones, con su muestra de color). Se guarda en
+  `localStorage['lesen.direction']` y se aplica en el acto. El script de arranque de `index.html` la pone antes del
+  bundle, sin destello; Musgo si no hay nada o el valor no es válido.
+- **Por dentro:**
+  - `src/theme/direction.ts` (`DIRECTIONS`, `DEFAULT_DIRECTION`, `useDirection`) pone `data-direction` en `<html>`.
+    Papel y tinta es no poner atributo: es `lesen.css` tal cual.
+  - Cada `src/theme/directions/<id>.css` vuelve a pintar los cinco temas de Lesen bajo ese atributo.
+  - `<id>.signature.css` añade la firma visual sobre los ganchos `data-ui` de los componentes, que no tienen estilo
+    propio.
+  - `directions.css` lo reúne y lo importa `src/index.css`.
+  - Las `@font-face` de las siete familias están en la build, pero el navegador solo descarga las de la identidad
+    activa (`unicode-range` y `font-display: swap`). Musgo carga unos 143 KB la primera vez.
+- **Generar:** los `<id>.css` y `swatches.ts` (las muestras del perfil) salen de `tokens/<id>.json` con
+  `node scripts/design-directions.mjs`, que comprueba el contraste y no escribe nada si hay un par por debajo de AA
+  (`--check` solo comprueba). No se editan a mano.
+- **Capturas y accesibilidad:**
   - `VISUAL_DIRECTION=<id> [VISUAL_DARK=1] [VISUAL_VIEWPORTS=phone,desktop] yarn e2e:visual` (14 pantallas a 360, 390,
-    768, 1024, 1440 y 1920 px).
-  - `A11Y_DIRECTION=<id> [A11Y_DARK=1] yarn e2e e2e/a11y.spec.ts` pasa axe con la dirección inyectada sobre la build.
+    768, 1024, 1440 y 1920 px, con un reloj fijo). Sin variable sale Musgo; `papel` reproduce las capturas de antes.
+  - `A11Y_DIRECTION=<id> [A11Y_DARK=1] yarn e2e e2e/a11y.spec.ts` pasa axe con esa identidad.
 
 ### Flutter (lesen-app)
 
-Se describe en `lesen-app/docs/design/README.md`: un selector flotante solo en el flavor dev y en modo debug, las
-direcciones en `lib/app/theme/explorations/` y los goldens por dirección con `flutter test --tags design`.
+Se describe en `lesen-app/docs/design/README.md` y en su ADR-0011: la misma elección en el perfil (identidad y modo
+claro u oscuro), guardada en el dispositivo, y los goldens por identidad con `flutter test --tags design --run-skipped`.
 
 ## Correspondencia de tokens
 
@@ -70,8 +72,9 @@ Los semánticos (`state.success`, `state.warning`, `state.error`, `state.info` y
 en la web. Flutter hoy los resuelve con `tones` y con el error de Material: adoptar una dirección es el momento de
 añadirlos a `LesenTokens`.
 
-## Retirar una dirección
+## Retirar una identidad
 
-Basta con borrar `tokens/<id>.json`, `directions/<id>.md`, `src/theme/explorations/<id>.css` y `<id>.signature.css`,
-quitar su línea de `lab.css`, su entrada en `DIRECTIONS` (`src/dev/design-lab/index.tsx`) y su nombre en la lista que espera `src/theme/lesen.test.ts`. En Flutter, borrar
-`lib/app/theme/explorations/<id>.dart` y su valor del enum. Nada de la app depende de ellas.
+Hay que borrar `tokens/<id>.json`, `directions/<id>.md`, `src/theme/directions/<id>.css` y `<id>.signature.css`,
+quitar su línea de `directions.css`, su id de `DIRECTIONS` (`src/theme/direction.ts`) y de la lista del script de
+arranque de `index.html`, y su nombre en la lista que espera `src/theme/lesen.test.ts`. Quien la tuviera elegida vuelve
+a Musgo. En Flutter, borrar `lib/app/theme/explorations/<id>.dart` y su valor del enum.

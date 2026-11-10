@@ -11,6 +11,3 @@ createRoot(document.getElementById('root')!).render(
     <WasichaiApp config={createConfig()} modules={modules} />
   </StrictMode>
 )
-
-// el laboratorio de diseño (src/dev/design-lab), solo en desarrollo: la build elimina esta rama y no lo incluye
-if (import.meta.env.DEV) void import('./dev/design-lab')

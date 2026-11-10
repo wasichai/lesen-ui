@@ -1,6 +1,10 @@
 # Recomendación
 
-**No se aplica nada.** Es una propuesta razonada; la decisión es de producto.
+> **Decisión (2026-11-10):** no se eligió una sola. Las cinco identidades se ofrecen en el perfil, con **Musgo** por
+> defecto (ADR-0011 de lesen-app). Lo que sigue es la recomendación tal como se escribió antes de decidir; sus avisos
+> sobre Musgo (verde de marca parecido al `success`, Manrope sin cursiva) siguen pendientes.
+
+La recomendación de entonces era una propuesta razonada; la decisión era de producto.
 
 ## Recomiendo: Gaceta, con tres ajustes
 

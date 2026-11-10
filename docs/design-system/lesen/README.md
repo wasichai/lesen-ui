@@ -25,9 +25,10 @@ tranquilo para leer mucho rato. La lectura manda; la interfaz se aparta.
 
 ### Exploración de 2026-11
 
-Cuatro direcciones nuevas (Gaceta, Pulso, Musgo y Atlas), comparadas con Papel y tinta sobre las pantallas reales desde
-un laboratorio que solo existe en desarrollo. Ninguna está aplicada: la auditoría, las direcciones, la comparación y la
-recomendación están en [`explorations/`](explorations/README.md).
+Cuatro direcciones nuevas (Gaceta, Pulso, Musgo y Atlas). Desde entonces **cada persona elige la identidad en su
+perfil** entre esas cuatro y Papel y tinta, y **Musgo es la de por defecto**. Lo que sigue de este documento describe
+Papel y tinta, la base sobre la que se pintan las demás; la auditoría, las direcciones, la comparación, la
+recomendación y cómo funciona la elección están en [`explorations/`](explorations/README.md).
 
 ## Tokens
 

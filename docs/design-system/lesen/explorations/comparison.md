@@ -95,7 +95,7 @@ Son los goldens de `lesen-app` (`test/design/goldens/<dirección>/`, generados c
 `flutter test --tags design --run-skipped`): las mismas pantallas con `FakeBackend` y las fuentes reales, en un teléfono
 de 390×844 en claro y oscuro y en una tableta de 1024×768 en claro.
 
-**Lo que muestran y lo que no.** En Flutter el laboratorio aplica los tokens: color, familias, pesos, tracking y radios
+**Lo que muestran y lo que no.** En Flutter las identidades aplican solo los tokens: color, familias, pesos, tracking y radios
 de botones, chips y tarjetas. La firma visual de la web (filetes de Gaceta, la destacada de color de Pulso, la hoja de
 Musgo, el círculo de Atlas) todavía no está en Flutter, así que allí las direcciones se diferencian menos. Al adoptar una
 dirección, su firma se implementa como widgets propios en las dos plataformas.

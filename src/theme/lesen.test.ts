@@ -97,24 +97,24 @@ describe('tema Lesen', () => {
   })
 })
 
-// las direcciones de exploración del laboratorio de diseño (src/theme/explorations, generadas desde
-// docs/design-system/lesen/explorations/tokens): cada una vuelve a pintar los cinco temas con el contrato completo y AA
-const explorations = join(import.meta.dirname, 'explorations')
-const DIRECTIONS = readdirSync(explorations)
-  .filter((file) => /^[a-z]+\.css$/.test(file) && file !== 'fonts.css' && file !== 'lab.css')
+// las identidades seleccionables en el perfil (src/theme/directions, generadas desde
+// docs/design-system/lesen/directions/tokens): cada una vuelve a pintar los cinco temas con el contrato completo y AA
+const directions = join(import.meta.dirname, 'directions')
+const DIRECTIONS = readdirSync(directions)
+  .filter((file) => /^[a-z]+\.css$/.test(file) && file !== 'fonts.css' && file !== 'directions.css')
   .map((file) => file.replace('.css', ''))
 const selector = (direction: string, id: string) =>
   id.startsWith('lesen-reader') ? `:root[data-direction='${direction}'] [data-theme='${id}']` : `:root[data-direction='${direction}'][data-theme='${id}']`
 const cases = DIRECTIONS.flatMap((direction) => LESEN_STYLED_THEMES.map((id) => [direction, id] as const))
 
-describe('direcciones de exploración', () => {
+describe('identidades seleccionables', () => {
   it('hay cuatro, con su firma', () => {
     expect(DIRECTIONS.sort()).toEqual(['atlas', 'gaceta', 'musgo', 'pulso'])
-    for (const direction of DIRECTIONS) expect(() => readFileSync(join(explorations, `${direction}.signature.css`), 'utf8')).not.toThrow()
+    for (const direction of DIRECTIONS) expect(() => readFileSync(join(directions, `${direction}.signature.css`), 'utf8')).not.toThrow()
   })
 
   it.each(cases)('%s · %s: contrato completo, texto a 4,5:1 y marcas a 3:1', (direction, id) => {
-    const block = tokens(readFileSync(join(explorations, `${direction}.css`), 'utf8'), selector(direction, id))
+    const block = tokens(readFileSync(join(directions, `${direction}.css`), 'utf8'), selector(direction, id))
     expect(contract.filter((name) => !block.has(name))).toEqual([])
     expect(failing(block, TEXT, 4.5)).toEqual([])
     expect(failing(block, MARKS, 3)).toEqual([])
@@ -123,15 +123,15 @@ describe('direcciones de exploración', () => {
   it.each(DIRECTIONS.flatMap((direction) => Object.values(READER_THEMES).map((theme) => [direction, theme.id] as const)))(
     '%s · %s: la tinta del lector sobre su papel llega a 7:1',
     (direction, id) => {
-      const block = tokens(readFileSync(join(explorations, `${direction}.css`), 'utf8'), selector(direction, id))
+      const block = tokens(readFileSync(join(directions, `${direction}.css`), 'utf8'), selector(direction, id))
       expect(contrast(resolve(block, 'ink'), resolve(block, 'surface'))).toBeGreaterThanOrEqual(7)
     }
   )
 
   // la destacada de Pulso cambia sus tokens en local (un bloque de color de marca): también AA
   it.each([LESEN_THEME.id, LESEN_DARK_THEME.id])('pulso · %s: la destacada de color de marca', (id) => {
-    const page = tokens(readFileSync(join(explorations, 'pulso.css'), 'utf8'), selector('pulso', id))
-    const hero = tokens(readFileSync(join(explorations, 'pulso.signature.css'), 'utf8'), `${selector('pulso', id)} [data-ui='hero']`)
+    const page = tokens(readFileSync(join(directions, 'pulso.css'), 'utf8'), selector('pulso', id))
+    const hero = tokens(readFileSync(join(directions, 'pulso.signature.css'), 'utf8'), `${selector('pulso', id)} [data-ui='hero']`)
     const block = new Map([...page, ...hero])
     const HERO: [string, string[]][] = [
       ['ink', ['surface-raised', 'surface-muted']],

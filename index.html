@@ -18,6 +18,15 @@
         document.documentElement.dataset.theme = theme
         document.documentElement.style.colorScheme = schemes[theme]
       } catch {}
+      // y la identidad elegida en el perfil (src/theme/direction.ts): Musgo por defecto; Papel y tinta, sin atributo
+      try {
+        const directions = ['musgo', 'gaceta', 'pulso', 'atlas']
+        const stored = localStorage.getItem('lesen.direction')
+        const direction = stored === 'papel' ? null : directions.includes(stored) ? stored : 'musgo'
+        if (direction) document.documentElement.dataset.direction = direction
+      } catch {
+        document.documentElement.dataset.direction = 'musgo'
+      }
     </script>
   </head>
   <body>

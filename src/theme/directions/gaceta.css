@@ -1,6 +1,6 @@
-/* dirección de exploración «Gaceta»: Editorial y literaria: una revista literaria internacional. Marfil, tinta azul noche, oxblood y filetes de oro.
+/* identidad «Gaceta»: Editorial y literaria: una revista literaria internacional. Marfil, tinta azul noche, oxblood y filetes de oro.
    generado por scripts/design-directions.mjs desde docs/design-system/lesen/explorations/tokens/gaceta.json; no se edita a mano.
-   solo lo carga el laboratorio de diseño (src/dev/design-lab), en desarrollo */
+   se elige en el perfil (src/theme/direction.ts); Musgo es la de por defecto */
 
 :root[data-direction='gaceta'] {
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;

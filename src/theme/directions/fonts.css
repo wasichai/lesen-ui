@@ -1,5 +1,5 @@
 /* las letras de las direcciones de exploración: variables, woff2, latin y latin-ext, con su licencia SIL OFL en fonts/.
-   de @fontsource-variable (5.3). solo las carga el laboratorio de diseño; la build de producción no las ve */
+   de @fontsource-variable (5.3). el navegador solo descarga las de la identidad elegida (unicode-range y font-display: swap) */
 
 @font-face {
   font-family: 'Fraunces';

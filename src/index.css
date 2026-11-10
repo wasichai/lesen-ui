@@ -3,6 +3,8 @@
 @import '@wasichai/ui/theme.css';
 /* los temas de Lesen: página (lesen, lesen-dark) y lector (lesen-reader-*) */
 @import './theme/lesen.css';
+/* las identidades que se eligen en el perfil (Musgo por defecto) sobre esos temas: <html data-direction="…"> */
+@import './theme/directions/directions.css';
 /* las clases de @wasichai/* llegan como texto: Tailwind las genera solo si las ve */
 @source '../node_modules/@wasichai';
 

@@ -1,6 +1,6 @@
-/* dirección de exploración «Pulso»: Aprendizaje vibrante: energía de producto de consumo sin infantilizar. Índigo seguro, coral para lo nuevo, superficies frías y claras.
+/* identidad «Pulso»: Aprendizaje vibrante: energía de producto de consumo sin infantilizar. Índigo seguro, coral para lo nuevo, superficies frías y claras.
    generado por scripts/design-directions.mjs desde docs/design-system/lesen/explorations/tokens/pulso.json; no se edita a mano.
-   solo lo carga el laboratorio de diseño (src/dev/design-lab), en desarrollo */
+   se elige en el perfil (src/theme/direction.ts); Musgo es la de por defecto */
 
 :root[data-direction='pulso'] {
   --font-display: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;

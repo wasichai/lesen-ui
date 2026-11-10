@@ -13,6 +13,8 @@ import { Skeleton } from '../../shared/Skeleton'
 import { localizedLabel } from '../../shared/topics'
 import { buttonClass, chipClass } from '../../shared/ui'
 import { usePageTitle } from '../../shared/useAppName'
+import { DIRECTIONS, useDirection } from '../../theme/direction'
+import { SWATCHES } from '../../theme/directions/swatches'
 import { PROFILE_MODULE_ID } from './i18n'
 
 const MINUTES = [5, 10, 15, 20, 30, 45, 60]
@@ -40,6 +42,7 @@ function ProfileForm({ profile, goals }: { profile: Profile; goals: Goals | null
   const languages = useLanguages()
   const topics = useTopics()
   const theme = useTheme()
+  const [direction, setDirection] = useDirection()
   const setLocale = useSetLocale()
   const queryClient = useQueryClient()
   const { send } = useLesenApi()
@@ -247,6 +250,43 @@ function ProfileForm({ profile, goals }: { profile: Profile; goals: Goals | null
       </Section>
 
       <Section title={t('appearance')}>
+        <p id="identity" className="mb-1 text-label">
+          {t('identity')}
+        </p>
+        <p id="identity-lead" className="mb-3 text-secondary text-ink-muted">
+          {t('identityLead')}
+        </p>
+        <div role="group" aria-labelledby="identity" aria-describedby="identity-lead" className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {DIRECTIONS.map((id) => {
+            const [brand, surface] = SWATCHES[id][theme.colorScheme]
+            const chosen = direction === id
+            return (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={chosen}
+                className={`flex min-h-14 items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2 text-left transition-colors ${
+                  chosen ? 'border-brand bg-brand-soft' : 'border-border bg-surface-raised hover:border-border-control'
+                }`}
+                onClick={() => setDirection(id)}
+              >
+                <span
+                  aria-hidden
+                  className="grid size-9 shrink-0 place-items-center rounded-full border border-border-control"
+                  style={{ backgroundColor: surface }}
+                >
+                  <span className="size-4 rounded-full" style={{ backgroundColor: brand }} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className={`block text-label ${chosen ? 'text-brand-strong' : 'text-ink'}`}>{t(`direction.${id}.name`)}</span>
+                  <span className="block text-[13px] text-ink-muted">{t(`direction.${id}.note`)}</span>
+                </span>
+                {chosen && <Check aria-hidden className="size-5 shrink-0 text-brand-strong" />}
+              </button>
+            )
+          })}
+        </div>
+        <p className="mb-3 mt-6 text-label">{t('mode')}</p>
         <div className="flex flex-wrap gap-2">
           {[
             { id: 'system', label: t('theme.system') },

@@ -1,15 +1,15 @@
 // genera los temas de exploración (docs/design-system/lesen/explorations) a partir de sus tokens en JSON:
-//   node scripts/design-directions.mjs           escribe src/theme/explorations/<id>.css y comprueba el contraste
+//   node scripts/design-directions.mjs           escribe src/theme/directions/<id>.css y comprueba el contraste
 //   node scripts/design-directions.mjs --check   solo comprueba (sale con 1 si un par no llega a WCAG 2.2 AA)
 // cada dirección da sus anclas para claro y oscuro; los temas del lector heredan de ellas y cambian lo que necesitan. el
 // resto de tokens del contrato de @wasichai/ui se deriva aquí, siempre igual, para que ninguna dirección se los salte.
-// solo el laboratorio de diseño (src/dev/design-lab) carga estas hojas, nunca la build de producción
+// las importa src/theme/directions/directions.css; la persona elige la suya en el perfil (src/theme/direction.ts)
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const root = join(import.meta.dirname, '..')
 const source = join(root, 'docs/design-system/lesen/explorations/tokens')
-const target = join(root, 'src/theme/explorations')
+const target = join(root, 'src/theme/directions')
 
 // los temas de Lesen que cada dirección vuelve a pintar, y de qué anclas parte cada uno
 const THEMES = [
@@ -192,12 +192,29 @@ for (const file of readdirSync(source)
     problems += failed.length
     blocks.push(block(direction, theme, values))
   }
-  const header = `/* dirección de exploración «${direction.name}»: ${direction.concept}\n   generado por scripts/design-directions.mjs desde docs/design-system/lesen/explorations/tokens/${file}; no se edita a mano.\n   solo lo carga el laboratorio de diseño (src/dev/design-lab), en desarrollo */\n`
+  const header = `/* identidad «${direction.name}»: ${direction.concept}\n   generado por scripts/design-directions.mjs desde docs/design-system/lesen/explorations/tokens/${file}; no se edita a mano.\n   se elige en el perfil (src/theme/direction.ts); Musgo es la de por defecto */\n`
   if (!check) writeFileSync(join(target, `${direction.id}.css`), `${header}\n${blocks.join('\n\n')}\n`)
 }
+
+// las muestras del perfil (marca sobre superficie de cada identidad, en claro y oscuro), para no repetir hex a mano.
+// Papel y tinta sale de docs/design-system/lesen/tokens.json
+const paper = JSON.parse(readFileSync(join(root, 'docs/design-system/lesen/tokens.json'), 'utf8')).color
+const swatches = { papel: { light: [paper.lesen.brand, paper.lesen.surface], dark: [paper['lesen-dark'].brand, paper['lesen-dark'].surface] } }
+for (const file of readdirSync(source)
+  .filter((name) => name.endsWith('.json'))
+  .sort()) {
+  const { id, color } = JSON.parse(readFileSync(join(source, file), 'utf8'))
+  swatches[id] = { light: [color.light.brand, color.light.surface], dark: [color.dark.brand, color.dark.surface] }
+}
+const lines = Object.entries(swatches).map(([id, { light, dark }]) => `  ${id}: { light: ['${light[0]}', '${light[1]}'], dark: ['${dark[0]}', '${dark[1]}'] }`)
+if (!check)
+  writeFileSync(
+    join(target, 'swatches.ts'),
+    `// generado por scripts/design-directions.mjs: la marca y la superficie de cada identidad, para su muestra en el perfil\nexport const SWATCHES = {\n${lines.join(',\n')}\n} as const satisfies Record<string, { light: readonly [string, string]; dark: readonly [string, string] }>\n`
+  )
 
 if (problems > 0) {
   console.error(`\n${problems} pares por debajo de WCAG 2.2 AA`)
   process.exit(1)
 }
-console.log(check ? 'contraste AA en todas las direcciones' : 'direcciones generadas en src/theme/explorations')
+console.log(check ? 'contraste AA en todas las direcciones' : 'direcciones generadas en src/theme/directions')

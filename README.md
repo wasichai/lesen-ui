@@ -32,8 +32,8 @@ yarn test                     # Vitest: modelos, contratos, componentes, fronter
 yarn e2e                      # Playwright con la API simulada: recorrido completo, teclado, móvil, 6 anchos, axe
 E2E_REAL=1 LESEN_PASSWORD=… yarn e2e:real   # humo contra el backend de verdad
 yarn e2e:visual               # capturas de cada pantalla a 360–1920 px (solo en local)
-VISUAL_DIRECTION=gaceta yarn e2e:visual       # las mismas, con una dirección del laboratorio de diseño
-A11Y_DIRECTION=gaceta yarn e2e e2e/a11y.spec.ts   # axe con esa dirección
+VISUAL_DIRECTION=gaceta yarn e2e:visual       # las mismas, con otra identidad del perfil (por defecto, Musgo)
+A11Y_DIRECTION=gaceta yarn e2e e2e/a11y.spec.ts   # axe con esa identidad
 ```
 
 Las respuestas de la API simulada (`e2e/fixtures/lesen.json`) se capturan del backend real con
@@ -42,8 +42,7 @@ misma contraseña, o `LESEN_EDITOR_EMAIL` y `LESEN_EDITOR_PASSWORD`), junto con 
 (`e2e/fixtures/audio/`) y las portadas ilustradas (`e2e/fixtures/covers/`); la simulación sirve la narración con
 rangos, como el servidor.
 
-El laboratorio de diseño (solo con `yarn dev`, botón abajo a la izquierda o `?direction=`) compara las direcciones de
-identidad en exploración sobre las pantallas reales: `docs/design-system/lesen/explorations/`.
+La identidad visual se elige en el perfil (Musgo por defecto, cuatro más): `docs/design-system/lesen/explorations/`.
 
 ## Estructura
 

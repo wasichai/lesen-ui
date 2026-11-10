@@ -1,6 +1,6 @@
-/* dirección de exploración «Musgo»: Calma natural: crecimiento intelectual sereno. Arena, musgo y pizarra mineral; acento contenido y formas orgánicas suaves.
+/* identidad «Musgo»: Calma natural: crecimiento intelectual sereno. Arena, musgo y pizarra mineral; acento contenido y formas orgánicas suaves.
    generado por scripts/design-directions.mjs desde docs/design-system/lesen/explorations/tokens/musgo.json; no se edita a mano.
-   solo lo carga el laboratorio de diseño (src/dev/design-lab), en desarrollo */
+   se elige en el perfil (src/theme/direction.ts); Musgo es la de por defecto */
 
 :root[data-direction='musgo'] {
   --font-display: 'Source Serif 4', Georgia, 'Times New Roman', serif;
