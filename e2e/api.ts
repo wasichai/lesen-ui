@@ -57,6 +57,7 @@ interface StudioDraft {
     format?: string
     layout?: string | null
     pages?: Json[]
+    images?: Json[]
   }
   questions: Json[]
   audio: { file: string; url: string; format: string; durationMs: number; voice: string; license: string; timedWords: number } | null
@@ -866,7 +867,15 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     if (rest[0] === 'illustrations' && method === 'POST')
       return {
         status: 201,
-        body: { file: 'illustration-0123456789abcdef01234567.png', kind: 'ILLUSTRATION', contentType: 'image/png', sizeBytes: 68, sha256: '0'.repeat(64) }
+        body: {
+          file: 'illustration-0123456789abcdef01234567.png',
+          kind: 'ILLUSTRATION',
+          contentType: 'image/png',
+          sizeBytes: 68,
+          sha256: '0'.repeat(64),
+          width: 640,
+          height: 480
+        }
       }
     if (rest[0] === 'covers' && method === 'POST')
       return {

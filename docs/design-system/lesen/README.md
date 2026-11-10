@@ -125,6 +125,12 @@ se dice por qué. El avance es el mismo `CommissionProgress` del estudio; lista,
 desde una tarjeta de Descubrir y desde «Mis lecturas a medida» en Mis lecturas, solo con el permiso
 `lectura_a_medida`.
 
+Imágenes entre párrafos (ADR-0018 del backend): en un texto, una imagen va en su sitio entre dos párrafos, a todo el
+ancho de la columna de lectura, con su espacio reservado por su ancho y su alto (sin saltos al cargar), el texto
+alternativo y el pie en el idioma de la lectura (`lang`) y el pie en cursiva centrado. Si no carga, un hueco con la
+misma proporción lo dice. En el estudio, cada hueco entre párrafos de «Texto y traducciones» ofrece «Añadir una imagen»,
+y cada imagen se sube, se mueve, se quita y pide su texto alternativo antes de publicarse.
+
 ## Movimiento
 
 Entradas cortas (`animate-rise` 420 ms, `animate-sheet` 260 ms) y una sola celebración (`animate-pop` al terminar una

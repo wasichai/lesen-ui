@@ -1,5 +1,5 @@
 import { paragraphAdded, paragraphRemoved } from './pagesModel'
-import type { Document, DraftParagraph, DraftSentence, Issue, Item, Question, QuestionType, SentenceRef } from './contract'
+import type { DraftImage, Document, DraftParagraph, DraftSentence, Issue, Item, Question, QuestionType, SentenceRef } from './contract'
 
 // la lógica del editor del estudio, sin React: cambios del documento, preguntas nuevas de cada tipo y a qué pestaña lleva
 // cada hallazgo de la comprobación
@@ -75,12 +75,16 @@ export function removeSentence(doc: Document, p: number, s: number): Document {
 
 // en un libro, el párrafo nuevo va a la página del anterior
 export const addParagraph = (doc: Document, after: number): Document =>
-  paragraphAdded({ ...doc, paragraphs: [...doc.paragraphs.slice(0, after + 1), emptyParagraph(), ...doc.paragraphs.slice(after + 1)] }, after + 1)
+  shiftImages(
+    paragraphAdded({ ...doc, paragraphs: [...doc.paragraphs.slice(0, after + 1), emptyParagraph(), ...doc.paragraphs.slice(after + 1)] }, after + 1),
+    after + 1,
+    1
+  )
 
 export function removeParagraph(doc: Document, p: number): Document {
   const paragraphs = doc.paragraphs.filter((_, i) => i !== p)
   if (!paragraphs.length) return { ...doc, paragraphs: [emptyParagraph()] }
-  return paragraphRemoved({ ...doc, paragraphs }, p)
+  return shiftImages(paragraphRemoved({ ...doc, paragraphs }, p), p + 1, -1)
 }
 
 export function move<T>(list: T[], index: number, delta: number): T[] {
@@ -157,13 +161,16 @@ export function issueTab(issue: Issue): Tab {
   switch (issue.code) {
     case 'FIELD':
       if (issue.ref === 'pages' || issue.ref === 'layout' || issue.ref?.startsWith('pages[')) return 'pages'
-      return issue.ref === 'paragraphs' || issue.ref?.startsWith('paragraphs[') ? 'text' : 'details'
+      return issue.ref === 'paragraphs' || issue.ref?.startsWith('paragraphs[') || issue.ref?.startsWith('images[') ? 'text' : 'details'
     case 'TRANSLATION_MISSING':
     case 'UNCHANGED':
       return 'text'
     case 'ILLUSTRATION_MISSING':
     case 'ALT_MISSING':
       return 'pages'
+    case 'IMAGE_MISSING':
+    case 'IMAGE_ALT_MISSING':
+      return 'text'
     case 'QUESTION':
     case 'NO_QUESTIONS':
     case 'PROMPT_MISSING':
@@ -221,3 +228,28 @@ export function audioDuration(file: Blob): Promise<number> {
     audio.src = url
   })
 }
+
+// las imágenes entre párrafos (ADR-0018 del backend): after = cuántos párrafos la preceden. Añadir o quitar un párrafo
+// mueve las que van detrás de él, para que cada imagen siga junto a su texto
+function shiftImages(doc: Document, from: number, delta: 1 | -1): Document {
+  if (!doc.images.length) return doc
+  return { ...doc, images: doc.images.map((image) => (image.after >= from ? { ...image, after: Math.max(0, image.after + delta) } : image)) }
+}
+
+const emptyImage = (after: number): DraftImage => ({ after, file: null, width: null, height: null, alt: '', caption: null })
+
+export const addImage = (doc: Document, after: number): Document => ({ ...doc, images: [...doc.images, emptyImage(after)] })
+
+export const updateImage = (doc: Document, i: number, change: Partial<DraftImage>): Document => ({
+  ...doc,
+  images: doc.images.map((image, n) => (n === i ? { ...image, ...change } : image))
+})
+
+export const removeImage = (doc: Document, i: number): Document => ({ ...doc, images: doc.images.filter((_, n) => n !== i) })
+
+// subir o bajar una imagen un hueco entre párrafos, sin salirse del texto
+export const moveImage = (doc: Document, i: number, delta: 1 | -1): Document =>
+  updateImage(doc, i, { after: Math.max(0, Math.min(doc.paragraphs.length, (doc.images[i]?.after ?? 0) + delta)) })
+
+// las imágenes que van en el hueco tras `after` párrafos, con su índice en el documento
+export const imagesAt = (doc: Document, after: number) => doc.images.flatMap((image, i) => (image.after === after ? [{ image, i }] : []))

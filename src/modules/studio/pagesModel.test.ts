@@ -29,7 +29,8 @@ const text = (n: number): Document => ({
   paragraphs: Array.from({ length: n }, (_, i) => ({ sentences: [{ text: `Satz ${i + 1}.`, translations: {}, senses: {} }], translations: {} })),
   format: 'TEXT',
   layout: null,
-  pages: []
+  pages: [],
+  images: []
 })
 const counts = (d: Document) => d.pages.map((p) => p.paragraphs)
 

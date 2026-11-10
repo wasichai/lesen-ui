@@ -5,18 +5,22 @@ import { fieldClass } from './DetailsTab'
 import type { Edited } from './DraftPage'
 import { addParagraph, addSentence, moveParagraph, removeParagraph, removeSentence, sentenceId, updateParagraph, updateSentence } from './draftModel'
 import { STUDIO_MODULE_ID } from './i18n'
+import { ImageSlot } from './InlineImageEditor'
 
 // el texto, oración por oración, con la traducción de cada oración y de cada párrafo en los idiomas de interfaz
 export function TextTab({ edited, onChange, language, into }: { edited: Edited; onChange: (next: Edited) => void; language: string; into: string[] }) {
   const { t } = useTranslation(STUDIO_MODULE_ID)
   const doc = edited.document
   const set = (next: typeof doc) => onChange({ ...edited, document: next })
+  // las imágenes entre párrafos son de un texto; un libro lleva las suyas en sus páginas
+  const textOnly = doc.format !== 'PICTURE_BOOK'
   const languageName = (code: string) => t(`language.${code}`, { defaultValue: code })
   return (
     <div className="flex flex-col gap-6">
       <p className="max-w-3xl text-ink-muted">{t('text.lead')}</p>
       <ol className="flex flex-col gap-6">
-        {doc.paragraphs.map((paragraph, p) => (
+        {textOnly && <ImageSlot doc={doc} after={0} language={language} onChange={set} />}
+        {doc.paragraphs.map((paragraph, p) => [
           <li key={p} className="rounded-[var(--radius-card)] border border-border bg-surface-raised p-4 sm:p-5">
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <h2 className="mr-auto font-display text-h4">{t('text.paragraph', { n: p + 1 })}</h2>
@@ -112,8 +116,9 @@ export function TextTab({ edited, onChange, language, into }: { edited: Edited; 
                 </label>
               ))}
             </div>
-          </li>
-        ))}
+          </li>,
+          textOnly && <ImageSlot key={`img-${p}`} doc={doc} after={p + 1} language={language} onChange={set} />
+        ])}
       </ol>
       <button type="button" className={buttonClass('secondary', 'md', 'self-start')} onClick={() => set(addParagraph(doc, doc.paragraphs.length - 1))}>
         <Plus aria-hidden className="size-4" />

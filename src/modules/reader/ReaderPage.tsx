@@ -384,6 +384,7 @@ function Reader({
                 version={content.version}
                 language={content.language}
                 paragraphs={content.paragraphs}
+                blocks={content.blocks}
                 index={index}
                 currentWord={currentWord}
                 setCurrentWord={setCurrentWord}

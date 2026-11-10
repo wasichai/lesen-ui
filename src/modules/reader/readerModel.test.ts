@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import type { ReadingContent } from './contract'
-import { indexContent, neighbourSentenceWord, neighbourWord, percentAt, remainingMinutes, sentenceText, topmost, totalSeconds } from './readerModel'
+import {
+  indexContent,
+  readingOrder,
+  neighbourSentenceWord,
+  neighbourWord,
+  percentAt,
+  remainingMinutes,
+  sentenceText,
+  topmost,
+  totalSeconds
+} from './readerModel'
 
 const word = (id: string, text: string, space = true) => ({ id, text, kind: 'WORD' as const, space, entry: null })
 const punct = (id: string, text: string, space = true) => ({ id, text, kind: 'PUNCT' as const, space, entry: null })
@@ -13,6 +23,7 @@ export const CONTENT: ReadingContent = {
   format: 'TEXT',
   layout: null,
   pages: null,
+  blocks: null,
   paragraphs: [
     {
       id: 'p1',
@@ -69,5 +80,12 @@ describe('modelo del lector', () => {
 
   it('suma los segundos de la sesión a los guardados', () => {
     expect(totalSeconds(120, 45_900)).toBe(165)
+  })
+
+  it('el orden de lectura pone cada imagen donde dice el servidor y salta lo que no existe', () => {
+    const image = { type: 'image' as const, id: 'img-1', url: '/i.png', width: 4, height: 3, alt: 'Ein Bild', caption: null }
+    expect(readingOrder(CONTENT.paragraphs, null).map((i) => i.kind)).toEqual(['paragraph', 'paragraph'])
+    const order = readingOrder(CONTENT.paragraphs, [{ type: 'paragraph', id: 'p1' }, image, { type: 'paragraph', id: 'nope' }, { type: 'paragraph', id: 'p2' }])
+    expect(order.map((i) => (i.kind === 'image' ? i.image.id : i.paragraph.id))).toEqual(['p1', 'img-1', 'p2'])
   })
 })

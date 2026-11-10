@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Document, Question } from './contract'
 import {
+  addImage,
   addParagraph,
+  imagesAt,
+  moveImage,
+  removeImage,
+  updateImage,
   addSentence,
   entryKey,
   groupIssues,
@@ -34,7 +39,8 @@ const doc = (texts: string[][]): Document => ({
   paragraphs: texts.map((sentences) => ({ sentences: sentences.map((text) => ({ text, translations: {}, senses: {} })), translations: {} })),
   format: 'TEXT',
   layout: null,
-  pages: []
+  pages: [],
+  images: []
 })
 const texts = (d: Document) => d.paragraphs.map((p) => p.sentences.map((s) => s.text))
 
@@ -153,5 +159,22 @@ describe('la comprobación', () => {
   it('las entradas del diccionario y sus formas', () => {
     expect(entryKey('de', ' Garten ')).toBe('de:garten')
     expect(splitList('Gärten, Gartens, , Gärten')).toEqual(['Gärten', 'Gartens'])
+  })
+})
+
+describe('las imágenes entre párrafos', () => {
+  it('se añaden en un hueco, se mueven sin salirse y siguen a su párrafo', () => {
+    let d = doc([['Eins.'], ['Zwei.'], ['Drei.']])
+    d = addImage(d, 1)
+    d = updateImage(d, 0, { file: 'bild.png', width: 4, height: 3, alt: 'Ein Bild' })
+    expect(imagesAt(d, 1).map((x) => x.image.alt)).toEqual(['Ein Bild'])
+    expect(moveImage(d, 0, -1).images[0]!.after).toBe(0)
+    expect(moveImage(moveImage(moveImage(d, 0, 1), 0, 1), 0, 1).images[0]!.after).toBe(3)
+    // un párrafo nuevo antes de la imagen la empuja; quitar uno anterior la trae
+    expect(addParagraph(d, 0).images[0]!.after).toBe(2)
+    expect(addParagraph(d, 1).images[0]!.after).toBe(1)
+    expect(removeParagraph(d, 0).images[0]!.after).toBe(0)
+    expect(removeImage(d, 0).images).toEqual([])
+    expect(issueTab({ code: 'IMAGE_ALT_MISSING', ref: 'images[0]', detail: null })).toBe('text')
   })
 })

@@ -34,6 +34,15 @@ export const pageSchema = z.object({
 })
 export type DraftPage = z.infer<typeof pageSchema>
 export type DraftIllustration = z.infer<typeof illustrationSchema>
+export const imageSchema = z.object({
+  after: z.number().int().nonnegative(),
+  file: z.string().nullable().default(null),
+  width: z.number().int().nullable().default(null),
+  height: z.number().int().nullable().default(null),
+  alt: z.string().default(''),
+  caption: z.string().nullable().default(null)
+})
+export type DraftImage = z.infer<typeof imageSchema>
 export const documentSchema = z.object({
   slug: z.string(),
   language: z.string(),
@@ -48,7 +57,9 @@ export const documentSchema = z.object({
   paragraphs: z.array(paragraphSchema),
   format: readingFormatSchema.default('TEXT'),
   layout: pageLayoutSchema.nullable().default(null),
-  pages: z.array(pageSchema).default([])
+  pages: z.array(pageSchema).default([]),
+  // imágenes entre párrafos de un texto (ADR-0018 del backend): after = cuántos párrafos la preceden
+  images: z.array(imageSchema).default([])
 })
 export type Document = z.infer<typeof documentSchema>
 export type DraftSentence = z.infer<typeof sentenceSchema>
@@ -180,7 +191,15 @@ export const historySchema = z.object({
 })
 export type History = z.infer<typeof historySchema>
 
-export const mediaSchema = z.object({ file: z.string(), kind: z.string(), contentType: z.string(), sizeBytes: z.number(), sha256: z.string() })
+export const mediaSchema = z.object({
+  file: z.string(),
+  kind: z.string(),
+  contentType: z.string(),
+  sizeBytes: z.number(),
+  sha256: z.string(),
+  width: z.number().int().nullable().optional(),
+  height: z.number().int().nullable().optional()
+})
 
 export const POS = [
   'noun',
