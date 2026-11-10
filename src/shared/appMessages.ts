@@ -118,6 +118,27 @@ const es = {
     bookmarked: 'Guardada para después',
     noCover: 'Sin portada'
   },
+  export: {
+    open: 'Exportar',
+    title: 'Exportar la lectura',
+    body: 'Llévatela a otra app de lectura: un ePub para Apple Books, Kindle y otros lectores, o una página para imprimir o guardar como PDF.',
+    include: 'Incluir',
+    always: 'El texto y la portada van siempre.',
+    part: { translations: 'Traducciones', glossary: 'Glosario', notes: 'Mis notas' },
+    partHint: {
+      translations: 'Bajo cada párrafo, en tu idioma. Si falta alguna, se dice.',
+      glossary: 'Las palabras del texto que están en el diccionario.',
+      notes: 'Las oraciones que guardaste, con tus notas.'
+    },
+    epub: 'Descargar ePub',
+    print: 'Imprimir o guardar como PDF',
+    apps: 'Apple Books abre el ePub directamente. Para Kindle, envíalo con «Send to Kindle».',
+    busy: 'Preparando el archivo…',
+    downloaded: 'Listo: el ePub está en tus descargas.',
+    printed: 'Listo: elige «Guardar como PDF» en el diálogo de impresión.',
+    forbidden: 'Tu cuenta no puede incluir notas. Quita «Mis notas» y vuelve a intentarlo.',
+    failed: 'No pudimos preparar el archivo. Revisa tu conexión y vuelve a intentarlo.'
+  },
   state: {
     loading: 'Cargando…',
     retry: 'Reintentar',
@@ -250,6 +271,27 @@ const en: typeof es = {
     reread: 'Read again',
     bookmarked: 'Saved for later',
     noCover: 'No cover'
+  },
+  export: {
+    open: 'Export',
+    title: 'Export the reading',
+    body: 'Take it to another reading app: an ePub for Apple Books, Kindle and other readers, or a page to print or save as PDF.',
+    include: 'Include',
+    always: 'The text and the cover are always included.',
+    part: { translations: 'Translations', glossary: 'Glossary', notes: 'My notes' },
+    partHint: {
+      translations: 'Below each paragraph, in your language. If one is missing, it says so.',
+      glossary: 'The words of the text that are in the dictionary.',
+      notes: 'The sentences you saved, with your notes.'
+    },
+    epub: 'Download ePub',
+    print: 'Print or save as PDF',
+    apps: 'Apple Books opens the ePub directly. For Kindle, send it with “Send to Kindle”.',
+    busy: 'Preparing the file…',
+    downloaded: 'Done: the ePub is in your downloads.',
+    printed: 'Done: choose “Save as PDF” in the print dialog.',
+    forbidden: 'Your account cannot include notes. Untick “My notes” and try again.',
+    failed: 'We could not prepare the file. Check your connection and try again.'
   },
   state: {
     loading: 'Loading…',

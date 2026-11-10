@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useParams } from 'react-router'
 import { APP_NAMESPACE } from '../../shared/appMessages'
 import { Cover } from '../../shared/Cover'
+import { ExportButton } from '../../shared/export/ExportSheet'
 import { languageName } from '../../shared/format'
 import { LearnerLayout } from '../../shared/LearnerLayout'
 import { LevelBadge } from '../../shared/LevelBadge'
@@ -110,6 +111,7 @@ function Detail({ slug }: { slug: string }) {
                 {bookmarked ? t('detail.bookmarked') : t('detail.bookmark')}
               </button>
               <ListsButton slug={slug} />
+              <ExportButton slug={slug} version={reading.version} title={reading.title} />
             </div>
           </div>
         </div>

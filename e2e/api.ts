@@ -1225,6 +1225,8 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     let reply: { status: number; body: unknown } | undefined
     if (path.startsWith('/api/lesen/public/covers/')) return route.fulfill({ status: 200, contentType: 'image/svg+xml', body: COVER })
     if (path.startsWith('/api/lesen/public/audio/')) return fulfillAudio(route, path.split('/').pop()!)
+    const exported = /^\/api\/lesen\/readings\/([^/]+)\/versions\/(\d+)\/export$/.exec(path)
+    if (exported && method === 'GET') return fulfillExport(route, exported[1]!, Number(exported[2]), url)
     if (method === 'POST' && path === '/api/auth/login')
       reply = { status: 200, body: { token: 'token-e2e', expiresAt: '2099-01-01T00:00:00Z', user: editor ? EDITOR : LEARNER } }
     else if (path === '/api/auth/me/permissions') reply = { status: 200, body: editor ? EDITOR_PERMISSIONS : PERMISSIONS }
@@ -1283,6 +1285,26 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
 }
 
 // el mp3 capturado, con rangos como el servidor: sin un 206 el navegador no deja buscar en el audio
+// la exportación (ADR-0015 del backend) no es JSON: un ePub como adjunto o la página para imprimir. Aquí basta su forma
+function fulfillExport(route: Route, slug: string, version: number, url: URL) {
+  const card = fixture.cards.find((c) => c.slug === slug)
+  if (!card) return route.fulfill({ status: 404, contentType: 'application/problem+json', body: JSON.stringify(problem(404, 'Reading version not found')) })
+  const name = `${slug}-v${version}`
+  if (url.searchParams.get('format') === 'epub')
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/epub+zip',
+      headers: { 'Content-Disposition': `attachment; filename="${name}.epub"`, 'Cache-Control': 'private, no-store' },
+      body: Buffer.from('mimetypeapplication/epub+zip')
+    })
+  return route.fulfill({
+    status: 200,
+    contentType: 'text/html; charset=utf-8',
+    headers: { 'Cache-Control': 'private, no-store' },
+    body: `<!DOCTYPE html><html lang="${card.language}"><head><meta charset="utf-8"/><title>${card.title}</title></head><body><h1>${card.title}</h1></body></html>`
+  })
+}
+
 function fulfillAudio(route: Route, file: string) {
   let bytes: Buffer
   try {
