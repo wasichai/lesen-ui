@@ -157,6 +157,10 @@ export interface FakeApi {
   // el estudio: borradores, lecturas publicadas desde él y entradas añadidas al diccionario
   drafts: StudioDraft[]
   entries: string[]
+  // los encargos del estudio (ADR-0015 del backend): avanzan un paso cada vez que se consultan
+  commissions: Json[]
+  // si el servidor simulado tiene quien escriba y quien dibuje
+  generation: { available: boolean; illustrations: boolean }
   // lo que se pidió, como «MÉTODO /ruta»
   requests: string[]
   unexpected: string[]
@@ -193,6 +197,8 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     lists: [],
     drafts: [],
     entries: [],
+    commissions: [],
+    generation: { available: true, illustrations: true },
     requests: [],
     unexpected: []
   }
@@ -675,6 +681,76 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
     updatedBy: d.updatedBy,
     updatedAt: d.updatedAt
   })
+  // un encargo: cada consulta lo avanza un paso; al terminar deja un borrador de libro ilustrado hecho de la lectura
+  // de la demostración, con sus páginas e ilustraciones, como lo entregaría el backend
+  const STEPS = ['QUEUED', 'WRITING', 'ILLUSTRATING', 'READY']
+  function commissionRoutes(method: string, rest: string[], body: Json) {
+    if (rest[1] === 'status' && method === 'GET') return { status: 200, body: api.generation }
+    if (rest.length === 1 && method === 'GET') return { status: 200, body: api.commissions }
+    if (rest.length === 1 && method === 'POST') {
+      if (!api.generation.available) return { status: 503, body: problem(503, 'Reading generation is not configured on this server') }
+      const request = { minutes: 2, kind: 'STORY', format: 'TEXT', topics: [], prompt: null, ...body }
+      const commission = {
+        id: `generation-${api.commissions.length + 1}`,
+        target: 'STUDIO',
+        status: 'QUEUED',
+        request,
+        draftId: null,
+        readingSlug: null,
+        reason: null,
+        findings: [],
+        directedBy: null,
+        illustrations: null,
+        createdAt: now(),
+        updatedAt: now()
+      }
+      api.commissions.unshift(commission)
+      return { status: 202, body: commission }
+    }
+    const commission = api.commissions.find((c) => c.id === rest[1])
+    if (!commission) return { status: 404, body: problem(404, 'Generation not found') }
+    const book = (commission.request as Json).format === 'PICTURE_BOOK'
+    const steps = book ? STEPS : STEPS.filter((s) => s !== 'ILLUSTRATING')
+    const at = steps.indexOf(commission.status as string)
+    if (at < steps.length - 1) {
+      commission.status = steps[at + 1]!
+      commission.updatedAt = now()
+      if (commission.status === 'READY') {
+        const draft = structuredClone(STUDIO_DRAFT)
+        const paragraphs = draft.document.paragraphs.length
+        Object.assign(draft, {
+          id: `draft-generated-${api.drafts.length + 1}`,
+          slug: `ein-buch-${commission.id}`,
+          status: 'DRAFT',
+          baseVersion: null,
+          events: []
+        })
+        draft.document = {
+          ...draft.document,
+          slug: draft.slug,
+          title: 'Ein Buch am Meer',
+          format: book ? 'PICTURE_BOOK' : 'TEXT',
+          layout: book ? 'IMAGE_TOP' : null,
+          pages: book
+            ? Array.from({ length: paragraphs }, (_, i) => ({
+                span: 1,
+                layout: null,
+                paragraphs: 1,
+                illustration: {
+                  file: `illustration-${i}0123456789abcdef0123456.png`,
+                  alt: { es: `Ilustración ${i + 1}`, en: `Illustration ${i + 1}` },
+                  scene: `Escena ${i + 1}`
+                }
+              }))
+            : []
+        }
+        event(draft, 'GENERATED', `${book ? 'PICTURE_BOOK' : 'TEXT'} A1`)
+        api.drafts.unshift(draft)
+        Object.assign(commission, { draftId: draft.id, directedBy: book ? 'generation' : null, illustrations: book ? paragraphs : 0 })
+      }
+    }
+    return { status: 200, body: commission }
+  }
   function studioRoutes(method: string, rest: string[], body: Json, request: Route['request'] extends () => infer R ? R : never) {
     if (!editor) return { status: 403, body: problem(403, 'Forbidden') }
     const open = (d: StudioDraft) => d.status === 'DRAFT' || d.status === 'IN_REVIEW'
@@ -718,6 +794,18 @@ export async function fakeApi(page: Page, options: { signedIn?: boolean; profile
           events: drafts.flatMap((d) => d.events)
         }
       }
+    }
+    if (rest[0] === 'generations') return commissionRoutes(method, rest, body)
+    if (rest[0] === 'drafts' && rest[2] === 'pages' && rest[4] === 'illustration' && method === 'POST') {
+      const draft = api.drafts.find((d) => d.id === rest[1])
+      const n = Number(rest[3])
+      const page = draft?.document.pages?.[n - 1] as { illustration?: { file: string | null } | null } | undefined
+      if (!draft || !page) return { status: 404, body: problem(404, 'Page not found') }
+      page.illustration = { ...(page.illustration ?? {}), file: `illustration-redrawn${n}${draft.revision}abcdef012345678.png` }
+      draft.revision += 1
+      draft.updatedAt = now()
+      event(draft, 'SAVED')
+      return { status: 200, body: studioView(draft) }
     }
     if (rest[0] === 'illustrations' && method === 'POST')
       return {

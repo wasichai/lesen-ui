@@ -1,9 +1,9 @@
-import { ImageOff, ImagePlus, ImageUp, Merge, Scissors, Trash2, X } from 'lucide-react'
+import { ImageOff, ImagePlus, ImageUp, Merge, RefreshCw, Scissors, Trash2, X } from 'lucide-react'
 import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PAGE_LAYOUTS, type PageLayout } from '../../shared/schemas'
 import { buttonClass } from '../../shared/ui'
-import { useUploadIllustration } from './api'
+import { useCommissionStatus, useRedraw, useUploadIllustration } from './api'
 import type { DraftPage } from './contract'
 import { fieldClass } from './DetailsTab'
 import type { Edited } from './DraftPage'
@@ -32,18 +32,26 @@ export function PagesTab({
   edited,
   onChange,
   language,
-  interfaceLanguages
+  interfaceLanguages,
+  draftId,
+  dirty
 }: {
   edited: Edited
   onChange: (next: Edited) => void
   language: string
   interfaceLanguages: string[]
+  draftId: string
+  // con cambios sin guardar no se vuelve a dibujar: el borrador que vuelve del servidor los pisaría
+  dirty: boolean
 }) {
   const { t } = useTranslation(STUDIO_MODULE_ID)
   const doc = edited.document
   const set = (next: typeof doc) => onChange({ ...edited, document: next })
   const starts = pageStarts(doc.pages)
   const balance = pagesBalance(doc)
+  const status = useCommissionStatus()
+  const redraw = useRedraw(draftId)
+  const canRedraw = status.data?.illustrations === true
   return (
     <div className="flex flex-col gap-6">
       <p className="max-w-3xl text-ink-muted">{t('pages.lead')}</p>
@@ -88,6 +96,17 @@ export function PagesTab({
             onMerge={() => set(mergeWithNext(doc, g))}
             onAddImage={() => set(addImagePage(doc, g))}
             onRemove={() => set(removePage(doc, g))}
+            redraw={
+              canRedraw
+                ? {
+                    disabled: dirty || redraw.isPending,
+                    pending: redraw.isPending && redraw.variables === g + 1,
+                    failed: redraw.isError && redraw.variables === g + 1,
+                    hint: dirty,
+                    run: () => redraw.mutate(g + 1)
+                  }
+                : null
+            }
           />
         ))}
       </ol>
@@ -111,7 +130,8 @@ function PageEditor({
   onSplit,
   onMerge,
   onAddImage,
-  onRemove
+  onRemove,
+  redraw
 }: {
   g: number
   page: DraftPage
@@ -129,6 +149,7 @@ function PageEditor({
   onMerge: () => void
   onAddImage: () => void
   onRemove: () => void
+  redraw: { disabled: boolean; pending: boolean; failed: boolean; hint: boolean; run: () => void } | null
 }) {
   const { t } = useTranslation(STUDIO_MODULE_ID)
   const upload = useUploadIllustration()
@@ -230,6 +251,7 @@ function PageEditor({
                   </div>
                 )}
               </div>
+              {redraw?.hint && page.illustration?.scene && <p className="text-secondary text-ink-muted">{t('generate.redrawHint')}</p>}
               <input
                 ref={input}
                 type="file"
@@ -247,6 +269,12 @@ function PageEditor({
                   <ImageUp aria-hidden className="size-4" />
                   {t('pages.upload', { n })}
                 </button>
+                {redraw && page.illustration?.scene && (
+                  <button type="button" className={buttonClass('secondary', 'sm')} disabled={redraw.disabled} onClick={redraw.run}>
+                    <RefreshCw aria-hidden className={`size-4 ${redraw.pending ? 'motion-safe:animate-spin' : ''}`} />
+                    {redraw.pending ? t('generate.redrawing') : t('generate.redraw')}
+                  </button>
+                )}
                 {file && (
                   <button type="button" className={buttonClass('ghost', 'sm')} onClick={() => onIllustration({ file: null })}>
                     <X aria-hidden className="size-4" />
@@ -255,7 +283,7 @@ function PageEditor({
                 )}
               </div>
               <p aria-live="polite" className="text-secondary text-danger empty:hidden">
-                {upload.isError ? t('pages.uploadError') : ''}
+                {upload.isError ? t('pages.uploadError') : redraw?.failed ? t('generate.redrawError') : ''}
               </p>
               {interfaceLanguages.map((code) => (
                 <label key={code} className="flex flex-col gap-1">

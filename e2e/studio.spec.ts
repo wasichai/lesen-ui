@@ -19,7 +19,7 @@ test('una editora escribe, revisa y publica una lectura nueva con audio y pregun
   // una lectura nueva: el slug sale del título
   await page.getByLabel('Título', { exact: true }).fill('Der kleine Hafen')
   await expect(page.getByLabel('Slug')).toHaveValue('der-kleine-hafen')
-  await page.getByLabel('Idioma de la lectura').selectOption('de')
+  await page.getByRole('region', { name: 'Nueva lectura' }).getByLabel('Idioma de la lectura').selectOption('de')
   await page.getByRole('button', { name: 'Crear borrador' }).click()
   await expect(page).toHaveURL(/\/studio\/drafts\/draft-1/)
   await expect(page.getByRole('heading', { level: 1, name: 'Der kleine Hafen' })).toBeVisible()
@@ -163,4 +163,39 @@ test('una editora convierte una lectura en libro ilustrado y diseña sus página
     illustration: { file: 'illustration-0123456789abcdef01234567.png', alt: { es: 'Un faro junto al mar', en: 'A lighthouse by the sea' } }
   })
   expect((document.pages as { paragraphs: number }[]).reduce((n, p) => n + p.paragraphs, 0)).toBe(document.paragraphs.length)
+})
+
+test('una editora genera un libro ilustrado, lo abre como borrador y vuelve a dibujar una página', async ({ page }) => {
+  const api = await fakeApi(page, { as: 'editor' })
+  await page.goto('/studio')
+  const panel = page.getByRole('region', { name: 'Generar con IA' })
+  await expect(panel.getByRole('button', { name: 'Libro ilustrado' })).toHaveAttribute('aria-pressed', 'true')
+  await panel.getByLabel('Idioma de la lectura').selectOption('de')
+  await panel.getByLabel('La idea (opcional)').fill('Ein Fuchs am Meer')
+  await panel.getByRole('button', { name: 'Generar' }).click()
+  expect(api.commissions[0]).toMatchObject({ request: { language: 'de', level: 'A1', format: 'PICTURE_BOOK', prompt: 'Ein Fuchs am Meer' } })
+
+  // el avance llega del servidor, paso a paso, hasta el borrador
+  const progress = panel.getByTestId('commission')
+  await expect(progress.getByRole('listitem').filter({ hasText: 'Dibujando las ilustraciones' })).toBeVisible()
+  await expect(progress.getByText(/ilustraciones dibujadas/)).toBeVisible({ timeout: 15_000 })
+  await progress.getByRole('link', { name: 'Abrir el borrador' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Ein Buch am Meer' })).toBeVisible()
+
+  // las páginas llegan con su ilustración y su escena; una se vuelve a dibujar
+  await page.getByRole('tab', { name: 'Páginas' }).click()
+  const first = page.getByRole('listitem', { name: 'Página 1' })
+  await expect(first.getByLabel('Escena')).toHaveValue('Escena 1')
+  const before = await first.locator('img').getAttribute('src')
+  await first.getByRole('button', { name: 'Volver a dibujar' }).click()
+  await expect(first.locator('img')).not.toHaveAttribute('src', before!)
+  expect(api.requests).toContain('POST /api/lesen/studio/drafts/draft-generated-1/pages/1/illustration')
+})
+
+test('sin quien escriba en el servidor, el estudio lo dice y no ofrece generar', async ({ page }) => {
+  const api = await fakeApi(page, { as: 'editor' })
+  api.generation = { available: false, illustrations: false }
+  await page.goto('/studio')
+  await expect(page.getByText('La generación no está configurada en este servidor.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Generar' })).toHaveCount(0)
 })

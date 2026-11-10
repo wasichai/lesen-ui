@@ -59,6 +59,26 @@ const es = {
     error: 'No pudimos guardar. Inténtalo de nuevo.',
     view: 'Ver como lectora'
   },
+  generate: {
+    title: 'Generar con IA',
+    lead: 'Pide un libro ilustrado o una lectura: se escribe con su nivel, sus traducciones y sus preguntas, y llega como borrador para revisarlo y publicarlo.',
+    unavailable: 'La generación no está configurada en este servidor.',
+    noIllustrations: 'Este servidor no tiene quien dibuje: el libro llegará con las ilustraciones pendientes, para subirlas.',
+    kind: 'Tipo de texto',
+    kinds: { STORY: 'Cuento', ARTICLE: 'Artículo', DIALOGUE: 'Diálogo', LETTER: 'Carta' },
+    minutes: 'Largo',
+    minutesValue_one: '{{count}} minuto',
+    minutesValue_other: '{{count}} minutos',
+    prompt: 'La idea (opcional)',
+    promptHint: 'De qué trata, el tono, quién sale. Lo demás lo pone el nivel.',
+    submit: 'Generar',
+    error: 'No se pudo encargar. Revisa los datos y vuelve a intentarlo.',
+    open: 'Abrir el borrador',
+    redraw: 'Volver a dibujar',
+    redrawing: 'Dibujando…',
+    redrawError: 'No se pudo dibujar esta página.',
+    redrawHint: 'Guarda los cambios antes de volver a dibujar.'
+  },
   format: {
     TEXT: 'Texto',
     PICTURE_BOOK: 'Libro ilustrado'
@@ -274,6 +294,7 @@ const es = {
   },
   event: {
     CREATED: 'Creó el borrador',
+    GENERATED: 'Encargó el borrador a la generación',
     SAVED: 'Guardó cambios',
     AUDIO_ATTACHED: 'Subió el audio',
     AUDIO_REMOVED: 'Quitó el audio',
@@ -361,6 +382,26 @@ const en: typeof es = {
     reload: 'Reload',
     error: "We couldn't save. Please try again.",
     view: 'See it as a learner'
+  },
+  generate: {
+    title: 'Generate with AI',
+    lead: 'Ask for a picture book or a reading: it is written at its level, with its translations and questions, and arrives as a draft to review and publish.',
+    unavailable: 'Generation is not configured on this server.',
+    noIllustrations: 'This server has nobody to draw: the book will arrive with its illustrations pending, to upload them.',
+    kind: 'Kind of text',
+    kinds: { STORY: 'Story', ARTICLE: 'Article', DIALOGUE: 'Dialogue', LETTER: 'Letter' },
+    minutes: 'Length',
+    minutesValue_one: '{{count}} minute',
+    minutesValue_other: '{{count}} minutes',
+    prompt: 'The idea (optional)',
+    promptHint: 'What it is about, the tone, who is in it. The level takes care of the rest.',
+    submit: 'Generate',
+    error: 'It could not be requested. Check the data and try again.',
+    open: 'Open the draft',
+    redraw: 'Draw again',
+    redrawing: 'Drawing…',
+    redrawError: 'This page could not be drawn.',
+    redrawHint: 'Save your changes before drawing again.'
   },
   format: {
     TEXT: 'Text',
@@ -577,6 +618,7 @@ const en: typeof es = {
   },
   event: {
     CREATED: 'Created the draft',
+    GENERATED: 'Commissioned the draft from generation',
     SAVED: 'Saved changes',
     AUDIO_ATTACHED: 'Uploaded the audio',
     AUDIO_REMOVED: 'Removed the audio',

@@ -86,3 +86,35 @@ export const readingDetailSchema = z.object({
   collections: z.array(z.string())
 })
 export type ReadingDetail = z.infer<typeof readingDetailSchema>
+
+// los encargos de generación (ADR-0015 del backend): una lectura o un libro que se escribe y se ilustra en segundo plano.
+// Los usan el estudio y las lecturas a medida
+export const COMMISSION_STATUSES = ['QUEUED', 'WRITING', 'ILLUSTRATING', 'READY', 'FAILED'] as const
+export type CommissionStatus = (typeof COMMISSION_STATUSES)[number]
+export const TEXT_KINDS = ['STORY', 'ARTICLE', 'DIALOGUE', 'LETTER'] as const
+export const MINUTES = [2, 5, 8] as const
+export const commissionRequestSchema = z.object({
+  language: z.string(),
+  level: z.string(),
+  minutes: z.number().int(),
+  kind: z.enum(TEXT_KINDS),
+  format: readingFormatSchema,
+  topics: z.array(z.string()),
+  prompt: z.string().nullable()
+})
+export type CommissionRequest = z.infer<typeof commissionRequestSchema>
+export const commissionSchema = z.object({
+  id: z.string(),
+  target: z.enum(['STUDIO', 'PRIVATE']),
+  status: z.enum(COMMISSION_STATUSES),
+  request: commissionRequestSchema,
+  draftId: z.string().nullable(),
+  readingSlug: z.string().nullable(),
+  reason: z.string().nullable(),
+  findings: z.array(z.object({ code: z.string(), ref: z.string().nullable().optional(), detail: z.string().nullable().optional() })),
+  directedBy: z.string().nullable(),
+  illustrations: z.number().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string()
+})
+export type Commission = z.infer<typeof commissionSchema>

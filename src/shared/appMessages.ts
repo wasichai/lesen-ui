@@ -3,6 +3,30 @@
 export const APP_NAMESPACE = 'app'
 
 const es = {
+  commission: {
+    progress: 'Avance del encargo',
+    status: {
+      QUEUED: 'En cola',
+      WRITING: 'Escribiendo el texto',
+      ILLUSTRATING: 'Dibujando las ilustraciones',
+      READY: 'Listo',
+      FAILED: 'No salió'
+    },
+    reason: {
+      REFUSED: 'El modelo no quiso escribir esta petición. Prueba con otra idea.',
+      UNREADABLE: 'La respuesta no se pudo leer, ni después de corregirla.',
+      CHECKS: 'El texto no pasó las comprobaciones de nivel, largo o vocabulario, ni después de corregirlo.',
+      ERROR: 'Algo falló en el servidor. Vuelve a intentarlo más tarde.',
+      other: 'No se pudo terminar ({{reason}}).'
+    },
+    directedBy: {
+      agent: 'Arte dirigido con Claude, revisado página a página',
+      generation: 'Arte a partir de la biblia visual del texto',
+      redraw: 'Página dibujada de nuevo'
+    },
+    illustrations_one: '{{count}} ilustración dibujada',
+    illustrations_other: '{{count}} ilustraciones dibujadas'
+  },
   nav: {
     label: 'Navegación principal',
     discover: 'Descubrir',
@@ -138,6 +162,30 @@ const es = {
 }
 
 const en: typeof es = {
+  commission: {
+    progress: 'Progress of the request',
+    status: {
+      QUEUED: 'Queued',
+      WRITING: 'Writing the text',
+      ILLUSTRATING: 'Drawing the illustrations',
+      READY: 'Ready',
+      FAILED: 'It did not work out'
+    },
+    reason: {
+      REFUSED: 'The model declined to write this request. Try another idea.',
+      UNREADABLE: 'The answer could not be read, not even after correcting it.',
+      CHECKS: 'The text did not pass the level, length or vocabulary checks, not even after correcting it.',
+      ERROR: 'Something failed on the server. Try again later.',
+      other: 'It could not be finished ({{reason}}).'
+    },
+    directedBy: {
+      agent: 'Art directed with Claude, reviewed page by page',
+      generation: 'Art from the text’s visual bible',
+      redraw: 'Page drawn again'
+    },
+    illustrations_one: '{{count}} illustration drawn',
+    illustrations_other: '{{count}} illustrations drawn'
+  },
   nav: {
     label: 'Main navigation',
     discover: 'Discover',

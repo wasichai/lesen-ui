@@ -74,7 +74,7 @@ export type Question = z.infer<typeof questionSchema>
 export const eventSchema = z.object({
   draftId: z.string(),
   slug: z.string(),
-  action: z.enum(['CREATED', 'SAVED', 'AUDIO_ATTACHED', 'AUDIO_REMOVED', 'SUBMITTED', 'RETURNED', 'PUBLISHED', 'DISCARDED']),
+  action: z.enum(['CREATED', 'GENERATED', 'SAVED', 'AUDIO_ATTACHED', 'AUDIO_REMOVED', 'SUBMITTED', 'RETURNED', 'PUBLISHED', 'DISCARDED']),
   actor: z.string(),
   note: z.string().nullable(),
   version: z.number().int().nullable(),

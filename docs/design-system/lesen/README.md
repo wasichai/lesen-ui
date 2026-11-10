@@ -106,6 +106,12 @@ se anuncia. Cada ilustración lleva su texto alternativo en el idioma de interfa
 fondo con un filete del acento dice «Esta ilustración no está disponible»: nunca una imagen inventada. En el estudio,
 la pestaña «Páginas» reparte el texto, elige maquetas, sube cada ilustración y pide su texto alternativo en cada idioma.
 
+Generar con IA (fase 7, ADR-0015 del backend): en el estudio, un formulario corto (formato, idioma, nivel, tipo, largo y
+una idea opcional) encarga un libro o una lectura. El avance (`CommissionProgress`, compartido) muestra los pasos que da
+el servidor (en cola, escribiendo, dibujando, listo) con el actual anunciado y un giro solo sin movimiento reducido; si
+falla, dice por qué con sus palabras. Sin quien escriba en el servidor, el formulario no se ofrece y se dice. En
+«Páginas», «Volver a dibujar» pide otra ilustración con la misma biblia del libro, y solo con los cambios guardados.
+
 ## Movimiento
 
 Entradas cortas (`animate-rise` 420 ms, `animate-sheet` 260 ms) y una sola celebración (`animate-pop` al terminar una

@@ -141,7 +141,9 @@ function Editor({ draft, save }: { draft: Draft; save: ReturnType<typeof useSave
         <fieldset disabled={!editable} className="min-w-0">
           {tab === 'details' && <DetailsTab edited={edited} onChange={setEdited} />}
           {tab === 'text' && <TextTab edited={edited} onChange={setEdited} language={draft.language} into={into} />}
-          {tab === 'pages' && <PagesTab edited={edited} onChange={setEdited} language={draft.language} interfaceLanguages={interfaceLanguages} />}
+          {tab === 'pages' && (
+            <PagesTab edited={edited} onChange={setEdited} language={draft.language} interfaceLanguages={interfaceLanguages} draftId={draft.id} dirty={dirty} />
+          )}
           {tab === 'questions' && (
             <QuestionsTab
               edited={edited}
