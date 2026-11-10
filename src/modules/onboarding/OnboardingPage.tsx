@@ -67,7 +67,7 @@ export function OnboardingPage() {
         <header className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <LesenMark className="size-9" />
-            <span className="font-read text-[22px] font-semibold">{appName}</span>
+            <span className="font-display text-[22px] font-semibold">{appName}</span>
           </div>
           <p className="text-secondary font-semibold text-ink-muted" aria-live="polite">
             {t('step', { current: index + 1, total: STEPS.length })}
@@ -95,7 +95,7 @@ export function OnboardingPage() {
                   <Sparkles aria-hidden className="size-4" />
                   {t('interface.eyebrow')}
                 </p>
-                <h1 ref={heading} tabIndex={-1} className="mt-3 font-read text-h1 sm:text-display">
+                <h1 ref={heading} tabIndex={-1} className="mt-3 font-display text-h1 sm:text-display">
                   {t('interface.heading')}
                 </h1>
                 <p className="mt-4 text-[18px] leading-relaxed text-ink-muted">{t('interface.body')}</p>
@@ -118,7 +118,7 @@ export function OnboardingPage() {
             )}
             {step === 'target' && (
               <>
-                <h1 ref={heading} tabIndex={-1} className="font-read text-h1">
+                <h1 ref={heading} tabIndex={-1} className="font-display text-h1">
                   {t('target.heading')}
                 </h1>
                 <p className="mt-3 text-ink-muted">{t('target.body')}</p>
@@ -141,7 +141,7 @@ export function OnboardingPage() {
             )}
             {step === 'level' && (
               <>
-                <h1 ref={heading} tabIndex={-1} className="font-read text-h1">
+                <h1 ref={heading} tabIndex={-1} className="font-display text-h1">
                   {t('level.heading', { language: target })}
                 </h1>
                 <p className="mt-3 text-ink-muted">{t('level.body')}</p>
@@ -171,7 +171,7 @@ export function OnboardingPage() {
             )}
             {step === 'interests' && (
               <>
-                <h1 ref={heading} tabIndex={-1} className="font-read text-h1">
+                <h1 ref={heading} tabIndex={-1} className="font-display text-h1">
                   {t('interests.heading')}
                 </h1>
                 <p className="mt-3 text-ink-muted">{t('interests.body')}</p>
@@ -213,7 +213,7 @@ export function OnboardingPage() {
             )}
             {step === 'habit' && (
               <>
-                <h1 ref={heading} tabIndex={-1} className="font-read text-h1">
+                <h1 ref={heading} tabIndex={-1} className="font-display text-h1">
                   {t('habit.heading')}
                 </h1>
                 <p className="mt-3 text-ink-muted">{t('habit.body')}</p>

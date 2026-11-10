@@ -5,9 +5,9 @@ import type { ReadingCard } from '../../shared/schemas'
 // el titular de una sección de la portada, con su enlace opcional a la derecha
 export function SectionHeading({ id, title, lead, action }: { id: string; title: string; lead?: string; action?: ReactNode }) {
   return (
-    <div className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+    <div data-ui="section-heading" className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
       <div>
-        <h2 id={id} className="font-read text-h2">
+        <h2 id={id} className="font-display text-h2">
           {title}
         </h2>
         {lead && <p className="mt-1 text-ink-muted">{lead}</p>}

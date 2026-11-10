@@ -61,7 +61,7 @@ export function ReviewTab({ draft, dirty, onGo }: { draft: Draft; dirty: boolean
       <div className="flex flex-col gap-6">
         <Steps draft={draft} dirty={dirty} ready={check.data?.ready ?? false} />
         <section aria-labelledby="draft-history">
-          <h2 id="draft-history" className="mb-3 font-read text-h3">
+          <h2 id="draft-history" className="mb-3 font-display text-h3">
             {t('review.history')}
           </h2>
           <Events events={draft.events} />
@@ -104,7 +104,7 @@ function Issues({
   if (issues.length === 0 && tone === 'error') return null
   return (
     <section aria-labelledby={id}>
-      <h2 id={id} className="mb-3 font-read text-h3">
+      <h2 id={id} className="mb-3 font-display text-h3">
         {title} <span className="text-ink-muted">({issues.length})</span>
       </h2>
       {issues.length === 0 ? (

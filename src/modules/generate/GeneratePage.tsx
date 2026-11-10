@@ -38,7 +38,7 @@ function Generate() {
   return (
     <div className="flex flex-col gap-10">
       <header>
-        <h1 className="font-read text-h1">{t('title')}</h1>
+        <h1 className="font-display text-h1">{t('title')}</h1>
         <p className="mt-2 max-w-2xl text-ink-muted">{t('lead')}</p>
       </header>
       <Ask key={profile.data?.targetLanguage ?? 'none'} initial={initialRequest(profile.data)} quota={quota.data} />
@@ -64,7 +64,7 @@ function Ask({ initial, quota }: { initial: CommissionRequest; quota: NonNullabl
   const error = ask.error instanceof ApiError ? ask.error.status : ask.error ? 0 : null
   return (
     <section aria-labelledby={`${id}-ask`} className="rounded-[var(--radius-card)] border border-border bg-surface-raised p-5 sm:p-6">
-      <h2 id={`${id}-ask`} className="flex items-center gap-2 font-read text-h3">
+      <h2 id={`${id}-ask`} className="flex items-center gap-2 font-display text-h3">
         <Sparkles aria-hidden className="size-5 text-brand" />
         {t('ask')}
       </h2>
@@ -184,7 +184,7 @@ function Mine() {
   if (!mine.data?.length) return null
   return (
     <section aria-labelledby={`${id}-mine`}>
-      <h2 id={`${id}-mine`} className="mb-4 font-read text-h2">
+      <h2 id={`${id}-mine`} className="mb-4 font-display text-h2">
         {t('mine')}
       </h2>
       <ul className="divide-y divide-border rounded-[var(--radius-card)] border border-border bg-surface-raised">

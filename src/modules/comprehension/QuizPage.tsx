@@ -69,7 +69,7 @@ function Quiz({ assessment, title }: { assessment: Assessment; title: string }) 
   if (step < 0)
     return (
       <section className="flex flex-col items-start gap-5">
-        <h1 className="font-read text-h1">{t('title')}</h1>
+        <h1 className="font-display text-h1">{t('title')}</h1>
         <p className="text-[18px]">{t('lead', { count: total, title })}</p>
         {last && (
           <p className="rounded-[var(--radius-lg)] bg-surface-muted px-4 py-3">
@@ -117,7 +117,7 @@ function Quiz({ assessment, title }: { assessment: Assessment; title: string }) 
         <ProgressBar percent={((step + 1) / total) * 100} label={t('progress', { current: step + 1, total })} />
       </div>
       <h1 className="sr-only">{t('title')}</h1>
-      <h2 id={promptId} ref={heading} tabIndex={-1} className="font-read text-h2 leading-snug">
+      <h2 id={promptId} ref={heading} tabIndex={-1} className="font-display text-h2 leading-snug">
         {question.prompt}
       </h2>
       {question.word && (

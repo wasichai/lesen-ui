@@ -1,0 +1,135 @@
+{
+  "id": "gaceta",
+  "name": "Gaceta",
+  "concept": "Editorial y literaria: una revista literaria internacional. Marfil, tinta azul noche, oxblood y filetes de oro.",
+  "font": {
+    "display": "'Fraunces', Georgia, 'Times New Roman', serif",
+    "read": "'Source Serif 4', Georgia, 'Times New Roman', serif",
+    "sans": "'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif"
+  },
+  "type": {
+    "display": { "weight": 380, "tracking": "-0.02em" },
+    "h1": { "weight": 400, "tracking": "-0.015em" },
+    "h2": { "weight": 430, "tracking": "-0.01em" },
+    "h3": { "weight": 500, "tracking": "-0.005em" },
+    "h4": { "weight": 560, "tracking": "0em" },
+    "eyebrow": { "weight": 600, "tracking": "0.14em" },
+    "label": { "weight": 500 }
+  },
+  "shape": {
+    "radius": { "base": "4px", "sm": "2px", "md": "4px", "lg": "6px", "xl": "10px", "card": "3px" },
+    "button": "3px",
+    "chip": "2px"
+  },
+  "shadow": {
+    "light": {
+      "card": "0 0 0 1px rgb(20 27 45 / 10%)",
+      "raised": "0 1px 0 rgb(20 27 45 / 12%), 0 14px 28px -18px rgb(20 27 45 / 40%)",
+      "overlay": "0 20px 44px rgb(20 27 45 / 20%)"
+    },
+    "dark": {
+      "card": "0 0 0 1px rgb(237 230 214 / 10%)",
+      "raised": "0 1px 0 rgb(0 0 0 / 40%), 0 14px 28px -18px rgb(0 0 0 / 70%)",
+      "overlay": "0 20px 44px rgb(0 0 0 / 55%)"
+    }
+  },
+  "color": {
+    "light": {
+      "surface": "#f7f2e8",
+      "surface-muted": "#eee6d6",
+      "surface-raised": "#fffcf5",
+      "border": "#ddd2bd",
+      "border-control": "#827863",
+      "ink": "#141b2d",
+      "ink-muted": "#4f5566",
+      "brand": "#7a1f2b",
+      "brand-strong": "#5e1520",
+      "brand-soft": "#f3e1df",
+      "on-brand": "#ffffff",
+      "focus": "#1f4f8f",
+      "accent": "#9a7425",
+      "sea": "#1f5566",
+      "sage": "#4a6247",
+      "ochre": "#7d5a10",
+      "plum": "#5f3a5c",
+      "danger": "#a3221a",
+      "danger-soft": "#f7e3df",
+      "on-danger": "#ffffff",
+      "success": "#2c5e3f",
+      "success-soft": "#e2ece0",
+      "warning": "#7a4a00",
+      "warning-soft": "#f4e7cc",
+      "notice": "#1f5566",
+      "notice-soft": "#dfe9ec",
+      "mark-saved": "#f0dc9a",
+      "mark-new": "#7a1f2b",
+      "mark-sentence": "#efe3cf"
+    },
+    "dark": {
+      "surface": "#121521",
+      "surface-muted": "#0c0e17",
+      "surface-raised": "#1b1f2e",
+      "border": "#2c3245",
+      "border-control": "#7c8299",
+      "ink": "#ede6d6",
+      "ink-muted": "#aaa697",
+      "brand": "#e8a3a8",
+      "brand-strong": "#f3c6c9",
+      "brand-soft": "#3a1c22",
+      "on-brand": "#1a0b0e",
+      "focus": "#8fb0e8",
+      "accent": "#d8b46a",
+      "sea": "#8cc3d1",
+      "sage": "#a7c3a0",
+      "ochre": "#dfbf73",
+      "plum": "#d3a9cf",
+      "danger": "#f08a80",
+      "danger-soft": "#3a1c1d",
+      "on-danger": "#1a0b0a",
+      "success": "#8cc79f",
+      "success-soft": "#15281c",
+      "warning": "#e3b35c",
+      "warning-soft": "#2e240e",
+      "notice": "#8cc3d1",
+      "notice-soft": "#13252c",
+      "mark-saved": "#514520",
+      "mark-saved-ink": "#f4ecd8",
+      "mark-new": "#e8a3a8",
+      "mark-sentence": "#252736"
+    },
+    "reader-light": {
+      "surface": "#fffcf4",
+      "surface-muted": "#f5efe2",
+      "surface-raised": "#ffffff",
+      "border": "#e3d9c6",
+      "ink": "#1a1f2c",
+      "ink-muted": "#535867",
+      "mark-sentence": "#f3e9d6"
+    },
+    "reader-sepia": {
+      "surface": "#f1e7d3",
+      "surface-muted": "#e8dcc4",
+      "surface-raised": "#f6eedd",
+      "border": "#d6c6a8",
+      "border-control": "#7a6a4f",
+      "ink": "#33281b",
+      "ink-muted": "#5a4a35",
+      "brand": "#74202a",
+      "brand-strong": "#5a141e",
+      "brand-soft": "#ead2c8",
+      "mark-saved": "#e8d08a",
+      "mark-new": "#74202a",
+      "mark-sentence": "#e6d8bd"
+    },
+    "reader-dark": {
+      "surface": "#0f111a",
+      "surface-muted": "#0a0b12",
+      "surface-raised": "#181b26",
+      "border": "#2a2f40",
+      "ink": "#e4dccb",
+      "ink-muted": "#a39e90",
+      "mark-saved": "#4b4020",
+      "mark-sentence": "#20222f"
+    }
+  }
+}

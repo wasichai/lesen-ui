@@ -100,7 +100,7 @@ function Details({
   if (!entry)
     return (
       <div className="flex flex-col gap-2">
-        <p className="font-read text-h3" lang={language}>
+        <p className="font-display text-h3" lang={language}>
           {lookup.token}
         </p>
         <p className="font-semibold">{t('word.noEntry')}</p>
@@ -128,7 +128,7 @@ function Details({
     <div className="flex flex-col gap-4">
       <div>
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <span className="font-read text-h2 leading-none" lang={entry.language}>
+          <span className="font-display text-h2 leading-none" lang={entry.language}>
             {entry.lemma}
           </span>
           {entry.ipa && <span className="text-secondary text-ink-muted">/{entry.ipa}/</span>}

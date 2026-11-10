@@ -53,12 +53,12 @@ function Week() {
             {t('week.back')}
           </Link>
         )}
-        <h1 className="font-read text-h1">{t('week.title')}</h1>
+        <h1 className="font-display text-h1">{t('week.title')}</h1>
         <div className="mt-4 flex items-center gap-2">
           <button type="button" className={buttonClass('secondary', 'icon', 'shrink-0')} onClick={() => go(-1)} aria-label={t('week.previous')}>
             <ChevronLeft aria-hidden className="size-5" />
           </button>
-          <p className="min-w-0 flex-1 px-1 text-center font-read text-h4 sm:flex-none sm:px-2 sm:text-h3" aria-live="polite">
+          <p className="min-w-0 flex-1 px-1 text-center font-display text-h4 sm:flex-none sm:px-2 sm:text-h3" aria-live="polite">
             {week.current ? `${t('week.current')} · ${range}` : range}
           </p>
           <button

@@ -120,5 +120,12 @@ fixture.studio = {
   check: await studio('GET', `/drafts/${draft.id}/check`)
 }
 await studio('DELETE', `/drafts/${draft.id}`)
+// las portadas ilustradas de cada tarjeta, para que las capturas visuales enseñen las de verdad
+mkdirSync(join(import.meta.dirname, 'covers'), { recursive: true })
+for (const card of cards) {
+  const file = await fetch(`${base}/lesen/public/covers/${card.slug}.svg`)
+  if (file.ok) writeFileSync(join(import.meta.dirname, 'covers', `${card.slug}.svg`), await file.text())
+}
+
 writeFileSync(join(import.meta.dirname, 'lesen.json'), JSON.stringify(fixture) + '\n')
 console.log(`${cards.length} tarjetas, ${READINGS.length} lecturas con texto`)

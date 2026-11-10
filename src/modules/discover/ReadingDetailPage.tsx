@@ -58,7 +58,7 @@ function Detail({ slug }: { slug: string }) {
         </button>
         <div className="grid items-start gap-8 sm:grid-cols-[minmax(0,16rem)_1fr] lg:grid-cols-[minmax(0,20rem)_1fr] lg:gap-14">
           <div className="mx-auto w-52 sm:w-full">
-            <Cover src={reading.cover} accent={reading.accent} eager className="shadow-[0_24px_48px_rgb(48_34_20/20%)]" />
+            <Cover src={reading.cover} accent={reading.accent} eager className="shadow-[var(--shadow-cover-raised)]" />
           </div>
           <div className="flex flex-col gap-5">
             <div className="flex flex-wrap items-center gap-2">
@@ -73,11 +73,11 @@ function Detail({ slug }: { slug: string }) {
                 </Link>
               ))}
             </div>
-            <h1 className="font-read text-h1 sm:text-display" lang={reading.language}>
+            <h1 className="font-display text-h1 sm:text-display" lang={reading.language}>
               {reading.title}
             </h1>
             {reading.subtitle && (
-              <p className="-mt-3 font-read text-h3 italic text-ink-muted" lang={reading.language}>
+              <p className="-mt-3 font-display text-h3 italic text-ink-muted" lang={reading.language}>
                 {reading.subtitle}
               </p>
             )}
@@ -118,7 +118,7 @@ function Detail({ slug }: { slug: string }) {
       </div>
       {related.length > 0 && (
         <section aria-labelledby="related">
-          <h2 id="related" className="mb-5 font-read text-h2">
+          <h2 id="related" className="mb-5 font-display text-h2">
             {t('detail.related')}
           </h2>
           <ul className="grid grid-cols-2 gap-6 sm:grid-cols-4">

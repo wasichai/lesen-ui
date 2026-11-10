@@ -42,7 +42,7 @@ function EntryView({ entryKey }: { entryKey: string }) {
       </Link>
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-          <h1 className="font-read text-display" lang={e.language}>
+          <h1 className="font-display text-display" lang={e.language}>
             {e.lemma}
           </h1>
           {e.ipa && <span className="text-[18px] text-ink-muted">/{e.ipa}/</span>}
@@ -79,7 +79,7 @@ function EntryView({ entryKey }: { entryKey: string }) {
         {e.senses.map((sense, i) => (
           <li key={i} className="flex flex-col gap-3">
             {e.senses.length > 1 && <p className="text-eyebrow uppercase text-brand-strong">{t('entry.meaning', { n: i + 1 })}</p>}
-            <p className="font-read text-h2">{sense.translations.join(', ')}</p>
+            <p className="font-display text-h2">{sense.translations.join(', ')}</p>
             {sense.definition && <p className="text-[17px] text-ink-muted">{sense.definition}</p>}
             {sense.examples.length > 0 && (
               <ul className="flex flex-col gap-3">
@@ -121,14 +121,14 @@ function EntryView({ entryKey }: { entryKey: string }) {
       </ol>
       {e.readings.length > 0 && (
         <section aria-labelledby="appears">
-          <h2 id="appears" className="mb-3 font-read text-h3">
+          <h2 id="appears" className="mb-3 font-display text-h3">
             {t('entry.readings')}
           </h2>
           <ul className="divide-y divide-border rounded-[var(--radius-card)] border border-border bg-surface-raised">
             {e.readings.map((reading) => (
               <li key={reading.slug} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
                 <span>
-                  <span className="font-read text-h4">{reading.title}</span>{' '}
+                  <span className="font-display text-h4">{reading.title}</span>{' '}
                   <span className="text-secondary text-ink-muted">
                     {reading.level} · {t('entry.occurrences', { count: reading.occurrences })}
                   </span>

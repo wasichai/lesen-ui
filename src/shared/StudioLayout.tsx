@@ -29,7 +29,7 @@ export function StudioLayout({ children, wide = false }: { children: ReactNode; 
         <div className="mx-auto flex h-16 max-w-page items-center gap-3 px-4 sm:px-6">
           <NavLink to={links.to(ROUTES.studio)} end className="flex min-w-0 items-center gap-2 rounded-full pr-2">
             <LesenMark className="size-8 shrink-0" />
-            <span className="truncate font-read text-[22px] font-semibold tracking-tight">{appName}</span>
+            <span className="truncate font-display text-[22px] font-semibold tracking-tight">{appName}</span>
             <span className="hidden rounded-full bg-surface-muted px-2.5 py-0.5 text-secondary font-semibold text-ink-muted sm:inline">
               {t('studio.label')}
             </span>

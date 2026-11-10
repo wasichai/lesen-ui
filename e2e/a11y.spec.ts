@@ -2,7 +2,14 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { fakeApi, seedDraft } from './api'
 
-// WCAG 2.2 AA con axe en las pantallas principales, en claro y en los tres temas del lector
+// WCAG 2.2 AA con axe en las pantallas principales, en claro y en los tres temas del lector, con la identidad por defecto
+// (Musgo). A11Y_DIRECTION=gaceta (o pulso, atlas, papel) repite la revisión con otra identidad del perfil, y A11Y_DARK=1
+// con la página oscura
+const direction = process.env.A11Y_DIRECTION
+test.beforeEach(async ({ page }) => {
+  if (process.env.A11Y_DARK) await page.emulateMedia({ colorScheme: 'dark' })
+  if (direction) await page.addInitScript((d) => localStorage.setItem('lesen.direction', d), direction)
+})
 const PAGES = [
   '/welcome',
   '/discover',

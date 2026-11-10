@@ -31,6 +31,8 @@ test('desde el lector se prepara la página para imprimir o guardar como PDF', a
 })
 
 test('la hoja de exportar no tiene problemas de accesibilidad', async ({ page }) => {
+  // sin la entrada animada de la hoja: axe mediría el contraste a media transparencia
+  await page.emulateMedia({ reducedMotion: 'reduce' })
   await fakeApi(page)
   await page.goto('/readings/der-alte-leuchtturm')
   await page.getByRole('button', { name: 'Exportar' }).click()

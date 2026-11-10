@@ -30,6 +30,16 @@ const es = {
     system: 'Como el sistema',
     lesen: 'Claro',
     lesenDark: 'Oscuro'
+  },
+  mode: 'Claro u oscuro',
+  identity: 'Identidad',
+  identityLead: 'Cómo se ve Lesen. Se guarda en este dispositivo.',
+  direction: {
+    musgo: { name: 'Musgo', note: 'Calma natural; la de por defecto' },
+    gaceta: { name: 'Gaceta', note: 'Editorial, como una revista literaria' },
+    pulso: { name: 'Pulso', note: 'Vibrante y con energía' },
+    atlas: { name: 'Atlas', note: 'Minimal, precisa y geométrica' },
+    papel: { name: 'Papel y tinta', note: 'La clásica de Lesen' }
   }
 }
 
@@ -63,6 +73,16 @@ const en: typeof es = {
     system: 'Match the system',
     lesen: 'Light',
     lesenDark: 'Dark'
+  },
+  mode: 'Light or dark',
+  identity: 'Identity',
+  identityLead: 'How Lesen looks. Saved on this device.',
+  direction: {
+    musgo: { name: 'Moss', note: 'Natural calm, the default' },
+    gaceta: { name: 'Gazette', note: 'Editorial, like a literary magazine' },
+    pulso: { name: 'Pulse', note: 'Vibrant and energetic' },
+    atlas: { name: 'Atlas', note: 'Minimal, precise and geometric' },
+    papel: { name: 'Paper & ink', note: 'The classic Lesen look' }
   }
 }
 

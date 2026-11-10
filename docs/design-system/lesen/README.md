@@ -23,6 +23,13 @@ tranquilo para leer mucho rato. La lectura manda; la interfaz se aparta.
 | Botánica            | Verdes y ocres, ilustración de hojas en todas partes, esquinas muy redondas           | Encantadora en portadas, cansa en sesiones largas; queda como tonos de tema (sage, ochre) |
 | Biblioteca nocturna | Oscuro por defecto, dorados, tipografía display muy contrastada                       | Espectacular en la portada, peor para leer de día; queda como tema oscuro del lector      |
 
+### Exploración de 2026-11
+
+Cuatro direcciones nuevas (Gaceta, Pulso, Musgo y Atlas). Desde entonces **cada persona elige la identidad en su
+perfil** entre esas cuatro y Papel y tinta, y **Musgo es la de por defecto**. Lo que sigue de este documento describe
+Papel y tinta, la base sobre la que se pintan las demás; la auditoría, las direcciones, la comparación, la
+recomendación y cómo funciona la elección están en [`explorations/`](explorations/README.md).
+
 ## Tokens
 
 Los valores viven en `src/theme/lesen.css` (cinco temas que ponen todos los tokens de `@wasichai/ui` más los propios) y

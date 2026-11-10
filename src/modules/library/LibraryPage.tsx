@@ -69,7 +69,7 @@ function Library() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="font-read text-h1">{t('title')}</h1>
+        <h1 className="font-display text-h1">{t('title')}</h1>
         <p className="mt-2 text-ink-muted">{t('lead')}</p>
       </header>
       <CustomReadings />
@@ -161,7 +161,7 @@ function Lists() {
                 to={links.to(ROUTES.list, { id: item.id })}
                 className="flex min-h-20 flex-col justify-center gap-1 rounded-[var(--radius-card)] border border-border bg-surface-raised p-4 transition-colors hover:border-border-control"
               >
-                <span className="font-read text-h4">{item.name}</span>
+                <span className="font-display text-h4">{item.name}</span>
                 <span className="text-secondary text-ink-muted">{t('lists.count', { count: item.count })}</span>
               </Link>
             </li>
@@ -185,7 +185,7 @@ function CustomReadings() {
   return (
     <section aria-labelledby={id} className="flex flex-col gap-3 rounded-[var(--radius-card)] border border-border bg-surface-raised p-4 sm:p-5">
       <div className="flex flex-wrap items-center gap-3">
-        <h2 id={id} className="mr-auto flex items-center gap-2 font-read text-h4">
+        <h2 id={id} className="mr-auto flex items-center gap-2 font-display text-h4">
           <Sparkles aria-hidden className="size-5 text-brand" />
           {t('custom.title')}
         </h2>

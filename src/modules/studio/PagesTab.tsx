@@ -161,7 +161,7 @@ function PageEditor({
   return (
     <li className="rounded-[var(--radius-card)] border border-border bg-surface-raised p-4 sm:p-5" aria-labelledby={`page-${n}`}>
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <h2 id={`page-${n}`} className="mr-auto font-read text-h4">
+        <h2 id={`page-${n}`} className="mr-auto font-display text-h4">
           {page.span === 2 ? t('pages.spread', { n }) : t('pages.page', { n })}
         </h2>
         <button type="button" className={buttonClass('ghost', 'sm')} onClick={onAddImage}>

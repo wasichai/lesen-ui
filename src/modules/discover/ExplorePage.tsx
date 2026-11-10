@@ -55,7 +55,7 @@ function Explore() {
   return (
     <div className="flex flex-col gap-6">
       <header>
-        <h1 className="font-read text-h1">{t('explore.title')}</h1>
+        <h1 className="font-display text-h1">{t('explore.title')}</h1>
         <p className="mt-2 text-ink-muted">{t('explore.lead')}</p>
       </header>
       <div className="flex flex-wrap items-center gap-3">

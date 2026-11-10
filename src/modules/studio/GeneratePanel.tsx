@@ -35,7 +35,7 @@ export function GeneratePanel() {
   if (status.data && !status.data.available)
     return (
       <section aria-labelledby={`${id}-title`} className="rounded-[var(--radius-card)] border border-border bg-surface-raised p-5 sm:p-6">
-        <h2 id={`${id}-title`} className="font-read text-h3">
+        <h2 id={`${id}-title`} className="font-display text-h3">
           {t('generate.title')}
         </h2>
         <p className="mt-1 text-secondary text-ink-muted">{t('generate.unavailable')}</p>
@@ -43,7 +43,7 @@ export function GeneratePanel() {
     )
   return (
     <section aria-labelledby={`${id}-title`} className="rounded-[var(--radius-card)] border border-border bg-surface-raised p-5 sm:p-6">
-      <h2 id={`${id}-title`} className="flex items-center gap-2 font-read text-h3">
+      <h2 id={`${id}-title`} className="flex items-center gap-2 font-display text-h3">
         <Sparkles aria-hidden className="size-5 text-brand" />
         {t('generate.title')}
       </h2>

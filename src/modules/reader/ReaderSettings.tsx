@@ -1,11 +1,9 @@
 import { Minus, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { chipClass, buttonClass } from '../../shared/ui'
-import type { ReaderTheme } from '../../theme/themes'
+import { READER_THEMES } from '../../theme/themes'
 import { READER_MODULE_ID } from './i18n'
 import { LEADINGS, SIZES, stepSize, type Leading, type ReaderPreferences } from './readerPreferences'
-
-const SWATCH: Record<ReaderTheme, string> = { light: '#fffdf8', sepia: '#f4ecdd', dark: '#121318' }
 
 export function ReaderSettings({ preferences, update }: { preferences: ReaderPreferences; update: (change: Partial<ReaderPreferences>) => void }) {
   const { t } = useTranslation(READER_MODULE_ID)
@@ -64,7 +62,9 @@ export function ReaderSettings({ preferences, update }: { preferences: ReaderPre
               className={chipClass(preferences.theme === theme)}
               onClick={() => update({ theme })}
             >
-              <span aria-hidden className="size-4 rounded-full border border-border-control" style={{ backgroundColor: SWATCH[theme] }} />
+              <span aria-hidden className="size-4 overflow-hidden rounded-full border border-border-control">
+                <span data-theme={READER_THEMES[theme].id} className="block size-full bg-surface" />
+              </span>
               {t(`settings.themes.${theme}`)}
             </button>
           ))}

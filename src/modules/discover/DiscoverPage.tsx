@@ -66,7 +66,7 @@ function DiscoverContent() {
   return (
     <div className="flex flex-col gap-14">
       <section aria-labelledby="hello" className="animate-rise">
-        <h1 id="hello" className="font-read text-h1 sm:text-display">
+        <h1 id="hello" className="font-display text-h1 sm:text-display">
           {name ? t('home.named', { greeting: hello, name }) : hello}
         </h1>
         <p className="mt-3 max-w-2xl text-[18px] leading-relaxed text-ink-muted">{t('home.lead', { language, minutes: profile.data.dailyMinutes })}</p>
@@ -94,7 +94,7 @@ function DiscoverContent() {
         >
           <Sparkles aria-hidden className="size-6 shrink-0 text-brand" />
           <span className="min-w-0 flex-1">
-            <span className="block font-read text-h4">{t('home.custom')}</span>
+            <span className="block font-display text-h4">{t('home.custom')}</span>
             <span className="mt-0.5 block text-secondary text-ink-muted">{t('home.customLead')}</span>
           </span>
           <ArrowRight aria-hidden className="size-5 shrink-0 text-ink-muted transition-transform group-hover:translate-x-0.5" />
@@ -117,7 +117,7 @@ function DiscoverContent() {
                     <Cover src={reading.cover} accent={reading.accent} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-read text-h4" lang={reading.language}>
+                    <p className="truncate font-display text-h4" lang={reading.language}>
                       {reading.title}
                     </p>
                     <p className="mt-0.5 text-secondary text-ink-muted">{app('reading.progress', { percent: reading.progress?.percent ?? 0 })}</p>
@@ -185,7 +185,7 @@ function DiscoverContent() {
                       className="group relative flex min-h-24 flex-col justify-between overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface-raised p-4 transition-colors hover:border-border-control"
                     >
                       <span aria-hidden className={`absolute -right-6 -top-6 size-20 rounded-full opacity-15 ${tone.bg}`} />
-                      <span className={`font-read text-h4 ${tone.text}`}>{topicLabel(topic.slug)}</span>
+                      <span className={`font-display text-h4 ${tone.text}`}>{topicLabel(topic.slug)}</span>
                       <span className="text-secondary text-ink-muted">{t('home.readings', { count: topic.readings })}</span>
                     </Link>
                   </li>
@@ -240,7 +240,7 @@ function WeekGlance() {
       className="-mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 rounded-[var(--radius-card)] border border-border bg-surface-raised p-4 sm:p-5"
     >
       <div className="min-w-0 flex-1 basis-64">
-        <h2 id="week-glance" className="font-read text-h4">
+        <h2 id="week-glance" className="font-display text-h4">
           {t('home.glance.title')}
         </h2>
         <p className="text-ink-muted">
@@ -264,30 +264,26 @@ function Hero({ reading }: { reading: ReadingCard }) {
   const links = useWasichaiLinks()
   const started = reading.progress && !reading.progress.completed
   return (
-    <section aria-labelledby="featured" className="relative overflow-hidden rounded-[28px] border border-border bg-surface-raised">
+    <section aria-labelledby="featured" data-ui="hero" className="relative overflow-hidden rounded-[28px] border border-border bg-surface-raised">
       <div
         aria-hidden
+        data-ui="hero-glow"
         className="absolute inset-0 opacity-[0.12]"
         style={{ background: `radial-gradient(120% 90% at 100% 0%, ${reading.accent ?? 'var(--brand)'}, transparent 60%)` }}
       />
       <div className="relative grid items-center gap-6 p-5 sm:grid-cols-[minmax(0,15rem)_1fr] sm:gap-10 sm:p-8 lg:grid-cols-[minmax(0,18rem)_1fr]">
         <Link to={links.to(ROUTES.reading, { slug: reading.slug })} className="mx-auto w-44 sm:w-full" tabIndex={-1} aria-hidden>
-          <Cover
-            src={reading.cover}
-            accent={reading.accent}
-            eager
-            className="shadow-[0_20px_40px_rgb(48_34_20/22%)] -rotate-2 transition-transform hover:rotate-0"
-          />
+          <Cover src={reading.cover} accent={reading.accent} eager className="shadow-[var(--shadow-hero)] -rotate-2 transition-transform hover:rotate-0" />
         </Link>
         <div className="flex flex-col items-start gap-4">
           <p id="featured" className="text-eyebrow uppercase text-brand-strong">
             {t('home.featured')}
           </p>
-          <h2 className="font-read text-h1" lang={reading.language}>
+          <h2 className="font-display text-h1" lang={reading.language}>
             {reading.title}
           </h2>
           {reading.subtitle && (
-            <p className="-mt-2 font-read text-h4 italic text-ink-muted" lang={reading.language}>
+            <p className="-mt-2 font-display text-h4 italic text-ink-muted" lang={reading.language}>
               {reading.subtitle}
             </p>
           )}

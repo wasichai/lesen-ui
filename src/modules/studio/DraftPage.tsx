@@ -90,7 +90,7 @@ function Editor({ draft, save }: { draft: Draft; save: ReturnType<typeof useSave
           {t('draft.back')}
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="min-w-0 break-words font-read text-h1" lang={draft.language}>
+          <h1 className="min-w-0 break-words font-display text-h1" lang={draft.language}>
             {edited.document.title || draft.slug}
           </h1>
           <StatusBadge status={draft.status} />

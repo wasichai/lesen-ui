@@ -51,6 +51,7 @@ export function WordPreview({
     <div
       ref={card}
       role="dialog"
+      data-ui="word-preview"
       aria-label={t('word.title', { word })}
       style={style}
       onMouseEnter={onEnter}

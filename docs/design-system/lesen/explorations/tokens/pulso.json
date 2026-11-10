@@ -1,0 +1,163 @@
+{
+  "id": "pulso",
+  "name": "Pulso",
+  "concept": "Aprendizaje vibrante: energía de producto de consumo sin infantilizar. Índigo seguro, coral para lo nuevo, superficies frías y claras.",
+  "font": {
+    "display": "'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif",
+    "read": "'Literata', Georgia, 'Times New Roman', serif",
+    "sans": "'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif"
+  },
+  "type": {
+    "display": {
+      "weight": 800,
+      "tracking": "-0.035em"
+    },
+    "h1": {
+      "weight": 800,
+      "tracking": "-0.03em"
+    },
+    "h2": {
+      "weight": 750,
+      "tracking": "-0.025em"
+    },
+    "h3": {
+      "weight": 700,
+      "tracking": "-0.015em"
+    },
+    "h4": {
+      "weight": 700,
+      "tracking": "-0.01em"
+    },
+    "eyebrow": {
+      "weight": 800,
+      "tracking": "0.08em"
+    },
+    "label": {
+      "weight": 700
+    }
+  },
+  "shape": {
+    "radius": {
+      "base": "14px",
+      "sm": "8px",
+      "md": "14px",
+      "lg": "20px",
+      "xl": "28px",
+      "card": "24px"
+    },
+    "button": "9999px",
+    "chip": "9999px"
+  },
+  "shadow": {
+    "light": {
+      "card": "0 10px 30px -12px rgb(40 36 120 / 28%)",
+      "raised": "0 16px 40px -16px rgb(40 36 120 / 34%)",
+      "overlay": "0 24px 56px rgb(22 26 51 / 22%)"
+    },
+    "dark": {
+      "card": "0 10px 30px -12px rgb(0 0 0 / 60%)",
+      "raised": "0 16px 40px -16px rgb(0 0 0 / 70%)",
+      "overlay": "0 24px 56px rgb(0 0 0 / 60%)"
+    }
+  },
+  "color": {
+    "light": {
+      "surface": "#f6f7fb",
+      "surface-muted": "#eceef7",
+      "surface-raised": "#ffffff",
+      "border": "#dcdff0",
+      "border-control": "#7b80a0",
+      "ink": "#161a33",
+      "ink-muted": "#4e5373",
+      "brand": "#4a3fd6",
+      "brand-strong": "#3529b0",
+      "brand-soft": "#e6e4ff",
+      "on-brand": "#ffffff",
+      "focus": "#0a66c2",
+      "accent": "#e8553f",
+      "sea": "#0f6476",
+      "sage": "#2e6b45",
+      "ochre": "#8a5300",
+      "plum": "#a02c5a",
+      "danger": "#b3261e",
+      "danger-soft": "#fde7e4",
+      "on-danger": "#ffffff",
+      "success": "#1f7a4d",
+      "success-soft": "#dff3e8",
+      "warning": "#8a5300",
+      "warning-soft": "#fbefd6",
+      "notice": "#0f6476",
+      "notice-soft": "#def2f6",
+      "mark-saved": "#ffe27a",
+      "mark-new": "#d1432c",
+      "mark-sentence": "#ece9ff"
+    },
+    "dark": {
+      "surface": "#0f1226",
+      "surface-muted": "#0a0c1c",
+      "surface-raised": "#191d38",
+      "border": "#2b3057",
+      "border-control": "#7f86b8",
+      "ink": "#eef0ff",
+      "ink-muted": "#aeb3d4",
+      "brand": "#a49cff",
+      "brand-strong": "#c6c1ff",
+      "brand-soft": "#2a2560",
+      "on-brand": "#120e3d",
+      "focus": "#7cc0ff",
+      "accent": "#ff8a73",
+      "sea": "#7fd3e3",
+      "sage": "#8fd6a8",
+      "ochre": "#f2c063",
+      "plum": "#ff9fc0",
+      "danger": "#ff8f84",
+      "danger-soft": "#3d1820",
+      "on-danger": "#2a0a0d",
+      "success": "#7fd6a3",
+      "success-soft": "#12301f",
+      "warning": "#f2c063",
+      "warning-soft": "#33270b",
+      "notice": "#7fd3e3",
+      "notice-soft": "#10303a",
+      "mark-saved": "#5b4a12",
+      "mark-saved-ink": "#fff4cc",
+      "mark-new": "#ff8a73",
+      "mark-sentence": "#232650"
+    },
+    "reader-light": {
+      "surface": "#fdfcf9",
+      "surface-muted": "#f4f3ee",
+      "surface-raised": "#ffffff",
+      "border": "#e4e2da",
+      "ink": "#1c1d2a",
+      "ink-muted": "#53556a",
+      "mark-sentence": "#eeebff"
+    },
+    "reader-sepia": {
+      "surface": "#f3ead8",
+      "surface-muted": "#e9dec8",
+      "surface-raised": "#f8f0e0",
+      "border": "#d7c8ab",
+      "border-control": "#7d6d52",
+      "ink": "#352a1c",
+      "ink-muted": "#5d4d38",
+      "brand": "#4337c4",
+      "brand-strong": "#3127a3",
+      "brand-soft": "#e2dbf0",
+      "mark-saved": "#efd58a",
+      "mark-new": "#b83a25",
+      "mark-sentence": "#e8dcc2",
+      "success": "#1a6b43"
+    },
+    "reader-dark": {
+      "surface": "#0c0e1c",
+      "surface-muted": "#080a15",
+      "surface-raised": "#151831",
+      "border": "#262a4d",
+      "ink": "#e3e5f5",
+      "ink-muted": "#a3a8c8",
+      "mark-saved": "#544411",
+      "mark-sentence": "#1e2146"
+    }
+  }
+}

@@ -130,7 +130,7 @@ function List({ id }: { id: string }) {
           />
         ) : (
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="min-w-0 break-words font-read text-h1">{data.name}</h1>
+            <h1 className="min-w-0 break-words font-display text-h1">{data.name}</h1>
             <button type="button" className={buttonClass('ghost', 'icon')} onClick={() => setEditing(true)} aria-label={t('lists.rename')}>
               <Pencil aria-hidden className="size-4" />
             </button>

@@ -123,7 +123,7 @@ function QuestionEditor({
       className="flex flex-col gap-4 rounded-[var(--radius-card)] border border-border bg-surface-raised p-4 sm:p-5"
     >
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="mr-auto font-read text-h4">
+        <h2 className="mr-auto font-display text-h4">
           {t('questions.question', { id })} · {t(`questions.type.${question.type}`)}
         </h2>
         <button type="button" className={buttonClass('ghost', 'icon')} disabled={first} onClick={() => onMove(-1)} aria-label={t('questions.up', { id })}>

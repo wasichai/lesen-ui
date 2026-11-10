@@ -4,7 +4,9 @@
    - lesen-reader-light, -sepia y -dark: los del lector, como subárbol (data-theme en el contenedor de la lectura)
    tokens propios: --sage, --ochre, --sea y --plum (temas y portadas), --mark-saved y --mark-saved-ink (palabra guardada),
    --mark-new (palabra sin guardar, subrayado) y --mark-sentence (la oración activa). los pares de contraste los comprueba
-   lesen.test.ts (WCAG 2.2 AA) */
+   lesen.test.ts (WCAG 2.2 AA). la forma: --radius-button y --radius-chip (botones y chips de src/shared/ui.ts) y
+   --shadow-cover, --shadow-cover-raised y --shadow-hero (portadas en tarjeta, en el detalle y en la destacada); las
+   identidades seleccionables (src/theme/directions) los vuelven a poner */
 
 /* Newsreader y Source Sans 3 (SIL OFL, src/theme/fonts) se declaran en src/index.css */
 
@@ -58,6 +60,11 @@
   --radius-lg: 14px;
   --radius-xl: 20px;
   --radius-card: 18px;
+  --radius-button: 9999px;
+  --radius-chip: 9999px;
+  --shadow-cover: 0 10px 24px rgb(48 34 20 / 12%);
+  --shadow-cover-raised: 0 24px 48px rgb(48 34 20 / 20%);
+  --shadow-hero: 0 20px 40px rgb(48 34 20 / 22%);
   --shadow-overlay: 0 18px 40px rgb(48 34 20 / 18%);
 }
 
@@ -111,6 +118,11 @@
   --radius-lg: 14px;
   --radius-xl: 20px;
   --radius-card: 18px;
+  --radius-button: 9999px;
+  --radius-chip: 9999px;
+  --shadow-cover: 0 10px 24px rgb(48 34 20 / 12%);
+  --shadow-cover-raised: 0 24px 48px rgb(48 34 20 / 20%);
+  --shadow-hero: 0 20px 40px rgb(48 34 20 / 22%);
   --shadow-overlay: 0 18px 40px rgb(0 0 0 / 45%);
 }
 
@@ -165,6 +177,11 @@
   --radius-lg: 14px;
   --radius-xl: 20px;
   --radius-card: 18px;
+  --radius-button: 9999px;
+  --radius-chip: 9999px;
+  --shadow-cover: 0 10px 24px rgb(48 34 20 / 12%);
+  --shadow-cover-raised: 0 24px 48px rgb(48 34 20 / 20%);
+  --shadow-hero: 0 20px 40px rgb(48 34 20 / 22%);
   --shadow-overlay: 0 18px 40px rgb(48 34 20 / 18%);
 }
 
@@ -219,6 +236,11 @@
   --radius-lg: 14px;
   --radius-xl: 20px;
   --radius-card: 18px;
+  --radius-button: 9999px;
+  --radius-chip: 9999px;
+  --shadow-cover: 0 10px 24px rgb(48 34 20 / 12%);
+  --shadow-cover-raised: 0 24px 48px rgb(48 34 20 / 20%);
+  --shadow-hero: 0 20px 40px rgb(48 34 20 / 22%);
   --shadow-overlay: 0 18px 40px rgb(58 47 34 / 20%);
 }
 
@@ -273,5 +295,10 @@
   --radius-lg: 14px;
   --radius-xl: 20px;
   --radius-card: 18px;
+  --radius-button: 9999px;
+  --radius-chip: 9999px;
+  --shadow-cover: 0 10px 24px rgb(48 34 20 / 12%);
+  --shadow-cover-raised: 0 24px 48px rgb(48 34 20 / 20%);
+  --shadow-hero: 0 20px 40px rgb(48 34 20 / 22%);
   --shadow-overlay: 0 18px 40px rgb(0 0 0 / 45%);
 }

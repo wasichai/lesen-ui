@@ -37,11 +37,11 @@ function History({ slug }: { slug: string }) {
           <ArrowLeft aria-hidden className="size-4" />
           {t('draft.back')}
         </Link>
-        <h1 className="break-words font-read text-h1">{t('history.title', { slug })}</h1>
+        <h1 className="break-words font-display text-h1">{t('history.title', { slug })}</h1>
       </div>
       <div className="grid gap-8 lg:grid-cols-2">
         <section aria-labelledby="versions">
-          <h2 id="versions" className="mb-3 font-read text-h3">
+          <h2 id="versions" className="mb-3 font-display text-h3">
             {t('history.versions')}
           </h2>
           <ol className="flex flex-col gap-3">
@@ -53,7 +53,7 @@ function History({ slug }: { slug: string }) {
                     {v.status === 'PUBLISHED' ? t('history.current') : t('history.retired')}
                   </span>
                 </p>
-                <p className="mt-1 font-read text-h4">{v.title}</p>
+                <p className="mt-1 font-display text-h4">{v.title}</p>
                 <p className="text-secondary text-ink-muted">
                   {formatDate(v.publishedAt, i18n.language)} · {t('history.words', { count: v.wordCount })} ·{' '}
                   {v.audio ? t('history.audio') : t('history.noAudio')} · {t('history.questions', { count: v.questions })}
@@ -63,7 +63,7 @@ function History({ slug }: { slug: string }) {
           </ol>
         </section>
         <section aria-labelledby="events">
-          <h2 id="events" className="mb-3 font-read text-h3">
+          <h2 id="events" className="mb-3 font-display text-h3">
             {t('history.events')}
           </h2>
           {data.events.length === 0 ? <p className="text-ink-muted">{t('history.none')}</p> : <Events events={data.events} />}
